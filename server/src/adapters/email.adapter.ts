@@ -26,7 +26,7 @@ export class DevMailboxAdapter implements EmailAdapter {
 
   async sendVerificationEmail(to: string, token: string): Promise<void> {
     const url = `http://localhost:5173/verify-email?token=${token}`;
-    await this.appendToMailbox(to, 'Verify your Ghostwriter OS account', `Click here to verify: ${url}`);
+    await this.appendToMailbox(to, 'Verify your Briefloom account', `Click here to verify: ${url}`);
   }
 
   async sendPasswordResetEmail(to: string, token: string): Promise<void> {
@@ -35,7 +35,7 @@ export class DevMailboxAdapter implements EmailAdapter {
   }
 
   async sendWelcomeEmail(to: string, name: string): Promise<void> {
-    await this.appendToMailbox(to, 'Welcome to Ghostwriter OS', `Hi ${name}, welcome aboard!`);
+    await this.appendToMailbox(to, 'Welcome to Briefloom', `Hi ${name}, welcome aboard!`);
   }
 }
 

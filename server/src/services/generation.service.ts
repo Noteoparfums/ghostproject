@@ -164,7 +164,7 @@ export const generationService = {
         outline: [
           'Capture attention using hook #1',
           'Agitate core pains (time and agency costs)',
-          'Present Ghostwriter OS as the scalable mechanism',
+          'Present the offer as the mechanism',
           'Close with strong CTA + objection handler'
         ]
       };
@@ -243,40 +243,30 @@ export const generationService = {
       await sleep(1500);
 
       // Save each asset to generation_assets table
-      let primaryAssetId = 0;
+      const persistedAssets = [];
       for (let i = 0; i < generatedAssets.length; i++) {
         const asset = generatedAssets[i]!;
-        const copyScore = Math.floor(Math.random() * 15) + 82; // 82-96 score
-        const scoreBreakdown = {
-          readability: 90,
-          persuasion: 85,
-          engagement: 88
-        };
-        const complianceFlags = {
-          unsubstantiated_claims: [],
-          over_promising: []
-        };
-
         const assetId = await generationAssetRepository.create({
           generationId: genId,
           assetType: asset.asset_type,
           content: asset.content,
           variant: i === 0 ? 'A' : null,
-          frameworkNote: asset.framework_note,
-          copyScore,
-          scoreBreakdown,
-          complianceFlags
+          frameworkNote: asset.framework_note
         });
-
-        if (i === 0) {
-          primaryAssetId = assetId;
-        }
+        persistedAssets.push({
+          id: assetId,
+          asset_type: asset.asset_type,
+          content: asset.content,
+          variant: i === 0 ? 'A' : null,
+          framework_note: asset.framework_note,
+          copy_score: null,
+          score_breakdown: null
+        });
       }
 
-      // Update generation to complete status
       await generationRepository.update(genId, {
         status: 'complete',
-        copyScore: 89
+        copyScore: null
       });
 
       handle.send('stage', { stage: 'polish', status: 'complete', output: 'Polished and saved.' });
@@ -288,7 +278,7 @@ export const generationService = {
         durationMs: 1500
       });
 
-      handle.send('complete', { assetId: primaryAssetId });
+      handle.send('complete', { generationId: genId, assets: persistedAssets });
     } catch (e: any) {
       logger.error({ err: e, genId }, 'Error running generation pipeline');
       handle.send('error', { code: 'INTERNAL', message: e?.message || 'Failed during generation pipeline' });

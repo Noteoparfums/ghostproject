@@ -13,7 +13,7 @@ import { cn } from '../../lib/cn';
 
 export function ResetPassword() {
   useDocumentMeta({
-    title: 'Reset Password — Ghostwriter OS',
+    title: 'Reset password',
     description: 'Set a new password for your account.',
   });
 

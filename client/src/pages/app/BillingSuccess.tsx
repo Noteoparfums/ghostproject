@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { useBilling } from '../../contexts/BillingContext';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
@@ -7,50 +7,67 @@ import Button from '../../components/ui/Button';
 import { CheckCircle, AlertTriangle, ArrowRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { track } from '../../lib/analytics';
+import type { BillingState } from '../../api/endpoints/billing';
+
+function materiallyChanged(before: BillingState, after: BillingState) {
+  return (
+    before.credit_balance !== after.credit_balance ||
+    before.plan?.slug !== after.plan?.slug ||
+    before.subscription?.id !== after.subscription?.id ||
+    before.subscription?.status !== after.subscription?.status
+  );
+}
 
 export function BillingSuccess() {
   useDocumentMeta({
-    title: 'Payment Successful — Ghostwriter OS',
+    title: 'Payment verification',
   });
 
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const { refresh } = useBilling();
   const reducedMotion = useReducedMotion();
+  const baselineRef = useRef<BillingState | null>(null);
 
   const [status, setStatus] = useState<'polling' | 'success' | 'timeout'>('polling');
 
   useEffect(() => {
-    track('checkout_completed');
-
-    // Polling loop
+    let disposed = false;
     let tries = 0;
-    const interval = setInterval(async () => {
-      tries++;
+    let timeout: number | undefined;
+
+    const poll = async () => {
       try {
-        await refresh();
-        // Since it's mock / active billing state, we've successfully refreshed.
-        // In a real app we'd verify subscription status is active/trialing.
-        clearInterval(interval);
-        setStatus('success');
-        
-        // Trigger confetti (unless reduced motion is preferred)
-        if (!reducedMotion) {
+        const next = await refresh();
+        if (disposed || !next) return;
+        if (!baselineRef.current) {
+          baselineRef.current = next;
+        } else if (materiallyChanged(baselineRef.current, next)) {
+          setStatus('success');
+          track('checkout_completed');
+          if (!reducedMotion) {
           confetti({
             particleCount: 100,
             spread: 70,
             origin: { y: 0.6 }
           });
+          }
+          return;
         }
-      } catch (e) {
-        if (tries >= 20) {
-          clearInterval(interval);
-          setStatus('timeout');
-        }
+      } catch (error) {
+        console.error('Billing verification request failed', error);
       }
-    }, 1500);
+      tries += 1;
+      if (tries >= 20) {
+        setStatus('timeout');
+      } else {
+        timeout = window.setTimeout(poll, 1500);
+      }
+    };
+    void poll();
 
-    return () => clearInterval(interval);
+    return () => {
+      disposed = true;
+      if (timeout) window.clearTimeout(timeout);
+    };
   }, [refresh, reducedMotion]);
 
   return (
@@ -72,7 +89,7 @@ export function BillingSuccess() {
         {status === 'success' && (
           <div className="flex flex-col items-center gap-4">
             <CheckCircle className="w-16 h-16 text-emerald-500 animate-bounce" />
-            <h2 className="text-xl font-bold dark:text-zinc-200 text-zinc-800">Upgrade Activated!</h2>
+            <h2 className="text-xl font-bold dark:text-zinc-200 text-zinc-800">Billing change confirmed</h2>
             <p className="text-xs dark:text-zinc-400 text-zinc-500 leading-relaxed">
               Payment confirmed. Your account limits have been successfully updated.
             </p>
@@ -90,7 +107,7 @@ export function BillingSuccess() {
             <AlertTriangle className="w-16 h-16 text-amber-500" />
             <h2 className="text-xl font-bold dark:text-zinc-200 text-zinc-800">Confirmation Delay</h2>
             <p className="text-xs dark:text-zinc-400 text-zinc-500 leading-relaxed">
-              Payment received. Plan activation is taking longer than usual. Please check back in a few minutes, or reach out to support.
+              We could not yet verify a plan or credit change. Your provider may still be processing it. Check billing again shortly or contact support.
             </p>
             <Link to="/app" className="w-full mt-4">
               <Button variant="secondary" className="w-full">

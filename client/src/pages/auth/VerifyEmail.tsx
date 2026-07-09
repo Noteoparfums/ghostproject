@@ -8,7 +8,7 @@ import { track } from '../../lib/analytics';
 
 export function VerifyEmail() {
   useDocumentMeta({
-    title: 'Verify Email — Ghostwriter OS',
+    title: 'Verify email',
     description: 'Verify your email address.',
   });
 

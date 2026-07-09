@@ -12,8 +12,8 @@ import { Sparkles, Mail, Lock } from 'lucide-react';
 
 export function Login() {
   useDocumentMeta({
-    title: 'Sign In — Ghostwriter OS',
-    description: 'Sign in to your Ghostwriter OS account.',
+    title: 'Sign in',
+    description: 'Sign in to your Briefloom account.',
   });
 
   const { login } = useAuth();

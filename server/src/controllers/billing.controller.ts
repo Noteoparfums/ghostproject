@@ -14,13 +14,6 @@ const topupSchema = z.object({
   amountCents: z.number().int().min(500)
 });
 
-const mockCheckoutCompleteSchema = z.object({
-  type: z.enum(['subscription', 'topup']),
-  planSlug: z.string().optional(),
-  interval: z.enum(['monthly', 'annual']).optional(),
-  amountCents: z.number().int().optional()
-});
-
 export const billingController = {
   async getBillingState(req: Request, res: Response) {
     if (!req.user) throw new AppError('UNAUTHORIZED', 'Not authenticated');
@@ -53,21 +46,6 @@ export const billingController = {
     
     const session = await billingService.createTopupCheckout(req.user.id, amountCents);
     res.json({ data: session });
-  },
-
-  async completeMockCheckout(req: Request, res: Response) {
-    if (!req.user) throw new AppError('UNAUTHORIZED', 'Not authenticated');
-    const data = mockCheckoutCompleteSchema.parse(req.body);
-
-    await billingService.handleCheckoutCompleted(
-      req.user.id, 
-      data.type, 
-      data.planSlug, 
-      data.interval, 
-      data.amountCents
-    );
-
-    res.json({ success: true });
   },
 
   async createPortal(req: Request, res: Response) {

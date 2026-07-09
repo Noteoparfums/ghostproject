@@ -18,18 +18,10 @@ const topupSchema = z.object({
   amountCents: z.number().int().min(500)
 });
 
-const mockCheckoutCompleteSchema = z.object({
-  type: z.enum(['subscription', 'topup']),
-  planSlug: z.string().optional(),
-  interval: z.enum(['monthly', 'annual']).optional(),
-  amountCents: z.number().int().optional()
-});
-
 router.get('/state', asyncHandler(billingController.getBillingState));
 router.get('/invoices', asyncHandler(billingController.getInvoices));
 router.post('/checkout/subscription', validate({ body: createSubscriptionSchema }), asyncHandler(billingController.createSubscriptionCheckout));
 router.post('/checkout/topup', validate({ body: topupSchema }), asyncHandler(billingController.createTopupCheckout));
-router.post('/checkout/mock-complete', validate({ body: mockCheckoutCompleteSchema }), asyncHandler(billingController.completeMockCheckout));
 router.post('/portal', asyncHandler(billingController.createPortal));
 router.post('/subscription/cancel', asyncHandler(billingController.cancelSubscription));
 

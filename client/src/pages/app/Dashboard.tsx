@@ -11,7 +11,7 @@ import { Link } from 'react-router-dom';
 
 export function Dashboard() {
   useDocumentMeta({
-    title: 'Dashboard — Ghostwriter OS',
+    title: 'Dashboard',
   });
 
   const { user } = useAuth();
@@ -62,7 +62,7 @@ export function Dashboard() {
               Active plan: {plan?.name || 'Free Tier'}
             </span>
           </div>
-          <ProgressRing value={parsedCredits} max={100} size={72} strokeWidth={5} />
+          <ProgressRing value={parsedCredits} max={Number(plan?.monthly_credits) || Math.max(parsedCredits, 1)} size={72} strokeWidth={5} />
         </div>
 
         {/* Projects */}

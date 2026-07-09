@@ -19,7 +19,7 @@ import { track } from '../../lib/analytics';
 
 export function BrandVoices() {
   useDocumentMeta({
-    title: 'Brand Voice — Ghostwriter OS',
+    title: 'Brand voices',
   });
 
   const toast = useToast();

@@ -26,7 +26,6 @@ export interface StreamState {
   status: 'idle' | 'queued' | 'running' | 'complete' | 'cancelled' | 'error';
   generationId: number | null;
   currentStage: StageId | null;
-  currentProgress: number;
   stages: Record<StageId, { status: StageStatus; output?: string }>;
   streamedContent: string;
   assets: AssetState[];
@@ -51,7 +50,6 @@ const initialState = (): StreamState => ({
   status: 'idle',
   generationId: null,
   currentStage: null,
-  currentProgress: 0,
   stages: initialStages(),
   streamedContent: '',
   assets: [],
@@ -81,18 +79,6 @@ export function useGenerationStream() {
         setState((previous) => ({
           ...previous,
           streamedContent: previous.streamedContent + content,
-          assets: [
-            {
-              id: 0,
-              asset_type: 'streamed_campaign',
-              content: previous.streamedContent + content,
-              variant: null,
-              edited_content: null,
-              framework_note: null,
-              copy_score: null,
-              score_breakdown: null,
-            },
-          ],
         }));
       }
       frameRef.current = requestAnimationFrame(flush);
@@ -109,16 +95,6 @@ export function useGenerationStream() {
       return {
         ...previous,
         streamedContent,
-        assets: [{
-          id: 0,
-          asset_type: 'streamed_campaign',
-          content: streamedContent,
-          variant: null,
-          edited_content: null,
-          framework_note: null,
-          copy_score: null,
-          score_breakdown: null,
-        }],
       };
     });
   }, []);
@@ -164,9 +140,6 @@ export function useGenerationStream() {
             ...previous,
             status: 'running',
             currentStage: data.status === 'complete' ? null : stage,
-            currentProgress: data.status === 'complete'
-              ? Object.values(previous.stages).filter((value) => value.status === 'complete').length * 20 + 20
-              : previous.currentProgress,
             stages: {
               ...previous.stages,
               [stage]: {
@@ -190,16 +163,12 @@ export function useGenerationStream() {
             ...previous,
             status: 'complete',
             currentStage: null,
-            currentProgress: 100,
-            assets: previous.assets.map((asset) => ({
-              ...asset,
-              id: Number.isFinite(Number(data.assetId)) ? Number(data.assetId) : 0,
-            })),
+            generationId: Number.isFinite(Number(data.generationId)) ? Number(data.generationId) : null,
+            assets: Array.isArray(data.assets) ? data.assets : [],
           }));
           void billing.refresh();
           track('generation_completed', {
             duration_ms: Date.now() - startedAt,
-            copy_score: 0,
             credits: CREDIT_COSTS.FULL_FUNNEL,
           });
           return;

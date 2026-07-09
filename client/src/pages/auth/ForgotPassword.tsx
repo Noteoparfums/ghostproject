@@ -11,7 +11,7 @@ import { Link } from 'react-router-dom';
 
 export function ForgotPassword() {
   useDocumentMeta({
-    title: 'Recover Password — Ghostwriter OS',
+    title: 'Recover password',
     description: 'Request a password reset link.',
   });
 

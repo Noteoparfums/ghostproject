@@ -50,7 +50,7 @@ export const EVENT_CATALOG = {
   }),
   generation_completed: z.object({
     duration_ms: z.number().int(),
-    copy_score: z.number().int(),
+    copy_score: z.number().int().optional(),
     credits: z.number(),
   }),
   generation_cancelled: z.object({}).passthrough(),

@@ -1,6 +1,6 @@
 import { logger } from '../lib/logger.js';
 import type { Plan, PaymentProviderKind, BillingInterval } from '@ghostwriter/shared';
-import { randomUUID } from 'node:crypto';
+import { AppError } from '../lib/errors.js';
 
 export interface CheckoutSession {
   url: string;
@@ -16,40 +16,33 @@ export interface PaymentAdapter {
   refundPayment(paymentIntentId: string, amountCents: number): Promise<void>;
 }
 
-export class MockPaymentAdapter implements PaymentAdapter {
+export class UnavailablePaymentAdapter implements PaymentAdapter {
   kind: PaymentProviderKind = 'mock';
 
   async createSubscriptionCheckout(userId: number, userEmail: string, plan: Plan, interval: BillingInterval): Promise<CheckoutSession> {
-    const id = `mock_cs_${randomUUID()}`;
-    logger.info({ userId, planId: plan.id, interval }, 'Created mock subscription checkout');
-    return {
-      id,
-      url: `/app/billing/mock-checkout?session_id=${id}&type=subscription&plan=${plan.slug}&interval=${interval}`
-    };
+    logger.warn({ userId, userEmail, planId: plan.id, interval }, 'Subscription checkout requested without a configured payment provider');
+    throw new AppError('MAINTENANCE', 'Checkout is unavailable because a payment provider is not configured.');
   }
 
   async createTopupCheckout(userId: number, userEmail: string, amountCents: number): Promise<CheckoutSession> {
-    const id = `mock_cs_${randomUUID()}`;
-    logger.info({ userId, amountCents }, 'Created mock topup checkout');
-    return {
-      id,
-      url: `/app/billing/mock-checkout?session_id=${id}&type=topup&amount=${amountCents}`
-    };
+    logger.warn({ userId, userEmail, amountCents }, 'Top-up checkout requested without a configured payment provider');
+    throw new AppError('MAINTENANCE', 'Top-up checkout is unavailable because a payment provider is not configured.');
   }
 
   async createCustomerPortal(userId: number, customerId: string): Promise<string> {
-    logger.info({ userId, customerId }, 'Created mock customer portal session');
-    return `/app/billing`;
+    logger.warn({ userId, customerId }, 'Billing portal requested without a configured payment provider');
+    throw new AppError('MAINTENANCE', 'The billing portal is unavailable because a payment provider is not configured.');
   }
 
   async cancelSubscription(subscriptionId: string): Promise<void> {
-    logger.info({ subscriptionId }, 'Mock canceled subscription');
+    logger.warn({ subscriptionId }, 'Subscription cancellation requested without a configured payment provider');
+    throw new AppError('MAINTENANCE', 'Cancellation is unavailable because a payment provider is not configured.');
   }
 
   async refundPayment(paymentIntentId: string, amountCents: number): Promise<void> {
-    logger.info({ paymentIntentId, amountCents }, 'Mock refunded payment');
+    logger.warn({ paymentIntentId, amountCents }, 'Refund requested without a configured payment provider');
+    throw new AppError('MAINTENANCE', 'Refunds are unavailable because a payment provider is not configured.');
   }
 }
 
-// You can add a StripePaymentAdapter implementation here in the future
-export const paymentAdapter = new MockPaymentAdapter();
+export const paymentAdapter = new UnavailablePaymentAdapter();

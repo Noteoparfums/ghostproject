@@ -20,7 +20,7 @@ import { track } from '../../lib/analytics';
 
 export function Projects() {
   useDocumentMeta({
-    title: 'Projects — Ghostwriter OS',
+    title: 'Projects',
   });
 
   const toast = useToast();

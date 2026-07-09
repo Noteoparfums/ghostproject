@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { useBilling } from '../../contexts/BillingContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -14,42 +14,28 @@ import Field from '../../components/ui/Field';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Badge from '../../components/ui/Badge';
-import Accordion from '../../components/ui/Accordion';
 import Modal from '../../components/ui/Modal';
 import { 
   Sparkles, 
-  Layers, 
-  HelpCircle, 
-  ChevronRight, 
-  Play, 
+  Layers,
   RotateCw, 
   Copy, 
-  Edit3, 
-  ArrowRight,
-  Download,
   History,
-  CheckCircle,
-  FileText,
-  Volume2,
-  Bookmark
 } from 'lucide-react';
 import { cn } from '../../lib/cn';
-import { track } from '../../lib/analytics';
 
 export function Generate() {
   useDocumentMeta({
-    title: 'Generate Workspace — Ghostwriter OS',
+    title: 'Generation workspace',
   });
 
-  const { credits, refresh } = useBilling();
+  const { credits } = useBilling();
   const toast = useToast();
   
   // Stream state hook
   const { 
     state, 
     start, 
-    cancel,
-    createVariant,
     regenerateSection, 
     reset 
   } = useGenerationStream();
@@ -59,11 +45,7 @@ export function Generate() {
   const [funnelType, setFunnelType] = useState<'vsl' | 'lead_magnet' | 'product_launch' | 'webinar' | 'ecom_pdp'>('vsl');
   const [product, setProduct] = useState('');
   const [audience, setAudience] = useState('');
-  const [tone, setTone] = useState('');
-
-  // Editing state
-  const [editingAssetId, setEditingAssetId] = useState<number | null>(null);
-  const [editingContent, setEditingContent] = useState('');
+  const [tone] = useState('');
 
   // History Drawer State
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
@@ -75,7 +57,7 @@ export function Generate() {
   const { data: voices = [] } = useApi(() => brandVoicesApi.list());
 
   // Load history list
-  const { data: historyPayload, refetch: refetchHistory } = useApi(
+  const { data: historyPayload } = useApi(
     () => generationsApi.list(1)
   );
   const history = historyPayload?.data || [];
@@ -94,27 +76,6 @@ export function Generate() {
   const handleCopyText = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success('Copy text copied to clipboard!');
-  };
-
-  const handleStartEdit = (assetId: number, content: string) => {
-    setEditingAssetId(assetId);
-    setEditingContent(content);
-  };
-
-  const handleSaveEdit = async (assetId: number) => {
-    try {
-      await generationsApi.updateAsset(assetId, { content: editingContent });
-      toast.success('Asset copy updated successfully.');
-      setEditingAssetId(null);
-      
-      // Update local asset state
-      setStateAssets((prev) => 
-        prev.map((a) => (a.id === assetId ? { ...a, content: editingContent } : a))
-      );
-      track('asset_edited', { asset_type: 'ad_hooks' });
-    } catch (e) {
-      toast.error('Failed to save edit.');
-    }
   };
 
   // Local override state for asset changes
@@ -290,15 +251,9 @@ export function Generate() {
                 <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
                   Funnel Compiler Pipeline
                 </span>
-                <span className="text-xs font-bold text-blue-500 font-mono">
-                  {state.currentProgress}%
+                <span className="text-xs font-bold text-blue-500 font-mono" aria-live="polite">
+                  {state.status === 'complete' ? 'Complete' : state.currentStage?.replace('_', ' ') || 'Starting'}
                 </span>
-              </div>
-              <div className="w-full bg-zinc-200 dark:bg-zinc-800 h-2 rounded-full overflow-hidden">
-                <div 
-                  className="bg-blue-600 h-full transition-all duration-300"
-                  style={{ width: `${state.currentProgress}%` }}
-                />
               </div>
 
               {/* Steps indicators */}
@@ -331,9 +286,7 @@ export function Generate() {
 
               {state.status === 'running' && (
                 <div className="flex justify-end mt-1 select-none">
-                  <Button onClick={cancel} variant="ghost" size="sm" className="text-red-500">
-                    Cancel Generation
-                  </Button>
+                  <span className="text-xs text-muted-foreground">This run continues if you leave the page.</span>
                 </div>
               )}
             </div>
@@ -360,7 +313,6 @@ export function Generate() {
 
           {/* Streaming Assets List */}
           {stateAssets.map((asset) => {
-            const isEditing = editingAssetId === asset.id;
             const hasScore = asset.copy_score !== null;
 
             return (
@@ -396,47 +348,22 @@ export function Generate() {
 
                 {/* Body Content */}
                 <div className="p-6 text-sm dark:text-zinc-200 text-zinc-700 leading-relaxed font-normal whitespace-pre-wrap select-text">
-                  {isEditing ? (
-                    <Input
-                      multiline
-                      rows={8}
-                      value={editingContent}
-                      onChange={(e) => setEditingContent(e.target.value)}
-                    />
-                  ) : (
-                    asset.content || <span className="text-zinc-400 dark:text-zinc-600 italic">Writing draft...</span>
-                  )}
+                  {asset.content || <span className="text-zinc-400 dark:text-zinc-600 italic">Writing draft...</span>}
                 </div>
 
                 {/* Footer Controls */}
                 {state.status === 'complete' && (
                   <div className="flex justify-between items-center px-6 py-3.5 border-t dark:border-zinc-900 border-zinc-100 bg-zinc-50/30 dark:bg-zinc-950/20 select-none">
                     <div className="flex gap-2">
-                      {isEditing ? (
-                        <>
-                          <Button onClick={() => handleSaveEdit(asset.id)} variant="primary" size="sm">
-                            Save
-                          </Button>
-                          <Button onClick={() => setEditingAssetId(null)} variant="ghost" size="sm">
-                            Cancel
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => handleCopyText(asset.content)}
-                            className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-lg text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
-                            title="Copy to Clipboard"
-                          >
-                            <Copy className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleStartEdit(asset.id, asset.content)}
-                            className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-lg text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
-                            title="Edit Draft"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
+                      <>
+                        <button
+                          onClick={() => handleCopyText(asset.content)}
+                          className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-lg text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
+                          title="Copy to clipboard"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
+                        {asset.id > 0 && (
                           <button
                             onClick={() => regenerateSection(asset.id)}
                             className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-lg text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
@@ -444,15 +371,8 @@ export function Generate() {
                           >
                             <RotateCw className="w-4 h-4" />
                           </button>
-                          <button
-                            onClick={() => createVariant(asset.id)}
-                            className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-lg text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
-                            title="A/B Variant (0.10 credit)"
-                          >
-                            <Layers className="w-4 h-4" />
-                          </button>
-                        </>
-                      )}
+                        )}
+                      </>
                     </div>
 
                     {asset.variants && asset.variants.length > 1 && (
@@ -509,14 +429,7 @@ export function Generate() {
               history.map((h) => (
                 <div
                   key={h.id}
-                  onClick={() => {
-                    // Hydrate simple history representation
-                    setFunnelType(h.funnel_type as any);
-                    setProduct(h.brief);
-                    setIsHistoryOpen(false);
-                    toast.success('Hydrated workspace parameters from history.');
-                  }}
-                  className="p-4 rounded-xl border dark:border-zinc-900 border-zinc-200 bg-zinc-50/50 dark:bg-zinc-950/40 hover:border-blue-500 transition-all cursor-pointer flex justify-between items-center gap-4"
+                  className="p-4 rounded-xl border dark:border-zinc-900 border-zinc-200 bg-zinc-50/50 dark:bg-zinc-950/40 flex justify-between items-center gap-4"
                 >
                   <div className="min-w-0">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">

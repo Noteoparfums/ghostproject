@@ -3,13 +3,14 @@ import type { ReactNode } from 'react';
 import type { Subscription, Plan } from '@ghostwriter/shared';
 import { useAuth } from './AuthContext';
 import { billingApi } from '../api/endpoints/billing';
+import type { BillingState } from '../api/endpoints/billing';
 
 interface BillingContextType {
   plan: Plan | null;
   subscription: Subscription | null;
   credits: string;
   isLoading: boolean;
-  refresh: () => Promise<void>;
+  refresh: () => Promise<BillingState | null>;
   
   // Derived flags
   isPastDue: boolean;
@@ -28,14 +29,16 @@ export function BillingProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const refresh = useCallback(async () => {
-    if (!user) return;
+    if (!user) return null;
     try {
       const state = await billingApi.state();
       setSubscription(state.subscription);
       setPlan(state.plan);
       setCredits(state.credit_balance || '0.00');
+      return state;
     } catch (e) {
       console.error('Failed to load billing state', e);
+      throw e;
     } finally {
       setIsLoading(false);
     }

@@ -1,6 +1,8 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
     "types": ["node"],
     "baseUrl": ".",
     "paths": {
@@ -8,5 +10,6 @@
       "@shared/*": ["../shared/src/*"]
     }
   },
-  "include": ["src", "../shared/src"]
+  "include": ["src/**/*.ts"],
+  "references": [{ "path": "../shared" }]
 }

@@ -16,8 +16,8 @@ import { cn } from '../../lib/cn';
 
 export function Signup() {
   useDocumentMeta({
-    title: 'Create Account — Ghostwriter OS',
-    description: 'Create a free Ghostwriter OS account and build your first copy funnel.',
+    title: 'Create account',
+    description: 'Create a free Briefloom account and build your first campaign.',
   });
 
   const { login } = useAuth(); // Log in user automatically on signup
