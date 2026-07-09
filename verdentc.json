@@ -1,0 +1,9 @@
+{
+  "deploy": {
+    "type": "fullstack",
+    "frontendDir": "client",
+    "backendDir": "server",
+    "apiPrefix": "/api",
+    "backendPort": 4001
+  }
+}
