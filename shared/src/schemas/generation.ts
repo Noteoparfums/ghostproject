@@ -26,6 +26,7 @@ export type SubmitAngleInput = z.infer<typeof submitAngleSchema>;
 /** Regenerate a single asset (section) — 0.25 credit. */
 export const regenerateSectionSchema = z.object({
   asset_id: z.coerce.number().int().positive(),
+  instruction: z.string().optional(),
 });
 export type RegenerateSectionInput = z.infer<typeof regenerateSectionSchema>;
 
@@ -47,7 +48,7 @@ export const patchAssetSchema = z
   );
 export type PatchAssetInput = z.infer<typeof patchAssetSchema>;
 
-export const idParam = z.object({ id: z.coerce.number().int().positive() });
+export const generationIdParam = z.object({ id: z.coerce.number().int().positive() });
 
 export const generationAssetParams = z.object({
   id: z.coerce.number().int().positive(),

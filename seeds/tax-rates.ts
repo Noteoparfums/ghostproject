@@ -1,0 +1,37 @@
+export interface TaxRateSeed {
+  country: string;
+  rate_bps: number;
+  label: string;
+  is_eu: boolean;
+}
+
+export const taxRatesSeed: TaxRateSeed[] = [
+  { country: 'US', rate_bps: 0, label: 'Sales Tax', is_eu: false },
+  { country: 'AT', rate_bps: 2000, label: 'VAT', is_eu: true },
+  { country: 'BE', rate_bps: 2100, label: 'VAT', is_eu: true },
+  { country: 'BG', rate_bps: 2000, label: 'VAT', is_eu: true },
+  { country: 'CY', rate_bps: 1900, label: 'VAT', is_eu: true },
+  { country: 'CZ', rate_bps: 2100, label: 'VAT', is_eu: true },
+  { country: 'DE', rate_bps: 1900, label: 'VAT', is_eu: true },
+  { country: 'DK', rate_bps: 2500, label: 'VAT', is_eu: true },
+  { country: 'EE', rate_bps: 2200, label: 'VAT', is_eu: true },
+  { country: 'EL', rate_bps: 2400, label: 'VAT', is_eu: true },
+  { country: 'ES', rate_bps: 2100, label: 'VAT', is_eu: true },
+  { country: 'FI', rate_bps: 2400, label: 'VAT', is_eu: true },
+  { country: 'FR', rate_bps: 2000, label: 'VAT', is_eu: true },
+  { country: 'HR', rate_bps: 2500, label: 'VAT', is_eu: true },
+  { country: 'HU', rate_bps: 2700, label: 'VAT', is_eu: true },
+  { country: 'IE', rate_bps: 2300, label: 'VAT', is_eu: true },
+  { country: 'IT', rate_bps: 2200, label: 'VAT', is_eu: true },
+  { country: 'LT', rate_bps: 2100, label: 'VAT', is_eu: true },
+  { country: 'LU', rate_bps: 1700, label: 'VAT', is_eu: true },
+  { country: 'LV', rate_bps: 2100, label: 'VAT', is_eu: true },
+  { country: 'MT', rate_bps: 1800, label: 'VAT', is_eu: true },
+  { country: 'NL', rate_bps: 2100, label: 'VAT', is_eu: true },
+  { country: 'PL', rate_bps: 2300, label: 'VAT', is_eu: true },
+  { country: 'PT', rate_bps: 2300, label: 'VAT', is_eu: true },
+  { country: 'RO', rate_bps: 1900, label: 'VAT', is_eu: true },
+  { country: 'SE', rate_bps: 2500, label: 'VAT', is_eu: true },
+  { country: 'SI', rate_bps: 2200, label: 'VAT', is_eu: true },
+  { country: 'SK', rate_bps: 2000, label: 'VAT', is_eu: true },
+];

@@ -75,12 +75,51 @@ export interface LoadEnvFailure {
   errors: string[];
 }
 
+import fs from 'node:fs';
+import path from 'node:path';
+
+function loadDotEnv() {
+  const paths = [
+    path.resolve(process.cwd(), '.env'),
+    path.resolve(process.cwd(), '../.env')
+  ];
+  for (const envPath of paths) {
+    if (fs.existsSync(envPath)) {
+      try {
+        const content = fs.readFileSync(envPath, 'utf-8');
+        for (const line of content.split('\n')) {
+          const cleanLine = line.trim();
+          if (!cleanLine || cleanLine.startsWith('#')) continue;
+          const match = cleanLine.match(/^([\w.-]+)\s*=\s*(.*)$/);
+          if (match) {
+            const key = match[1]!;
+            let value = match[2] || '';
+            if (value.startsWith('"') && value.endsWith('"')) {
+              value = value.slice(1, -1);
+            } else if (value.startsWith("'") && value.endsWith("'")) {
+              value = value.slice(1, -1);
+            }
+            if (process.env[key] === undefined) {
+              process.env[key] = value.trim();
+            }
+          }
+        }
+      } catch (err) {
+        // ignore read errors
+      }
+    }
+  }
+}
+
 /**
  * Parse and validate the given source (defaults to process.env).
  * Returns a discriminated result so callers can decide how to exit — the server
  * boot prints errors and exits(1); tests assert on the messages.
  */
 export function parseEnv(source: Record<string, unknown> = process.env): LoadEnvResult | LoadEnvFailure {
+  if (source === process.env) {
+    loadDotEnv();
+  }
   const parsed = envSchema.safeParse(source);
   if (!parsed.success) {
     return { ok: false, errors: formatEnvErrors(parsed.error) };

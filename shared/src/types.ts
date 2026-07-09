@@ -95,6 +95,8 @@ export interface Subscription {
   cancel_at_period_end: boolean;
   pending_plan_id: number | null;
   paused_until: string | null;
+  provider_subscription_id?: string | null;
+  providerSubscriptionId?: string | null;
 }
 
 export interface Invoice {

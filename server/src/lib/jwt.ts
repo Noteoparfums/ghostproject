@@ -6,6 +6,7 @@ export interface AccessPayload {
   id: number;
   role: 'user' | 'admin';
   email: string;
+  sid: number;
 }
 
 export function signAccess(payload: AccessPayload): string {

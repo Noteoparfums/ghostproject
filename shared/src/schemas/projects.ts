@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const idParam = z.object({ id: z.coerce.number().int().positive() });
+export const projectIdParam = z.object({ id: z.coerce.number().int().positive() });
 
 export const createProjectBody = z.object({
   name: z.string().trim().min(1, 'Project name is required').max(120),

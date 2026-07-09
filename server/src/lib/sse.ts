@@ -47,6 +47,9 @@ export const sseRegistry = {
   count() {
     return streams.size;
   },
+  getIds() {
+    return Array.from(streams.keys());
+  },
   broadcastError(code: string) {
     for (const { handle } of streams.values()) {
       handle.send('error', { code, message: 'Server restarting', refunded: true });
@@ -54,3 +57,4 @@ export const sseRegistry = {
     }
   },
 };
+

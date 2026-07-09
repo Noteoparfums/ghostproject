@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import type { FunnelType } from '@ghostwriter/shared';
-import { FUNNEL_MATRIX } from '@ghostwriter/shared';
+import { FUNNEL_ASSET_MATRIX } from '@ghostwriter/shared';
 
 export interface Brief {
   product: string;
@@ -20,6 +20,14 @@ export interface GeneratedAsset {
 function hashPick<T>(seed: string, arr: T[]): T {
   const h = crypto.createHash('md5').update(seed).digest();
   return arr[h[0]! % arr.length]!;
+}
+
+export function generateCopyBank(briefRaw: string, assetType: string): string {
+  // A simple deterministic mock generator that just returns standard copy
+  // in real life we'd parse the brief JSON and use our copy banks
+  const seed = briefRaw + assetType;
+  const content = `Mock generated content for ${assetType}. Based on brief: ${briefRaw.substring(0, 50)}...`;
+  return content;
 }
 
 const POWER_HOOKS = [
@@ -129,8 +137,9 @@ const FRAMEWORKS: Record<string, string> = {
 };
 
 export function buildAssets(funnel: FunnelType, brief: Brief): GeneratedAsset[] {
-  const meta = FUNNEL_MATRIX[funnel];
-  return meta.assets.map(({ key, label }) => {
+  const assets = FUNNEL_ASSET_MATRIX[funnel];
+  return assets.map((key: string) => {
+    const label = key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
     let content: string;
     if (key === 'ad_hooks') content = hooks(brief);
     else if (key === 'vsl_script') content = vslScript(brief);

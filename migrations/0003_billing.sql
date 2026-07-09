@@ -163,6 +163,7 @@ CREATE TABLE IF NOT EXISTS payment_events (
   type VARCHAR(80) NOT NULL,
   payload JSON NOT NULL,
   processed_at TIMESTAMP NULL,
+  error_message TEXT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uq_payment_events_event (provider, event_id),

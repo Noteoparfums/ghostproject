@@ -9,14 +9,17 @@
   },
   "workspaces": [
     "shared",
-    "scripts"
+    "server",
+    "scripts",
+    "client"
   ],
   "scripts": {
     "migrate": "npm run -w scripts migrate",
     "migrate:status": "npm run -w scripts migrate:status",
     "seed": "npm run -w scripts seed",
     "db:reset": "npm run -w scripts db:reset",
-    "typecheck": "tsc -b shared scripts --pretty",
+    "dev": "concurrently \"npm run dev -w server\" \"npm run dev -w client\"",
+    "typecheck": "tsc -b shared server scripts --pretty",
     "lint": "eslint .",
     "format": "prettier --check .",
     "test": "vitest run",
