@@ -1,4 +1,4 @@
-import { query, queryOne, pool } from '../lib/db.js';
+import { execute, query, queryOne } from '../lib/db.js';
 export const planRepository = {
     async listActive(tx) {
         return query('SELECT * FROM plans WHERE is_active = 1 ORDER BY sort_order ASC', [], tx);
@@ -29,17 +29,15 @@ export const subscriptionRepository = {
     `, [providerSubscriptionId], tx);
     },
     async create(data, tx) {
-        const executor = tx || pool;
-        const [result] = await executor.execute(`INSERT INTO subscriptions 
+        const result = await execute(`INSERT INTO subscriptions 
       (user_id, plan_id, interval_unit, status, provider, provider_subscription_id, current_period_start, current_period_end) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`, [
             data.userId, data.planId, data.interval, data.status, data.provider,
             data.providerSubscriptionId || null, data.currentPeriodStart || null, data.currentPeriodEnd || null
-        ]);
-        return result.insertId;
+        ], tx);
+        return result.rows[0].id;
     },
     async update(id, updates, tx) {
-        const executor = tx || pool;
         const fields = [];
         const params = [];
         const fieldMap = {
@@ -63,25 +61,24 @@ export const subscriptionRepository = {
         }
         if (fields.length > 0) {
             params.push(id);
-            await executor.execute(`UPDATE subscriptions SET ${fields.join(', ')} WHERE id = ?`, params);
+            await execute(`UPDATE subscriptions SET ${fields.join(', ')} WHERE id = ?`, params, tx);
         }
     }
 };
 export const invoiceRepository = {
     async create(data, tx) {
-        const executor = tx || pool;
-        const [result] = await executor.execute(`INSERT INTO invoices (
+        const result = await execute(`INSERT INTO invoices (
         user_id, subscription_id, number, kind, status, currency, 
         subtotal_cents, tax_cents, total_cents, tax_rate_bps, tax_country, 
         reverse_charge, provider, provider_invoice_id, line_items, billing_snapshot, paid_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`, [
             data.userId, data.subscriptionId || null, data.number, data.kind, data.status, data.currency,
             data.subtotalCents, data.taxCents, data.totalCents, data.taxRateBps, data.taxCountry || null,
             data.reverseCharge || false, data.provider, data.providerInvoiceId || null,
             JSON.stringify(data.lineItems), data.billingSnapshot ? JSON.stringify(data.billingSnapshot) : null,
             data.paidAt || null
-        ]);
-        return result.insertId;
+        ], tx);
+        return result.rows[0].id;
     },
     async findById(id, tx) {
         return queryOne('SELECT * FROM invoices WHERE id = ?', [id], tx);
@@ -90,7 +87,6 @@ export const invoiceRepository = {
         return queryOne('SELECT * FROM invoices WHERE number = ?', [number], tx);
     },
     async updateStatus(id, status, updates, tx) {
-        const executor = tx || pool;
         const fields = ['status = ?'];
         const params = [status];
         if (updates?.paidAt !== undefined) {
@@ -102,7 +98,7 @@ export const invoiceRepository = {
             params.push(updates.refundedAt);
         }
         params.push(id);
-        await executor.execute(`UPDATE invoices SET ${fields.join(', ')} WHERE id = ?`, params);
+        await execute(`UPDATE invoices SET ${fields.join(', ')} WHERE id = ?`, params, tx);
     },
     async listByUser(userId, limit = 20, tx) {
         return query('SELECT * FROM invoices WHERE user_id = ? ORDER BY created_at DESC LIMIT ?', [userId, limit], tx);
@@ -113,13 +109,12 @@ export const billingProfileRepository = {
         return queryOne('SELECT * FROM billing_profiles WHERE user_id = ?', [userId], tx);
     },
     async upsert(userId, data, tx) {
-        const executor = tx || pool;
         const existing = await this.get(userId, tx);
         if (existing) {
-            await executor.execute(`UPDATE billing_profiles SET company = ?, billing_email = ?, address_line1 = ?, address_line2 = ?, city = ?, postal_code = ?, country = ?, vat_id = ?, vat_valid = ? WHERE user_id = ?`, [data.company || null, data.billingEmail || null, data.addressLine1 || null, data.addressLine2 || null, data.city || null, data.postalCode || null, data.country || null, data.vatId || null, data.vatValid ? 1 : 0, userId]);
+            await execute(`UPDATE billing_profiles SET company = ?, billing_email = ?, address_line1 = ?, address_line2 = ?, city = ?, postal_code = ?, country = ?, vat_id = ?, vat_valid = ? WHERE user_id = ?`, [data.company || null, data.billingEmail || null, data.addressLine1 || null, data.addressLine2 || null, data.city || null, data.postalCode || null, data.country || null, data.vatId || null, data.vatValid ? 1 : 0, userId], tx);
         }
         else {
-            await executor.execute(`INSERT INTO billing_profiles (user_id, company, billing_email, address_line1, address_line2, city, postal_code, country, vat_id, vat_valid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [userId, data.company || null, data.billingEmail || null, data.addressLine1 || null, data.addressLine2 || null, data.city || null, data.postalCode || null, data.country || null, data.vatId || null, data.vatValid ? 1 : 0]);
+            await execute(`INSERT INTO billing_profiles (user_id, company, billing_email, address_line1, address_line2, city, postal_code, country, vat_id, vat_valid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [userId, data.company || null, data.billingEmail || null, data.addressLine1 || null, data.addressLine2 || null, data.city || null, data.postalCode || null, data.country || null, data.vatId || null, data.vatValid ? 1 : 0], tx);
         }
     }
 };
@@ -135,15 +130,13 @@ export const taxRateRepository = {
 };
 export const refundRepository = {
     async create(data, tx) {
-        const executor = tx || pool;
-        const [result] = await executor.execute('INSERT INTO refunds (invoice_id, user_id, amount_cents, reason, status) VALUES (?, ?, ?, ?, ?)', [data.invoiceId, data.userId, data.amountCents, data.reason || null, data.status]);
-        return result.insertId;
+        const result = await execute('INSERT INTO refunds (invoice_id, user_id, amount_cents, reason, status) VALUES (?, ?, ?, ?, ?) RETURNING id', [data.invoiceId, data.userId, data.amountCents, data.reason || null, data.status], tx);
+        return result.rows[0].id;
     },
     async findById(id, tx) {
         return queryOne('SELECT * FROM refunds WHERE id = ?', [id], tx);
     },
     async updateStatus(id, status, processedAt, tx) {
-        const executor = tx || pool;
         const fields = ['status = ?'];
         const params = [status];
         if (processedAt !== undefined) {
@@ -151,7 +144,7 @@ export const refundRepository = {
             params.push(processedAt);
         }
         params.push(id);
-        await executor.execute(`UPDATE refunds SET ${fields.join(', ')} WHERE id = ?`, params);
+        await execute(`UPDATE refunds SET ${fields.join(', ')} WHERE id = ?`, params, tx);
     }
 };
 //# sourceMappingURL=billing.repository.js.map

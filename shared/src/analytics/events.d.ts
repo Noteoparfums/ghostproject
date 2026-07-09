@@ -243,12 +243,12 @@ export declare const EVENT_CATALOG: {
         route: z.ZodString;
         app_version: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
-        message: string;
         route: string;
+        message: string;
         app_version?: string | undefined;
     }, {
-        message: string;
         route: string;
+        message: string;
         app_version?: string | undefined;
     }>;
     readonly web_vital: z.ZodObject<{

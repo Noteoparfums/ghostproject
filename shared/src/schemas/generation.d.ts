@@ -114,8 +114,8 @@ export declare const listGenerationsQuery: z.ZodObject<{
     funnel_type?: "vsl" | "lead_magnet" | "product_launch" | "webinar" | "ecom_pdp" | undefined;
     project_id?: number | undefined;
 }, {
-    page?: number | undefined;
     status?: "queued" | "running" | "complete" | "failed" | "cancelled" | undefined;
+    page?: number | undefined;
     per_page?: number | undefined;
     funnel_type?: "vsl" | "lead_magnet" | "product_launch" | "webinar" | "ecom_pdp" | undefined;
     project_id?: number | undefined;

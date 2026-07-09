@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { env } from './config/env.js';
 import { logger } from './lib/logger.js';
-import { pool } from './lib/db.js';
+import { execute, pool, query, queryOne, withTransaction } from './lib/db.js';
 import { app } from './app.js';
 import { startScheduler } from './jobs/scheduler.js';
 import { sseRegistry } from './lib/sse.js';
@@ -16,8 +16,8 @@ async function assertMigrationsCurrent() {
         return;
     const files = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql'));
     try {
-        const [rows] = await pool.query('SELECT COUNT(*) as count FROM schema_migrations');
-        const appliedCount = rows[0]?.count ?? 0;
+        const row = await queryOne('SELECT COUNT(*) as count FROM schema_migrations');
+        const appliedCount = Number(row?.count ?? 0);
         if (appliedCount < files.length) {
             const errMsg = `Refusing to boot: database has pending migrations (applied ${appliedCount}/${files.length}). Run npm run migrate first.`;
             if (env.NODE_ENV === 'production') {
@@ -45,11 +45,10 @@ async function assertMigrationsCurrent() {
 }
 async function assertDemoLedgerConsistency() {
     try {
-        const [users] = await pool.query('SELECT id FROM users WHERE email = ?', ['demo@ghostwriter.os']);
-        const demoUser = users[0];
+        const demoUser = await queryOne('SELECT id FROM users WHERE email = ?', ['demo@ghostwriter.os']);
         if (demoUser) {
-            const [rows] = await pool.query('SELECT COALESCE(SUM(delta), 0) AS bal FROM credit_ledger WHERE user_id = ?', [demoUser.id]);
-            const bal = Number(rows[0]?.bal ?? 0);
+            const row = await queryOne('SELECT COALESCE(SUM(delta), 0) AS bal FROM credit_ledger WHERE user_id = ?', [demoUser.id]);
+            const bal = Number(row?.bal ?? 0);
             logger.info({ userId: demoUser.id, balance: bal }, 'Startup invariant check: demo user ledger balance consistent.');
         }
     }
@@ -79,29 +78,23 @@ function registerGracefulShutdown(server, scheduler) {
                 logger.info({ count: activeIds.length }, `Processing refunds for ${activeIds.length} in-flight generations...`);
                 for (const genId of activeIds) {
                     try {
-                        const [rows] = await pool.query('SELECT user_id, credits_charged FROM generations WHERE id = ?', [genId]);
-                        const gen = rows[0];
+                        const gen = await queryOne('SELECT user_id, credits_charged FROM generations WHERE id = ?', [genId]);
                         if (gen) {
                             const cost = Number(gen.credits_charged);
                             const userId = gen.user_id;
-                            const conn = await pool.getConnection();
                             try {
-                                await conn.beginTransaction();
-                                await conn.query('UPDATE generations SET status = "failed", error_message = "Server restart" WHERE id = ?', [genId]);
-                                if (cost > 0) {
-                                    const [ledgerRows] = await conn.execute('SELECT COALESCE(SUM(delta), 0) AS bal FROM credit_ledger WHERE user_id = ? FOR UPDATE', [userId]);
-                                    const current = Number(ledgerRows[0]?.bal ?? 0);
-                                    const after = current + cost;
-                                    await conn.execute('INSERT INTO credit_ledger (user_id, delta, balance_after, source, generation_id, note) VALUES (?, ?, ?, "refund", ?, ?)', [userId, cost, after, genId, 'Refund for in-flight generation aborted by server restart']);
-                                }
-                                await conn.commit();
+                                await withTransaction(async (conn) => {
+                                    await execute("UPDATE generations SET status = 'failed', error_message = 'Server restart' WHERE id = ?", [genId], conn);
+                                    if (cost > 0) {
+                                        await execute('SELECT pg_advisory_xact_lock(?)', [userId], conn);
+                                        const row = await queryOne('SELECT COALESCE(SUM(delta), 0) AS bal FROM credit_ledger WHERE user_id = ?', [userId], conn);
+                                        const after = Number(row?.bal ?? 0) + cost;
+                                        await execute("INSERT INTO credit_ledger (user_id, delta, balance_after, source, generation_id, note) VALUES (?, ?, ?, 'refund', ?, ?)", [userId, cost, after, genId, 'Refund for in-flight generation aborted by server restart'], conn);
+                                    }
+                                });
                             }
                             catch (txErr) {
-                                await conn.rollback();
                                 logger.error({ genId, err: txErr }, 'Failed transaction refund for in-flight generation.');
-                            }
-                            finally {
-                                conn.release();
                             }
                         }
                     }

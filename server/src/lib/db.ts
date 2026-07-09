@@ -28,9 +28,48 @@ function connectionConfig(connectionString: string) {
   };
 }
 
-export function postgresSql(sql: string): string {
+export function postgresSql(sql: string, parameterCount?: number): string {
   let index = 0;
-  return sql.replace(/\?/g, () => `$${++index}`);
+  let converted = '';
+  let inSingleQuote = false;
+  let inDoubleQuote = false;
+
+  for (let position = 0; position < sql.length; position += 1) {
+    const character = sql[position];
+    const nextCharacter = sql[position + 1];
+
+    if (character === "'" && !inDoubleQuote) {
+      converted += character;
+      if (inSingleQuote && nextCharacter === "'") {
+        converted += nextCharacter;
+        position += 1;
+      } else {
+        inSingleQuote = !inSingleQuote;
+      }
+      continue;
+    }
+
+    if (character === '"' && !inSingleQuote) {
+      converted += character;
+      if (inDoubleQuote && nextCharacter === '"') {
+        converted += nextCharacter;
+        position += 1;
+      } else {
+        inDoubleQuote = !inDoubleQuote;
+      }
+      continue;
+    }
+
+    converted += character === '?' && !inSingleQuote && !inDoubleQuote
+      ? `$${++index}`
+      : character;
+  }
+
+  if (parameterCount !== undefined && index !== parameterCount) {
+    throw new Error(`SQL parameter count mismatch: expected ${index}, received ${parameterCount}`);
+  }
+
+  return converted;
 }
 
 export type TransactionConnection = PoolClient;
@@ -43,7 +82,7 @@ export async function execute<T extends QueryResultRow = QueryResultRow>(
   params: unknown[] = [],
   tx?: TransactionConnection
 ): Promise<QueryResult<T>> {
-  return (tx ?? pool).query<T>(postgresSql(sql), params);
+  return (tx ?? pool).query<T>(postgresSql(sql, params.length), params);
 }
 
 export async function query<T extends QueryResultRow = QueryResultRow>(
@@ -76,7 +115,8 @@ export async function withTransaction<T>(
   } catch (error) {
     try {
       await client.query('ROLLBACK');
-    } catch {
+    } catch (rollbackError) {
+      console.error('Database transaction rollback failed:', rollbackError);
     }
     throw error;
   } finally {

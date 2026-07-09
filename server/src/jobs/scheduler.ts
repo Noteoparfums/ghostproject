@@ -11,7 +11,7 @@ let lockConn: PoolClient | null = null;
 async function tryAcquireLock(): Promise<boolean> {
   try {
     if (!lockConn) {
-      lockConn = await pool.getConnection();
+      lockConn = await pool.connect();
     }
     const result = await lockConn.query<{ locked: boolean }>(
       "SELECT pg_try_advisory_lock(hashtext('gw_scheduler')) AS locked"

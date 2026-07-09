@@ -1,4 +1,4 @@
-import { pool } from '../lib/db.js';
+import { execute, pool } from '../lib/db.js';
 const metricsBuffer = new Map();
 const MAX_BUFFER_SIZE = 5000;
 export function recordMetric(routeGroup, durationMs, isError) {
@@ -37,8 +37,8 @@ function getPercentile(values, pct) {
 export async function flushMetricsToDb() {
     try {
         // Read pool stats safely
-        const poolActive = pool._allConnections?.length - pool._freeConnections?.length || 0;
-        const poolIdle = pool._freeConnections?.length || 0;
+        const poolActive = pool.totalCount - pool.idleCount;
+        const poolIdle = pool.idleCount;
         for (const [routeGroup, entries] of metricsBuffer.entries()) {
             if (entries.length === 0)
                 continue;
@@ -53,7 +53,7 @@ export async function flushMetricsToDb() {
             const p50 = getPercentile(durations, 50);
             const p95 = getPercentile(durations, 95);
             const p99 = getPercentile(durations, 99);
-            await pool.execute(`INSERT INTO request_metrics (route_group, count, error_count, latency_p50, latency_p95, latency_p99, pool_active, pool_idle)
+            await execute(`INSERT INTO request_metrics (route_group, count, error_count, latency_p50, latency_p95, latency_p99, pool_active, pool_idle)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [routeGroup, count, errorCount, p50, p95, p99, poolActive, poolIdle]);
         }
     }

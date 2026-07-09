@@ -1,8 +1,7 @@
-import { pool } from '../lib/db.js';
+import { execute } from '../lib/db.js';
 export const auditRepository = {
     async log(data, tx) {
-        const executor = tx || pool;
-        await executor.execute(`INSERT INTO audit_logs (actor_type, actor_id, action, target_type, target_id, properties, ip_address, user_agent)
+        await execute(`INSERT INTO audit_logs (actor_type, actor_id, action, target_type, target_id, properties, ip_address, user_agent)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [
             data.actorType,
             data.actorId || null,
@@ -12,7 +11,7 @@ export const auditRepository = {
             data.properties ? JSON.stringify(data.properties) : null,
             data.ipAddress || null,
             data.userAgent || null
-        ]);
+        ], tx);
     }
 };
 //# sourceMappingURL=audit.repository.js.map

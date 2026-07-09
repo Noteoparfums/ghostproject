@@ -48,8 +48,8 @@ export declare const listProjectsQuery: z.ZodObject<{
     per_page: number;
     status?: "active" | "archived" | undefined;
 }, {
-    page?: number | undefined;
     status?: "active" | "archived" | undefined;
+    page?: number | undefined;
     per_page?: number | undefined;
 }>;
 //# sourceMappingURL=projects.d.ts.map

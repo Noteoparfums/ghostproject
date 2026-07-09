@@ -1,17 +1,15 @@
-import { query, queryOne, pool } from '../lib/db.js';
+import { execute, query, queryOne } from '../lib/db.js';
 import { paginated } from '@ghostwriter/shared';
 export const projectRepository = {
     async create(userId, name, description, tx) {
-        const executor = tx || pool;
-        const [result] = await executor.execute('INSERT INTO projects (user_id, name, description) VALUES (?, ?, ?)', [userId, name, description]);
-        const id = result.insertId;
+        const result = await execute('INSERT INTO projects (user_id, name, description) VALUES (?, ?, ?) RETURNING id', [userId, name, description], tx);
+        const id = result.rows[0].id;
         return this.findById(id, tx);
     },
     async findById(id, tx) {
         return queryOne('SELECT * FROM projects WHERE id = ?', [id], tx);
     },
     async update(id, updates, tx) {
-        const executor = tx || pool;
         const fields = [];
         const params = [];
         if (updates.name !== undefined) {
@@ -34,12 +32,11 @@ export const projectRepository = {
         }
         if (fields.length > 0) {
             params.push(id);
-            await executor.execute(`UPDATE projects SET ${fields.join(', ')} WHERE id = ?`, params);
+            await execute(`UPDATE projects SET ${fields.join(', ')} WHERE id = ?`, params, tx);
         }
     },
     async delete(id, tx) {
-        const executor = tx || pool;
-        await executor.execute('DELETE FROM projects WHERE id = ?', [id]);
+        await execute('DELETE FROM projects WHERE id = ?', [id], tx);
     },
     async list(userId, status, page = 1, perPage = 20, tx) {
         const offset = (page - 1) * perPage;
@@ -60,7 +57,7 @@ export const projectRepository = {
             countParams.push(status);
         }
         const countRow = await queryOne(countSql, countParams, tx);
-        return paginated(rows, { page, per_page: perPage }, countRow?.count ?? 0);
+        return paginated(rows, { page, per_page: perPage }, Number(countRow?.count ?? 0));
     }
 };
 //# sourceMappingURL=project.repository.js.map

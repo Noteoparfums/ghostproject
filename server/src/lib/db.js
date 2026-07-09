@@ -1,55 +1,98 @@
-import mysql, {} from 'mysql2/promise';
+import { Pool, types } from 'pg';
 import { env } from '../config/env.js';
-import dns from 'node:dns';
-dns.setDefaultResultOrder('ipv4first');
-function connectionOptions(connectionString) {
+types.setTypeParser(types.builtins.INT8, (value) => Number(value));
+function connectionConfig(connectionString) {
     const url = new URL(connectionString);
-    if (url.protocol !== 'mysql:' && url.protocol !== 'mysql2:') {
-        throw new Error('DATABASE_URL must use the mysql:// protocol');
+    if (url.protocol !== 'postgres:' && url.protocol !== 'postgresql:') {
+        throw new Error('DATABASE_URL must use the postgresql:// protocol');
     }
+    const sslMode = url.searchParams.get('sslmode');
+    const useTls = sslMode !== null && sslMode !== 'disable';
+    url.searchParams.delete('sslmode');
+    url.searchParams.delete('sslcert');
+    url.searchParams.delete('sslkey');
+    url.searchParams.delete('sslrootcert');
     return {
-        host: url.hostname,
-        port: url.port ? Number(url.port) : 3306,
-        user: decodeURIComponent(url.username),
-        password: decodeURIComponent(url.password),
-        database: decodeURIComponent(url.pathname.slice(1)),
-        ssl: url.searchParams.has('ssl')
-            ? { minVersion: 'TLSv1.2', rejectUnauthorized: true }
+        connectionString: url.toString(),
+        max: 10,
+        ssl: useTls
+            ? {
+                minVersion: 'TLSv1.2',
+                rejectUnauthorized: sslMode !== 'no-verify',
+            }
             : undefined,
-        waitForConnections: true,
-        connectionLimit: 10,
-        queueLimit: 0,
     };
 }
-export const pool = mysql.createPool(connectionOptions(env.DATABASE_URL));
+export function postgresSql(sql, parameterCount) {
+    let index = 0;
+    let converted = '';
+    let inSingleQuote = false;
+    let inDoubleQuote = false;
+    for (let position = 0; position < sql.length; position += 1) {
+        const character = sql[position];
+        const nextCharacter = sql[position + 1];
+        if (character === "'" && !inDoubleQuote) {
+            converted += character;
+            if (inSingleQuote && nextCharacter === "'") {
+                converted += nextCharacter;
+                position += 1;
+            }
+            else {
+                inSingleQuote = !inSingleQuote;
+            }
+            continue;
+        }
+        if (character === '"' && !inSingleQuote) {
+            converted += character;
+            if (inDoubleQuote && nextCharacter === '"') {
+                converted += nextCharacter;
+                position += 1;
+            }
+            else {
+                inDoubleQuote = !inDoubleQuote;
+            }
+            continue;
+        }
+        converted += character === '?' && !inSingleQuote && !inDoubleQuote
+            ? `$${++index}`
+            : character;
+    }
+    if (parameterCount !== undefined && index !== parameterCount) {
+        throw new Error(`SQL parameter count mismatch: expected ${index}, received ${parameterCount}`);
+    }
+    return converted;
+}
+export const pool = new Pool(connectionConfig(env.DATABASE_URL));
+export async function execute(sql, params = [], tx) {
+    return (tx ?? pool).query(postgresSql(sql, params.length), params);
+}
 export async function query(sql, params = [], tx) {
-    const executor = tx || pool;
-    const [rows] = await executor.execute(sql, params);
-    return rows;
+    const result = await execute(sql, params, tx);
+    return result.rows;
 }
 export async function queryOne(sql, params = [], tx) {
     const rows = await query(sql, params, tx);
     return rows[0] ?? null;
 }
 export async function withTransaction(callback) {
-    const conn = await pool.getConnection();
+    const client = await pool.connect();
     try {
-        await conn.beginTransaction();
-        const result = await callback(conn);
-        await conn.commit();
+        await client.query('BEGIN');
+        const result = await callback(client);
+        await client.query('COMMIT');
         return result;
     }
-    catch (err) {
+    catch (error) {
         try {
-            await conn.rollback();
+            await client.query('ROLLBACK');
         }
-        catch {
-            // ignore
+        catch (rollbackError) {
+            console.error('Database transaction rollback failed:', rollbackError);
         }
-        throw err;
+        throw error;
     }
     finally {
-        conn.release();
+        client.release();
     }
 }
 //# sourceMappingURL=db.js.map

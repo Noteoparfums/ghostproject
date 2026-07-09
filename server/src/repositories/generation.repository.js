@@ -1,11 +1,10 @@
-import { query, queryOne, pool } from '../lib/db.js';
+import { execute, query, queryOne } from '../lib/db.js';
 import { paginated } from '@ghostwriter/shared';
 export const generationRepository = {
     async create(data, tx) {
-        const executor = tx || pool;
-        const [result] = await executor.execute(`INSERT INTO generations 
+        const result = await execute(`INSERT INTO generations 
       (user_id, project_id, brand_voice_id, funnel_type, input_snapshot, status, credits_charged, parent_generation_id) 
-      VALUES (?, ?, ?, ?, ?, 'queued', ?, ?)`, [
+      VALUES (?, ?, ?, ?, ?, 'queued', ?, ?) RETURNING id`, [
             data.userId,
             data.projectId || null,
             data.brandVoiceId || null,
@@ -13,8 +12,8 @@ export const generationRepository = {
             JSON.stringify(data.inputSnapshot),
             data.creditsCharged,
             data.parentGenerationId || null
-        ]);
-        const id = result.insertId;
+        ], tx);
+        const id = result.rows[0].id;
         return this.findById(id, tx);
     },
     async findById(id, tx) {
@@ -24,7 +23,6 @@ export const generationRepository = {
         return queryOne('SELECT * FROM generations WHERE id = ? AND user_id = ?', [id, userId], tx);
     },
     async update(id, updates, tx) {
-        const executor = tx || pool;
         const fields = [];
         const params = [];
         if (updates.status !== undefined) {
@@ -45,25 +43,24 @@ export const generationRepository = {
         }
         if (fields.length > 0) {
             params.push(id);
-            await executor.execute(`UPDATE generations SET ${fields.join(', ')} WHERE id = ?`, params);
+            await execute(`UPDATE generations SET ${fields.join(', ')} WHERE id = ?`, params, tx);
         }
     },
     async setStatus(tx, id, status) {
-        await tx.execute('UPDATE generations SET status = ? WHERE id = ?', [status, id]);
+        await execute('UPDATE generations SET status = ? WHERE id = ?', [status, id], tx);
     },
     async listByUser(userId, page = 1, perPage = 20, tx) {
         const offset = (page - 1) * perPage;
         const rows = await query('SELECT * FROM generations WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?', [userId, perPage, offset], tx);
         const countRow = await queryOne('SELECT COUNT(*) as count FROM generations WHERE user_id = ?', [userId], tx);
-        return paginated(rows, { page, per_page: perPage }, countRow?.count ?? 0);
+        return paginated(rows, { page, per_page: perPage }, Number(countRow?.count ?? 0));
     }
 };
 export const generationAssetRepository = {
     async create(data, tx) {
-        const executor = tx || pool;
-        const [result] = await executor.execute(`INSERT INTO generation_assets 
+        const result = await execute(`INSERT INTO generation_assets 
       (generation_id, asset_type, content, variant, edited_content, framework_note, copy_score, score_breakdown, compliance_flags) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`, [
             data.generationId,
             data.assetType,
             data.content,
@@ -73,8 +70,8 @@ export const generationAssetRepository = {
             data.copyScore || null,
             data.scoreBreakdown ? JSON.stringify(data.scoreBreakdown) : null,
             data.complianceFlags ? JSON.stringify(data.complianceFlags) : null
-        ]);
-        return result.insertId;
+        ], tx);
+        return result.rows[0].id;
     },
     async findById(id, tx) {
         return queryOne(`SELECT ga.*, g.user_id, g.project_id, CASE WHEN sc.id IS NOT NULL THEN 1 ELSE 0 END as is_favorited
@@ -100,7 +97,6 @@ export const generationAssetRepository = {
        ORDER BY ga.created_at DESC`, [projectId], tx);
     },
     async update(id, updates, tx) {
-        const executor = tx || pool;
         const fields = [];
         const params = [];
         if (updates.editedContent !== undefined) {
@@ -121,44 +117,43 @@ export const generationAssetRepository = {
         }
         if (fields.length > 0) {
             params.push(id);
-            await executor.execute(`UPDATE generation_assets SET ${fields.join(', ')} WHERE id = ?`, params);
+            await execute(`UPDATE generation_assets SET ${fields.join(', ')} WHERE id = ?`, params, tx);
         }
     },
     async updateContent(id, content, tx) {
         await this.update(id, { editedContent: content }, tx);
     },
     async toggleFavorite(id, isFavorited, tx) {
-        const executor = tx || pool;
         const asset = await this.findById(id, tx);
         if (!asset)
             return;
         if (isFavorited) {
-            await executor.execute(`INSERT IGNORE INTO saved_copies (user_id, generation_asset_id, title)
-         VALUES (?, ?, ?)`, [asset.user_id, id, `Saved Copy #${id}`]);
+            await execute(`INSERT INTO saved_copies (user_id, generation_asset_id, title)
+         VALUES (?, ?, ?)
+         ON CONFLICT (generation_asset_id) DO NOTHING`, [asset.user_id, id, `Saved Copy #${id}`], tx);
         }
         else {
-            await executor.execute('DELETE FROM saved_copies WHERE generation_asset_id = ? AND user_id = ?', [id, asset.user_id]);
+            await execute('DELETE FROM saved_copies WHERE generation_asset_id = ? AND user_id = ?', [id, asset.user_id], tx);
         }
     }
 };
 export const generationStageRepository = {
     async upsert(data, tx) {
-        const executor = tx || pool;
-        await executor.execute(`INSERT INTO generation_stages 
+        await execute(`INSERT INTO generation_stages 
       (generation_id, stage, status, output, tokens_used, duration_ms) 
       VALUES (?, ?, ?, ?, ?, ?)
-      ON DUPLICATE KEY UPDATE
-        status = VALUES(status),
-        output = COALESCE(VALUES(output), output),
-        tokens_used = VALUES(tokens_used),
-        duration_ms = VALUES(duration_ms)`, [
+      ON CONFLICT (generation_id, stage) DO UPDATE SET
+        status = EXCLUDED.status,
+        output = COALESCE(EXCLUDED.output, generation_stages.output),
+        tokens_used = EXCLUDED.tokens_used,
+        duration_ms = EXCLUDED.duration_ms`, [
             data.generationId,
             data.stage,
             data.status,
             data.output || null,
             data.tokensUsed || 0,
             data.durationMs || 0
-        ]);
+        ], tx);
     },
     async listByGeneration(generationId, tx) {
         return query('SELECT * FROM generation_stages WHERE generation_id = ? ORDER BY id ASC', [generationId], tx);

@@ -18,7 +18,7 @@ describe('Shared Library Suite', () => {
 
     it('successfully parses valid environment variables', () => {
       const result = parseEnv({
-        DATABASE_URL: 'mysql://root:root@127.0.0.1:3306/ghostwriter_dev',
+        DATABASE_URL: 'postgresql://postgres:postgres@127.0.0.1:5432/ghostwriter_dev',
         JWT_SECRET: 'super-secret-key-at-least-32-chars-long',
       });
       expect(result.ok).toBe(true);
@@ -26,7 +26,7 @@ describe('Shared Library Suite', () => {
 
     it('accepts Groq when an API key is configured', () => {
       const result = parseEnv({
-        DATABASE_URL: 'mysql://root:root@127.0.0.1:3306/ghostwriter_dev',
+        DATABASE_URL: 'postgresql://postgres:postgres@127.0.0.1:5432/ghostwriter_dev',
         AI_PROVIDER: 'groq',
         GROQ_API_KEY: 'test-groq-key',
       });
@@ -35,7 +35,7 @@ describe('Shared Library Suite', () => {
 
     it('rejects Groq without an API key', () => {
       const result = parseEnv({
-        DATABASE_URL: 'mysql://root:root@127.0.0.1:3306/ghostwriter_dev',
+        DATABASE_URL: 'postgresql://postgres:postgres@127.0.0.1:5432/ghostwriter_dev',
         AI_PROVIDER: 'groq',
       });
       expect(result.ok).toBe(false);
