@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 244 56" role="img" aria-labelledby="title">
+  <title id="title">Briefloom</title>
+  <g fill="none" stroke-linecap="round" stroke-width="5">
+    <path d="M10 14c9 0 13.5 4.5 13.5 13.5S28 41 37 41" stroke="#BE5A3C"/>
+    <path d="M42 11.5c-9 0-13.5 4.5-13.5 13.5S24 38.5 15 38.5" stroke="#263B33"/>
+    <path d="M11.5 26h29" stroke="#D6A84B"/>
+  </g>
+  <g fill="#BE5A3C"><circle cx="10" cy="14" r="3.5"/></g>
+  <g fill="#263B33"><circle cx="42" cy="11.5" r="3.5"/></g>
+  <g fill="#D6A84B"><circle cx="11.5" cy="26" r="3.5"/></g>
+  <text x="60" y="36" fill="#18231F" font-family="Georgia,serif" font-size="31" font-weight="700" letter-spacing="-1">Briefloom</text>
+</svg>

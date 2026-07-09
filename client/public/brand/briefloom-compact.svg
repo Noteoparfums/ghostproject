@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-labelledby="title">
+  <title id="title">Briefloom</title>
+  <g fill="none" stroke-linecap="round" stroke-width="4.5">
+    <path d="M9 12.5c8.4 0 12.6 4.2 12.6 12.6S25.8 37.7 34.2 37.7" stroke="#BE5A3C"/>
+    <path d="M39 10.3c-8.4 0-12.6 4.2-12.6 12.6S22.2 35.5 13.8 35.5" stroke="#263B33"/>
+    <path d="M10.2 24h27.6" stroke="#D6A84B"/>
+  </g>
+  <circle cx="9" cy="12.5" r="3.3" fill="#BE5A3C"/>
+  <circle cx="39" cy="10.3" r="3.3" fill="#263B33"/>
+  <circle cx="10.2" cy="24" r="3.3" fill="#D6A84B"/>
+</svg>

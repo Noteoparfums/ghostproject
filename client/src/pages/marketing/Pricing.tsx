@@ -7,11 +7,12 @@ import Button from '../../components/ui/Button';
 import { CheckCircle, ShieldCheck, HelpCircle } from 'lucide-react';
 import { cn } from '../../lib/cn';
 import { track } from '../../lib/analytics';
+import { BRAND } from '../../config/brand';
 
 export function Pricing() {
   useDocumentMeta({
-    title: 'Pricing Plans — Ghostwriter OS',
-    description: 'Get started with Ghostwriter OS. Modular plans designed for individual copywriters and growing digital agencies.',
+    title: 'Pricing plans',
+    description: `Get started with ${BRAND.name}. Modular plans for individual copywriters and growing digital agencies.`,
     canonical: '/pricing',
   });
 
@@ -233,7 +234,7 @@ export function Pricing() {
           <div>
             <h4 className="text-sm font-bold text-zinc-100">14-Day Money-Back Guarantee</h4>
             <p className="mt-1 text-xs text-zinc-400 leading-relaxed">
-              If Ghostwriter OS doesn't improve your campaign conversions, drop us a line within 14 days of upgrade for a full refund of your invoice. Reversed charges apply instantly.
+              If {BRAND.name} doesn't improve your campaign conversions, drop us a line within 14 days of upgrade for a full refund of your invoice. Reversed charges apply instantly.
             </p>
           </div>
         </div>

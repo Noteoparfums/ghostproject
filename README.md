@@ -1,4 +1,10 @@
-# Ghostwriter OS
+# Briefloom
+
+Briefloom is the working public identity for this direct-response copy intelligence product. It weaves one clear campaign brief into coordinated copy assets.
+
+The operational monorepo and package identifiers remain `ghostwriter-os` and `@ghostwriter/shared`. API paths, database identifiers, analytics contracts, environment variables, and deployment topology are intentionally unchanged.
+
+> Briefloom has passed only a lightweight exact-name screen. Trademark, domain, company-name, jurisdiction, and legal counsel review are required before public launch.
 
 ## Groq AI
 

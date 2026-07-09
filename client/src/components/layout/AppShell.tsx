@@ -18,6 +18,7 @@ import {
   Moon
 } from 'lucide-react';
 import { cn } from '../../lib/cn';
+import BrandLockup from '../brand/BrandLockup';
 
 export function AppShell() {
   const { user, logout } = useAuth();
@@ -45,12 +46,7 @@ export function AppShell() {
       {/* Brand logo */}
       <div className="h-16 flex items-center px-6 border-b border-zinc-100 dark:border-zinc-900 shrink-0">
         <Link to="/app" className="flex items-center gap-2">
-          <div className="p-1 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white">
-            <Sparkles className="w-4 h-4" />
-          </div>
-          <span className="font-extrabold text-sm tracking-tight text-zinc-900 dark:text-zinc-50">
-            Ghostwriter<span className="text-blue-600">OS</span>
-          </span>
+          <BrandLockup className="text-zinc-900 dark:text-zinc-50" />
         </Link>
       </div>
 

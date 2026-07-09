@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { BRAND, canonicalUrl, formatDocumentTitle } from '../config/brand';
 
 export interface DocumentMetaOptions {
   title: string;
@@ -10,28 +11,26 @@ export interface DocumentMetaOptions {
     title?: string;
     description?: string;
   };
-  jsonLd?: Record<string, any>;
+  jsonLd?: Record<string, unknown>;
 }
 
 export function useDocumentMeta(options: DocumentMetaOptions) {
   useEffect(() => {
-    // Set title
     const prevTitle = document.title;
-    document.title = options.title;
+    document.title = formatDocumentTitle(options.title);
 
-    // Set description
     let descMeta = document.querySelector('meta[name="description"]');
     const prevDesc = descMeta?.getAttribute('content') || '';
-    if (options.description) {
+    const description = options.description || BRAND.metadata.description;
+    if (description) {
       if (!descMeta) {
         descMeta = document.createElement('meta');
         descMeta.setAttribute('name', 'description');
         document.head.appendChild(descMeta);
       }
-      descMeta.setAttribute('content', options.description);
+      descMeta.setAttribute('content', description);
     }
 
-    // Set canonical link
     let canonicalLink = document.querySelector('link[rel="canonical"]');
     const prevCanonical = canonicalLink?.getAttribute('href') || '';
     if (options.canonical) {
@@ -42,25 +41,29 @@ export function useDocumentMeta(options: DocumentMetaOptions) {
       }
       const absoluteUrl = options.canonical.startsWith('http')
         ? options.canonical
-        : window.location.origin + options.canonical;
+        : canonicalUrl(options.canonical);
       canonicalLink.setAttribute('href', absoluteUrl);
     }
 
-    // Set OpenGraph meta tags
-    const ogTags: { name: string; value: string }[] = [];
-    if (options.og) {
-      if (options.og.type) ogTags.push({ name: 'og:type', value: options.og.type });
-      if (options.og.image) {
-        const absImg = options.og.image.startsWith('http') ? options.og.image : window.location.origin + options.og.image;
-        ogTags.push({ name: 'og:image', value: absImg });
-      }
-      ogTags.push({ name: 'og:title', value: options.og.title || options.title });
-      if (options.og.description || options.description) {
-        ogTags.push({ name: 'og:description', value: options.og.description || options.description || '' });
-      }
-    }
+    const image = options.og?.image || BRAND.metadata.socialImage;
+    const ogTags: { name: string; value: string }[] = [
+      { name: 'og:type', value: options.og?.type || 'website' },
+      {
+        name: 'og:image',
+        value: image.startsWith('http') ? image : canonicalUrl(image),
+      },
+      {
+        name: 'og:title',
+        value: formatDocumentTitle(options.og?.title || options.title),
+      },
+      {
+        name: 'og:description',
+        value: options.og?.description || description,
+      },
+    ];
 
     const createdOgElements: HTMLMetaElement[] = [];
+    const previousOgValues = new Map<HTMLMetaElement, string>();
     ogTags.forEach(({ name, value }) => {
       let ogEl = document.querySelector(`meta[property="${name}"]`) as HTMLMetaElement;
       if (!ogEl) {
@@ -68,11 +71,12 @@ export function useDocumentMeta(options: DocumentMetaOptions) {
         ogEl.setAttribute('property', name);
         document.head.appendChild(ogEl);
         createdOgElements.push(ogEl);
+      } else {
+        previousOgValues.set(ogEl, ogEl.getAttribute('content') || '');
       }
       ogEl.setAttribute('content', value);
     });
 
-    // Set JSON-LD script
     let ldScript: HTMLScriptElement | null = null;
     if (options.jsonLd) {
       ldScript = document.createElement('script');
@@ -83,7 +87,7 @@ export function useDocumentMeta(options: DocumentMetaOptions) {
 
     return () => {
       document.title = prevTitle;
-      
+
       if (descMeta) {
         if (prevDesc) descMeta.setAttribute('content', prevDesc);
         else descMeta.remove();
@@ -95,11 +99,18 @@ export function useDocumentMeta(options: DocumentMetaOptions) {
       }
 
       createdOgElements.forEach((el) => el.remove());
+      previousOgValues.forEach((value, element) => element.setAttribute('content', value));
 
       if (ldScript) {
         ldScript.remove();
       }
     };
-  }, [options.title, options.description, options.canonical, JSON.stringify(options.og), JSON.stringify(options.jsonLd)]);
+  }, [
+    options.title,
+    options.description,
+    options.canonical,
+    JSON.stringify(options.og),
+    JSON.stringify(options.jsonLd),
+  ]);
 }
 export default useDocumentMeta;

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Briefloom</title>
+  <desc id="desc">Weave one clear brief into a coordinated campaign.</desc>
+  <rect width="1200" height="630" fill="#F5F0E7"/>
+  <path d="M0 510C240 390 368 620 620 472s352-64 580-180v338H0Z" fill="#E8DDC9"/>
+  <g transform="translate(110 112) scale(2.3)" fill="none" stroke-linecap="round" stroke-width="5">
+    <path d="M10 14c9 0 13.5 4.5 13.5 13.5S28 41 37 41" stroke="#BE5A3C"/>
+    <path d="M42 11.5c-9 0-13.5 4.5-13.5 13.5S24 38.5 15 38.5" stroke="#263B33"/>
+    <path d="M11.5 26h29" stroke="#D6A84B"/>
+  </g>
+  <text x="110" y="310" fill="#18231F" font-family="Georgia,serif" font-size="104" font-weight="700" letter-spacing="-4">Briefloom</text>
+  <text x="116" y="382" fill="#4E5B55" font-family="Arial,sans-serif" font-size="33">Weave one clear brief into a coordinated campaign.</text>
+  <path d="M795 145c130 0 195 65 195 195s65 195 195 195" fill="none" stroke="#BE5A3C" stroke-linecap="round" stroke-width="28" opacity=".85"/>
+  <path d="M1110 90c-130 0-195 65-195 195S850 480 720 480" fill="none" stroke="#263B33" stroke-linecap="round" stroke-width="28" opacity=".9"/>
+  <path d="M760 315h370" fill="none" stroke="#D6A84B" stroke-linecap="round" stroke-width="28" opacity=".9"/>
+</svg>

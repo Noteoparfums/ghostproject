@@ -1,9 +1,11 @@
 import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { Sun, Moon, Sparkles } from 'lucide-react';
+import { Sun, Moon } from 'lucide-react';
 import Button from '../ui/Button';
 import { cn } from '../../lib/cn';
+import BrandLockup from '../brand/BrandLockup';
+import { BRAND } from '../../config/brand';
 
 export function MarketingNav() {
   const { status } = useAuth();
@@ -13,30 +15,16 @@ export function MarketingNav() {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
-  const navLinks = [
-    { to: '/', label: 'Features' }, // landing page segments
-    { to: '/pricing', label: 'Pricing' },
-    { to: '/about', label: 'About' },
-    { to: '/blog', label: 'Blog' },
-    { to: '/changelog', label: 'Changelog' },
-  ];
-
   return (
     <header className="sticky top-0 z-40 w-full border-b backdrop-blur-md bg-white/70 dark:bg-zinc-950/70 border-zinc-200/50 dark:border-zinc-900/50">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
-        {/* Logo */}
         <Link to="/" className="flex items-center gap-2 hover:opacity-90 active:scale-98 transition-all select-none">
-          <div className="p-1.5 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-sm">
-            <Sparkles className="w-5 h-5 animate-pulse" />
-          </div>
-          <span className="font-extrabold text-base tracking-tight text-zinc-900 dark:text-zinc-50">
-            Ghostwriter<span className="text-blue-600">OS</span>
-          </span>
+          <BrandLockup className="text-zinc-900 dark:text-zinc-50" />
         </Link>
 
         {/* Links */}
         <nav className="hidden md:flex items-center gap-6 select-none">
-          {navLinks.map((link) => (
+          {BRAND.navigation.marketing.map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
