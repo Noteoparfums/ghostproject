@@ -1,36 +1,21 @@
 import { z } from 'zod';
+import type { PageMeta, Paginated } from './types.js';
 
-export const PAGINATION_DEFAULT_PER_PAGE = 20;
-export const PAGINATION_MAX_PER_PAGE = 100;
-
-/** `?page=&per_page=` query schema shared by every paginated endpoint. */
-export const paginationQuerySchema = z.object({
+/** Query schema for `?page=&per_page=` list endpoints. */
+export const paginationQuery = z.object({
   page: z.coerce.number().int().min(1).default(1),
-  per_page: z.coerce
-    .number()
-    .int()
-    .min(1)
-    .max(PAGINATION_MAX_PER_PAGE)
-    .default(PAGINATION_DEFAULT_PER_PAGE),
+  per_page: z.coerce.number().int().min(1).max(100).default(20),
 });
 
-export type PaginationQuery = z.infer<typeof paginationQuerySchema>;
+export type PaginationQuery = z.infer<typeof paginationQuery>;
 
-export interface PageMeta {
-  page: number;
-  per_page: number;
-  total: number;
+/** Convert a validated pagination query into SQL LIMIT/OFFSET params. */
+export function toLimitOffset(q: PaginationQuery): { limit: number; offset: number } {
+  return { limit: q.per_page, offset: (q.page - 1) * q.per_page };
 }
 
-export interface PageEnvelope<T> {
-  data: T[];
-  meta: PageMeta;
-}
-
-export function pageMeta(query: PaginationQuery, total: number): PageMeta {
-  return { page: query.page, per_page: query.per_page, total };
-}
-
-export function offsetOf(query: PaginationQuery): number {
-  return (query.page - 1) * query.per_page;
+/** Build the `{ data, meta }` envelope returned by every list endpoint. */
+export function paginated<T>(data: T[], q: PaginationQuery, total: number): Paginated<T> {
+  const meta: PageMeta = { page: q.page, per_page: q.per_page, total };
+  return { data, meta };
 }

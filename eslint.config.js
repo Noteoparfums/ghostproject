@@ -3,16 +3,14 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['**/dist/**', '**/node_modules/**', '**/coverage/**', '**/*.d.ts'],
+    ignores: ['**/dist/**', '**/node_modules/**', '**/*.d.ts', '**/coverage/**'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
     languageOptions: {
-      parserOptions: {
-        ecmaVersion: 2022,
-        sourceType: 'module',
-      },
+      ecmaVersion: 2022,
+      sourceType: 'module',
     },
     rules: {
       '@typescript-eslint/no-unused-vars': [
