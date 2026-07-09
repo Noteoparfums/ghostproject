@@ -16,11 +16,11 @@ export const errorDigest = {
       await pool.execute(
         `INSERT INTO error_digests (frame_hash, message, stack, count, first_seen, last_seen)
          VALUES (?, ?, ?, 1, NOW(), NOW())
-         ON DUPLICATE KEY UPDATE
-           count = count + 1,
+         ON CONFLICT (frame_hash) DO UPDATE SET
+           count = error_digests.count + 1,
            last_seen = NOW(),
-           message = VALUES(message),
-           stack = VALUES(stack)`,
+           message = EXCLUDED.message,
+           stack = EXCLUDED.stack`,
         [hash, message.slice(0, 500), stack]
       );
     } catch (e) {

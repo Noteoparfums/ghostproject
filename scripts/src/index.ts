@@ -1,5 +1,8 @@
-import mysql from 'mysql2/promise';
+import pg from 'pg';
 import fs from 'node:fs';
+import dns from 'node:dns';
+
+dns.setDefaultResultOrder('ipv4first');
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -34,42 +37,41 @@ if (!dbUrl) {
   process.exit(1);
 }
 
-// Extract database name from connection URL to support raw reset
-function parseDbUrl(url: string) {
-  // Pattern: mysql://user:pass@host:port/dbname or mysql://root@localhost:3306/ghostwriter
-  const matches = url.match(/mysql:\/\/(?:([^:]+)(?::([^@]+))?@)?([^:/]+)(?::(\d+))?\/(.+)/);
-  if (!matches) {
-    throw new Error('Could not parse DATABASE_URL: ' + url);
+// Extract database name from connection URL
+function parseDbUrl(urlStr: string) {
+  try {
+    const url = new URL(urlStr);
+    const user = url.username || 'postgres';
+    const password = url.password || '';
+    const host = url.hostname || 'localhost';
+    const port = url.port ? Number(url.port) : 5432;
+    const dbName = url.pathname.slice(1) || 'postgres';
+    
+    const baseUrl = `${url.protocol}//${user}${password ? `:${password}` : ''}@${host}:${port}/`;
+    return { baseUrl, dbName, user, password, host, port };
+  } catch (err) {
+    throw new Error('Could not parse DATABASE_URL: ' + urlStr);
   }
-  const [, user, password, host, port, dbName] = matches;
-  const baseUrl = `mysql://${user || 'root'}${password ? `:${password}` : ''}@${host || 'localhost'}:${port || '3306'}/`;
-  return { baseUrl, dbName, user: user || 'root', password, host: host || 'localhost', port: Number(port || '3306') };
 }
 
 const parsedDb = parseDbUrl(dbUrl);
 
 async function getClient(withDb = true) {
-  const config: mysql.ConnectionOptions = {
-    host: parsedDb.host,
-    user: parsedDb.user,
-    password: parsedDb.password,
-    port: parsedDb.port,
-    multipleStatements: true,
-  };
-  if (withDb) {
-    config.database = parsedDb.dbName;
-  }
-  return mysql.createConnection(config);
+  const client = new pg.Client({
+    connectionString: dbUrl,
+  });
+  await client.connect();
+  return client;
 }
 
-async function ensureMigrationTable(conn: mysql.Connection) {
+async function ensureMigrationTable(conn: pg.Client) {
   await conn.query(`
     CREATE TABLE IF NOT EXISTS migrations (
-      id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       filename VARCHAR(255) NOT NULL,
       applied_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE KEY uq_migrations_filename (filename)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+      CONSTRAINT uq_migrations_filename UNIQUE (filename)
+    );
   `);
 }
 
@@ -89,7 +91,7 @@ async function runMigrations() {
     await ensureMigrationTable(conn);
     const files = await getMigrationFiles();
     
-    const [rows] = await conn.query('SELECT filename FROM migrations');
+    const { rows } = await conn.query('SELECT filename FROM migrations');
     const applied = new Set((rows as any[]).map(r => r.filename));
     
     console.log(`Checking migrations in: ${path.resolve(__dirname, '../../migrations')}`);
@@ -104,8 +106,9 @@ async function runMigrations() {
       const filePath = path.resolve(__dirname, '../../migrations', file);
       const sql = fs.readFileSync(filePath, 'utf8');
       
+      // Execute multi-statement schema migration
       await conn.query(sql);
-      await conn.query('INSERT INTO migrations (filename) VALUES (?)', [file]);
+      await conn.query('INSERT INTO migrations (filename) VALUES ($1)', [file]);
       console.log(`Migration ${file} applied successfully.`);
       ranAny = true;
     }
@@ -123,7 +126,7 @@ async function printStatus() {
   try {
     await ensureMigrationTable(conn);
     const files = await getMigrationFiles();
-    const [rows] = await conn.query('SELECT filename, applied_at FROM migrations');
+    const { rows } = await conn.query('SELECT filename, applied_at FROM migrations');
     const appliedMap = new Map((rows as any[]).map(r => [r.filename, r.applied_at]));
     
     console.log('\nMigration Status:');
@@ -142,14 +145,16 @@ async function printStatus() {
 }
 
 async function resetDb() {
-  console.log(`Dropping and recreating database: ${parsedDb.dbName}`);
-  const tempConn = await getClient(false);
+  console.log(`Resetting schema: public`);
+  const conn = await getClient(true);
   try {
-    await tempConn.query(`DROP DATABASE IF EXISTS \`${parsedDb.dbName}\``);
-    await tempConn.query(`CREATE DATABASE \`${parsedDb.dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
-    console.log(`Database ${parsedDb.dbName} recreated.`);
+    await conn.query('DROP SCHEMA IF EXISTS public CASCADE');
+    await conn.query('CREATE SCHEMA public');
+    await conn.query('GRANT ALL ON SCHEMA public TO postgres');
+    await conn.query('GRANT ALL ON SCHEMA public TO public');
+    console.log('Schema public reset.');
   } finally {
-    await tempConn.end();
+    await conn.end();
   }
   
   await runMigrations();
@@ -161,8 +166,8 @@ async function runSeed() {
     console.log('Seeding initial data...');
     
     // 1. Seed plans
-    const [planRows] = await conn.query('SELECT COUNT(*) as count FROM plans');
-    if ((planRows as any)[0].count === 0) {
+    const { rows: planRows } = await conn.query('SELECT COUNT(*) as count FROM plans');
+    if (Number(planRows[0].count) === 0) {
       console.log('Seeding plans...');
       await conn.query(`
         INSERT INTO plans (slug, name, monthly_price_cents, annual_price_cents, monthly_credits, features, sort_order) VALUES
@@ -173,8 +178,8 @@ async function runSeed() {
     }
     
     // 2. Seed tax rates
-    const [taxRows] = await conn.query('SELECT COUNT(*) as count FROM tax_rates');
-    if ((taxRows as any)[0].count === 0) {
+    const { rows: taxRows } = await conn.query('SELECT COUNT(*) as count FROM tax_rates');
+    if (Number(taxRows[0].count) === 0) {
       console.log('Seeding EU VAT tax rates...');
       await conn.query(`
         INSERT INTO tax_rates (country, rate_bps, label, is_eu) VALUES
@@ -189,53 +194,53 @@ async function runSeed() {
     }
     
     // 3. Seed templates
-    const [templateRows] = await conn.query('SELECT COUNT(*) as count FROM templates');
-    if ((templateRows as any)[0].count === 0) {
+    const { rows: templateRows } = await conn.query('SELECT COUNT(*) as count FROM templates');
+    if (Number(templateRows[0].count) === 0) {
       console.log('Seeding marketing templates...');
       await conn.query(`
         INSERT INTO templates (name, category, description, funnel_type, prompt_scaffold, is_premium) VALUES
-        ('High-Converting VSL Hook', 'VSL', 'Hook structures that keep viewers watching beyond the first 5 seconds.', 'vsl', '{"system": "You are a master copywriter.", "prompt": "Write a VSL hook about: {{product}}"}', 0),
-        ('Lead Magnet Optin Page', 'Lead Magnet', 'Landing page copy optimized for lead conversions.', 'lead_magnet', '{"system": "You are a master landing page copywriter.", "prompt": "Write page copy for: {{product}}"}', 0),
-        ('Product Launch Email 1', 'Launch', 'Gain attention with a powerful story-driven launch email.', 'product_launch', '{"system": "You are an email marketing specialist.", "prompt": "Write a launch email for: {{product}}"}', 1),
-        ('Webinar Registration Title & Copy', 'Webinar', 'Compelling headlines and bullet points for webinar registrations.', 'webinar', '{"system": "You are an event copywriter.", "prompt": "Write registration page copy for: {{product}}"}', 0),
-        ('E-commerce PDP Hero Pitch', 'PDP', 'Product description page hero sections focused on customer desires.', 'ecom_pdp', '{"system": "You are an e-commerce PDP copywriter.", "prompt": "Write hero description for: {{product}}"}', 1);
+        ('High-Converting VSL Hook', 'VSL', 'Hook structures that keep viewers watching beyond the first 5 seconds.', 'vsl', '{"system": "You are a master copywriter.", "prompt": "Write a VSL hook about: {{product}}"}'::jsonb, 0),
+        ('Lead Magnet Optin Page', 'Lead Magnet', 'Landing page copy optimized for lead conversions.', 'lead_magnet', '{"system": "You are a master landing page copywriter.", "prompt": "Write page copy for: {{product}}"}'::jsonb, 0),
+        ('Product Launch Email 1', 'Launch', 'Gain attention with a powerful story-driven launch email.', 'product_launch', '{"system": "You are an email marketing specialist.", "prompt": "Write a launch email for: {{product}}"}'::jsonb, 1),
+        ('Webinar Registration Title & Copy', 'Webinar', 'Compelling headlines and bullet points for webinar registrations.', 'webinar', '{"system": "You are an event copywriter.", "prompt": "Write registration page copy for: {{product}}"}'::jsonb, 0),
+        ('E-commerce PDP Hero Pitch', 'PDP', 'Product description page hero sections focused on customer desires.', 'ecom_pdp', '{"system": "You are an e-commerce PDP copywriter.", "prompt": "Write hero description for: {{product}}"}'::jsonb, 1);
       `);
     }
     
     // 4. Seed demo user
-    const [userRows] = await conn.query('SELECT * FROM users WHERE email = ?', ['demo@ghostwriter.os']);
-    if ((userRows as any).length === 0) {
+    const { rows: userRows } = await conn.query('SELECT * FROM users WHERE email = $1', ['demo@ghostwriter.os']);
+    if (userRows.length === 0) {
       console.log('Seeding demo user: demo@ghostwriter.os...');
-      // bcrypt hash for password "password123" with 10 salt rounds
       const passwordHash = '$2a$10$tM9sQz.2dGzYqF/DkKEXbe14TqY5hL0b.d3JgV4w0/o4yR0P7aCye';
       
-      const [userResult] = await conn.query(
-        'INSERT INTO users (email, password_hash, name, role, email_verified_at) VALUES (?, ?, ?, ?, NOW())',
+      const userResult = await conn.query(
+        'INSERT INTO users (email, password_hash, name, role, email_verified_at) VALUES ($1, $2, $3, $4, NOW()) RETURNING id',
         ['demo@ghostwriter.os', passwordHash, 'Demo Copywriter', 'user']
       );
-      const userId = (userResult as any).insertId;
+      const userId = userResult.rows[0].id;
       
       // Seed billing profile
       await conn.query(
-        'INSERT INTO billing_profiles (user_id, company, address_line1, city, postal_code, country) VALUES (?, ?, ?, ?, ?, ?)',
+        'INSERT INTO billing_profiles (user_id, company, address_line1, city, postal_code, country) VALUES ($1, $2, $3, $4, $5, $6)',
         [userId, 'Demo Studio LLC', '123 Copy Street', 'Dublin', 'D02', 'IE']
       );
       
       // Seed subscription (active Pro monthly)
-      const [[proPlan]] = await conn.query('SELECT id FROM plans WHERE slug = "pro"') as any;
+      const { rows: proPlanRows } = await conn.query("SELECT id FROM plans WHERE slug = 'pro'");
+      const proPlan = proPlanRows[0];
       const start = new Date();
       const end = new Date();
       end.setMonth(end.getMonth() + 1);
       
-      const [subResult] = await conn.query(
-        'INSERT INTO subscriptions (user_id, plan_id, interval_unit, status, current_period_start, current_period_end, provider, provider_subscription_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      const subResult = await conn.query(
+        'INSERT INTO subscriptions (user_id, plan_id, interval_unit, status, current_period_start, current_period_end, provider, provider_subscription_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id',
         [userId, proPlan.id, 'monthly', 'active', start, end, 'mock', 'mock_sub_demo_123']
       );
-      const subId = (subResult as any).insertId;
+      const subId = subResult.rows[0].id;
       
       // Seed invoices
       await conn.query(
-        'INSERT INTO invoices (user_id, subscription_id, number, kind, status, currency, subtotal_cents, tax_cents, total_cents, paid_at, line_items) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)',
+        'INSERT INTO invoices (user_id, subscription_id, number, kind, status, currency, subtotal_cents, tax_cents, total_cents, paid_at, line_items) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), $10)',
         [
           userId, 
           subId, 

@@ -110,11 +110,11 @@ export declare const listGenerationsQuery: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     page: number;
     per_page: number;
-    status?: "cancelled" | "queued" | "running" | "complete" | "failed" | undefined;
+    status?: "queued" | "running" | "complete" | "failed" | "cancelled" | undefined;
     funnel_type?: "vsl" | "lead_magnet" | "product_launch" | "webinar" | "ecom_pdp" | undefined;
     project_id?: number | undefined;
 }, {
-    status?: "cancelled" | "queued" | "running" | "complete" | "failed" | undefined;
+    status?: "queued" | "running" | "complete" | "failed" | "cancelled" | undefined;
     page?: number | undefined;
     per_page?: number | undefined;
     funnel_type?: "vsl" | "lead_magnet" | "product_launch" | "webinar" | "ecom_pdp" | undefined;

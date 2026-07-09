@@ -23,9 +23,9 @@ export declare const envSchema: z.ZodEffects<z.ZodObject<{
     ALERT_WEBHOOK_URL: z.ZodOptional<z.ZodString>;
     SENTRY_DSN: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
+    NODE_ENV: "development" | "staging" | "production";
     DATABASE_URL: string;
     PORT: number;
-    NODE_ENV: "development" | "staging" | "production";
     APP_URL: string;
     APP_VERSION: string;
     AI_PROVIDER: "mock" | "openai" | "anthropic";
@@ -42,8 +42,8 @@ export declare const envSchema: z.ZodEffects<z.ZodObject<{
     SENTRY_DSN?: string | undefined;
 }, {
     DATABASE_URL: string;
-    PORT?: number | undefined;
     NODE_ENV?: "development" | "staging" | "production" | undefined;
+    PORT?: number | undefined;
     APP_URL?: string | undefined;
     APP_VERSION?: string | undefined;
     JWT_SECRET?: string | undefined;
@@ -59,9 +59,9 @@ export declare const envSchema: z.ZodEffects<z.ZodObject<{
     ALERT_WEBHOOK_URL?: string | undefined;
     SENTRY_DSN?: string | undefined;
 }>, {
+    NODE_ENV: "development" | "staging" | "production";
     DATABASE_URL: string;
     PORT: number;
-    NODE_ENV: "development" | "staging" | "production";
     APP_URL: string;
     APP_VERSION: string;
     AI_PROVIDER: "mock" | "openai" | "anthropic";
@@ -78,8 +78,8 @@ export declare const envSchema: z.ZodEffects<z.ZodObject<{
     SENTRY_DSN?: string | undefined;
 }, {
     DATABASE_URL: string;
-    PORT?: number | undefined;
     NODE_ENV?: "development" | "staging" | "production" | undefined;
+    PORT?: number | undefined;
     APP_URL?: string | undefined;
     APP_VERSION?: string | undefined;
     JWT_SECRET?: string | undefined;

@@ -77,14 +77,14 @@ export const generationAssetRepository = {
         return result.insertId;
     },
     async findById(id, tx) {
-        return queryOne(`SELECT ga.*, g.user_id, g.project_id, IF(sc.id IS NOT NULL, 1, 0) as is_favorited
+        return queryOne(`SELECT ga.*, g.user_id, g.project_id, CASE WHEN sc.id IS NOT NULL THEN 1 ELSE 0 END as is_favorited
        FROM generation_assets ga
        JOIN generations g ON ga.generation_id = g.id
        LEFT JOIN saved_copies sc ON ga.id = sc.generation_asset_id
        WHERE ga.id = ?`, [id], tx);
     },
     async listByGeneration(generationId, tx) {
-        return query(`SELECT ga.*, g.user_id, g.project_id, IF(sc.id IS NOT NULL, 1, 0) as is_favorited
+        return query(`SELECT ga.*, g.user_id, g.project_id, CASE WHEN sc.id IS NOT NULL THEN 1 ELSE 0 END as is_favorited
        FROM generation_assets ga
        JOIN generations g ON ga.generation_id = g.id
        LEFT JOIN saved_copies sc ON ga.id = sc.generation_asset_id
@@ -92,7 +92,7 @@ export const generationAssetRepository = {
        ORDER BY ga.created_at ASC`, [generationId], tx);
     },
     async listByProject(projectId, tx) {
-        return query(`SELECT ga.*, g.user_id, g.project_id, IF(sc.id IS NOT NULL, 1, 0) as is_favorited
+        return query(`SELECT ga.*, g.user_id, g.project_id, CASE WHEN sc.id IS NOT NULL THEN 1 ELSE 0 END as is_favorited
        FROM generation_assets ga
        JOIN generations g ON ga.generation_id = g.id
        LEFT JOIN saved_copies sc ON ga.id = sc.generation_asset_id
@@ -135,7 +135,7 @@ export const generationAssetRepository = {
         if (isFavorited) {
             await executor.execute(`INSERT INTO saved_copies (user_id, generation_asset_id, title)
          VALUES (?, ?, ?)
-         ON DUPLICATE KEY UPDATE id=id`, [asset.user_id, id, `Saved Copy #${id}`]);
+         ON CONFLICT (generation_asset_id) DO NOTHING`, [asset.user_id, id, `Saved Copy #${id}`]);
         }
         else {
             await executor.execute('DELETE FROM saved_copies WHERE generation_asset_id = ? AND user_id = ?', [id, asset.user_id]);
@@ -148,11 +148,11 @@ export const generationStageRepository = {
         await executor.execute(`INSERT INTO generation_stages 
       (generation_id, stage, status, output, tokens_used, duration_ms) 
       VALUES (?, ?, ?, ?, ?, ?)
-      ON DUPLICATE KEY UPDATE
-        status = VALUES(status),
-        output = COALESCE(VALUES(output), output),
-        tokens_used = VALUES(tokens_used),
-        duration_ms = VALUES(duration_ms)`, [
+      ON CONFLICT (generation_id, stage) DO UPDATE SET
+        status = EXCLUDED.status,
+        output = COALESCE(EXCLUDED.output, generation_stages.output),
+        tokens_used = EXCLUDED.tokens_used,
+        duration_ms = EXCLUDED.duration_ms`, [
             data.generationId,
             data.stage,
             data.status,

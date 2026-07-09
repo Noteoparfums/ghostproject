@@ -6,13 +6,13 @@ export declare const contactSchema: z.ZodObject<{
     subject: z.ZodString;
     message: z.ZodString;
 }, "strip", z.ZodTypeAny, {
-    subject: string;
     message: string;
+    subject: string;
     name: string;
     email: string;
 }, {
-    subject: string;
     message: string;
+    subject: string;
     name: string;
     email: string;
 }>;

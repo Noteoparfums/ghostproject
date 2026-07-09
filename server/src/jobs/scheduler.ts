@@ -6,14 +6,14 @@ import type { PoolConnection } from 'mysql2/promise';
 let schedulerInterval: NodeJS.Timeout | null = null;
 let electionTimeout: NodeJS.Timeout | null = null;
 let hasLock = false;
-let lockConn: PoolConnection | null = null;
+let lockConn: any = null;
 
 async function tryAcquireLock(): Promise<boolean> {
   try {
     if (!lockConn) {
       lockConn = await pool.getConnection();
     }
-    const [rows] = await lockConn.execute("SELECT GET_LOCK('gw_scheduler', 0) as locked");
+    const [rows] = await lockConn!.execute("SELECT GET_LOCK('gw_scheduler', 0) as locked");
     const isLocked = (rows as any[])[0]?.locked === 1;
     return isLocked;
   } catch (err) {
@@ -144,8 +144,8 @@ export function startScheduler(config?: { env: any; pool: any; logger: any }) {
         electionTimeout = null;
       }
       if (hasLock && lockConn) {
-        lockConn.execute("SELECT RELEASE_LOCK('gw_scheduler')")
-          .catch((err) => logger.error({ err }, 'Failed to release scheduler lock'))
+        lockConn!.execute("SELECT RELEASE_LOCK('gw_scheduler')")
+          .catch((err: any) => logger.error({ err }, 'Failed to release scheduler lock'))
           .finally(() => {
             if (lockConn) {
               try {

@@ -44,7 +44,7 @@ export const newsletterRepository = {
         const executor = tx || pool;
         await executor.execute(`INSERT INTO newsletter_subscribers (email, source) 
        VALUES (?, ?)
-       ON DUPLICATE KEY UPDATE updated_at = NOW()`, [email, source || null]);
+       ON CONFLICT (email) DO UPDATE SET updated_at = NOW()`, [email, source || null]);
     }
 };
 //# sourceMappingURL=platform.repository.js.map

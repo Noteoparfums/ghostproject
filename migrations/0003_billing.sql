@@ -3,29 +3,34 @@
 -- credit_ledger (SUM(delta)); never store a mutable balance counter.
 
 CREATE TABLE IF NOT EXISTS plans (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  slug ENUM('free','pro','agency') NOT NULL,
+  id BIGSERIAL PRIMARY KEY,
+  slug VARCHAR(20) NOT NULL CHECK (slug IN ('free','pro','agency')),
   name VARCHAR(80) NOT NULL,
-  monthly_price_cents INT UNSIGNED NOT NULL DEFAULT 0,
-  annual_price_cents INT UNSIGNED NOT NULL DEFAULT 0,
-  monthly_credits DECIMAL(8,2) NOT NULL DEFAULT 0,
-  features JSON NULL,
-  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  monthly_price_cents INT NOT NULL DEFAULT 0,
+  annual_price_cents INT NOT NULL DEFAULT 0,
+  monthly_credits NUMERIC(8,2) NOT NULL DEFAULT 0,
+  features JSONB NULL,
+  is_active SMALLINT NOT NULL DEFAULT 1,
   sort_order INT NOT NULL DEFAULT 0,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  UNIQUE KEY uq_plans_slug (slug)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT uq_plans_slug UNIQUE (slug)
+);
+
+CREATE OR REPLACE TRIGGER trg_plans_updated_at
+  BEFORE UPDATE ON plans
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TABLE IF NOT EXISTS subscriptions (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  user_id BIGINT UNSIGNED NOT NULL,
-  plan_id BIGINT UNSIGNED NOT NULL,
-  interval_unit ENUM('monthly','annual') NOT NULL,
-  status ENUM('trialing','active','past_due','paused','cancelled','expired') NOT NULL DEFAULT 'active',
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  plan_id BIGINT NOT NULL,
+  interval_unit VARCHAR(20) NOT NULL CHECK (interval_unit IN ('monthly','annual')),
+  status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('trialing','active','past_due','paused','cancelled','expired')),
   current_period_start TIMESTAMP NULL,
   current_period_end TIMESTAMP NULL,
-  cancel_at_period_end TINYINT(1) NOT NULL DEFAULT 0,
+  cancel_at_period_end SMALLINT NOT NULL DEFAULT 0,
   cancelled_at TIMESTAMP NULL,
   paused_until TIMESTAMP NULL,
   provider VARCHAR(40) NOT NULL DEFAULT 'mock',
@@ -33,44 +38,60 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   dunning_attempts INT NOT NULL DEFAULT 0,
   past_due_since TIMESTAMP NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  KEY idx_subscriptions_user (user_id),
-  KEY idx_subscriptions_status (status),
-  UNIQUE KEY uq_subscriptions_provider (provider_subscription_id),
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT uq_subscriptions_provider UNIQUE (provider_subscription_id),
   CONSTRAINT fk_subscriptions_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   CONSTRAINT fk_subscriptions_plan FOREIGN KEY (plan_id) REFERENCES plans(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+);
+
+CREATE INDEX IF NOT EXISTS idx_subscriptions_user ON subscriptions (user_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions (status);
+
+CREATE OR REPLACE TRIGGER trg_subscriptions_updated_at
+  BEFORE UPDATE ON subscriptions
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TABLE IF NOT EXISTS coupons (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  id BIGSERIAL PRIMARY KEY,
   code VARCHAR(64) NOT NULL,
-  kind ENUM('percent','amount') NOT NULL,
-  value INT UNSIGNED NOT NULL,
-  duration ENUM('once','repeating','forever') NOT NULL DEFAULT 'once',
-  duration_months INT UNSIGNED NULL,
-  max_redemptions INT UNSIGNED NULL,
-  times_redeemed INT UNSIGNED NOT NULL DEFAULT 0,
+  kind VARCHAR(20) NOT NULL CHECK (kind IN ('percent','amount')),
+  value INT NOT NULL,
+  duration VARCHAR(20) NOT NULL DEFAULT 'once' CHECK (duration IN ('once','repeating','forever')),
+  duration_months INT NULL,
+  max_redemptions INT NULL,
+  times_redeemed INT NOT NULL DEFAULT 0,
   expires_at TIMESTAMP NULL,
-  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  is_active SMALLINT NOT NULL DEFAULT 1,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  UNIQUE KEY uq_coupons_code (code)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT uq_coupons_code UNIQUE (code)
+);
+
+CREATE OR REPLACE TRIGGER trg_coupons_updated_at
+  BEFORE UPDATE ON coupons
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TABLE IF NOT EXISTS tax_rates (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  id BIGSERIAL PRIMARY KEY,
   country CHAR(2) NOT NULL,
-  rate_bps INT UNSIGNED NOT NULL,
+  rate_bps INT NOT NULL,
   label VARCHAR(80) NOT NULL,
-  is_eu TINYINT(1) NOT NULL DEFAULT 0,
+  is_eu SMALLINT NOT NULL DEFAULT 0,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  UNIQUE KEY uq_tax_rates_country (country)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT uq_tax_rates_country UNIQUE (country)
+);
+
+CREATE OR REPLACE TRIGGER trg_tax_rates_updated_at
+  BEFORE UPDATE ON tax_rates
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TABLE IF NOT EXISTS billing_profiles (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  user_id BIGINT UNSIGNED NOT NULL,
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL,
   company VARCHAR(200) NULL,
   billing_email VARCHAR(255) NULL,
   address_line1 VARCHAR(200) NULL,
@@ -79,93 +100,122 @@ CREATE TABLE IF NOT EXISTS billing_profiles (
   postal_code VARCHAR(40) NULL,
   country CHAR(2) NULL,
   vat_id VARCHAR(20) NULL,
-  vat_valid TINYINT(1) NULL,
+  vat_valid SMALLINT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  UNIQUE KEY uq_billing_profiles_user (user_id),
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT uq_billing_profiles_user UNIQUE (user_id),
   CONSTRAINT fk_billing_profiles_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+);
+
+CREATE OR REPLACE TRIGGER trg_billing_profiles_updated_at
+  BEFORE UPDATE ON billing_profiles
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TABLE IF NOT EXISTS invoices (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  user_id BIGINT UNSIGNED NOT NULL,
-  subscription_id BIGINT UNSIGNED NULL,
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  subscription_id BIGINT NULL,
   number VARCHAR(40) NOT NULL,
-  kind ENUM('subscription','topup') NOT NULL DEFAULT 'subscription',
-  status ENUM('draft','open','paid','void','refunded','uncollectible') NOT NULL DEFAULT 'open',
+  kind VARCHAR(20) NOT NULL DEFAULT 'subscription' CHECK (kind IN ('subscription','topup')),
+  status VARCHAR(20) NOT NULL DEFAULT 'open' CHECK (status IN ('draft','open','paid','void','refunded','uncollectible')),
   currency CHAR(3) NOT NULL DEFAULT 'EUR',
   subtotal_cents INT NOT NULL DEFAULT 0,
   discount_cents INT NOT NULL DEFAULT 0,
   tax_cents INT NOT NULL DEFAULT 0,
   total_cents INT NOT NULL DEFAULT 0,
-  tax_rate_bps INT UNSIGNED NOT NULL DEFAULT 0,
+  tax_rate_bps INT NOT NULL DEFAULT 0,
   tax_country CHAR(2) NULL,
-  reverse_charge TINYINT(1) NOT NULL DEFAULT 0,
-  coupon_id BIGINT UNSIGNED NULL,
+  reverse_charge SMALLINT NOT NULL DEFAULT 0,
+  coupon_id BIGINT NULL,
   provider VARCHAR(40) NOT NULL DEFAULT 'mock',
   provider_invoice_id VARCHAR(120) NULL,
   paid_at TIMESTAMP NULL,
   refunded_at TIMESTAMP NULL,
-  line_items JSON NOT NULL,
-  billing_snapshot JSON NULL,
+  line_items JSONB NOT NULL,
+  billing_snapshot JSONB NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  UNIQUE KEY uq_invoices_number (number),
-  KEY idx_invoices_user (user_id),
-  KEY idx_invoices_status (status),
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT uq_invoices_number UNIQUE (number),
   CONSTRAINT fk_invoices_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   CONSTRAINT fk_invoices_subscription FOREIGN KEY (subscription_id) REFERENCES subscriptions(id) ON DELETE SET NULL,
   CONSTRAINT fk_invoices_coupon FOREIGN KEY (coupon_id) REFERENCES coupons(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+);
+
+CREATE INDEX IF NOT EXISTS idx_invoices_user ON invoices (user_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices (status);
+
+CREATE OR REPLACE TRIGGER trg_invoices_updated_at
+  BEFORE UPDATE ON invoices
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TABLE IF NOT EXISTS refunds (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  invoice_id BIGINT UNSIGNED NOT NULL,
-  user_id BIGINT UNSIGNED NOT NULL,
+  id BIGSERIAL PRIMARY KEY,
+  invoice_id BIGINT NOT NULL,
+  user_id BIGINT NOT NULL,
   amount_cents INT NOT NULL,
   reason VARCHAR(1000) NULL,
-  status ENUM('requested','approved','rejected','processed') NOT NULL DEFAULT 'requested',
+  status VARCHAR(20) NOT NULL DEFAULT 'requested' CHECK (status IN ('requested','approved','rejected','processed')),
   processed_at TIMESTAMP NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  KEY idx_refunds_invoice (invoice_id),
-  KEY idx_refunds_user (user_id),
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_refunds_invoice FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE,
   CONSTRAINT fk_refunds_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+);
+
+CREATE INDEX IF NOT EXISTS idx_refunds_invoice ON refunds (invoice_id);
+CREATE INDEX IF NOT EXISTS idx_refunds_user ON refunds (user_id);
+
+CREATE OR REPLACE TRIGGER trg_refunds_updated_at
+  BEFORE UPDATE ON refunds
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
 
 -- Append-only credit ledger. Balance = SUM(delta) WHERE user_id = ?.
 CREATE TABLE IF NOT EXISTS credit_ledger (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  user_id BIGINT UNSIGNED NOT NULL,
-  delta DECIMAL(10,2) NOT NULL,
-  source ENUM('plan_grant','topup','generation','section_regen','variant','refund','admin_adjust','expiry') NOT NULL,
-  generation_id BIGINT UNSIGNED NULL,
-  invoice_id BIGINT UNSIGNED NULL,
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  delta NUMERIC(10,2) NOT NULL,
+  source VARCHAR(20) NOT NULL CHECK (source IN ('plan_grant','topup','generation','section_regen','variant','refund','admin_adjust','expiry')),
+  generation_id BIGINT NULL,
+  invoice_id BIGINT NULL,
   note VARCHAR(500) NULL,
   expires_at TIMESTAMP NULL,
   idempotency_key VARCHAR(120) NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  KEY idx_credit_ledger_user (user_id),
-  KEY idx_credit_ledger_source (source),
-  UNIQUE KEY uq_credit_ledger_idem (idempotency_key),
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT uq_credit_ledger_idem UNIQUE (idempotency_key),
   CONSTRAINT fk_credit_ledger_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   CONSTRAINT fk_credit_ledger_gen FOREIGN KEY (generation_id) REFERENCES generations(id) ON DELETE SET NULL,
   CONSTRAINT fk_credit_ledger_invoice FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+);
+
+CREATE INDEX IF NOT EXISTS idx_credit_ledger_user ON credit_ledger (user_id);
+CREATE INDEX IF NOT EXISTS idx_credit_ledger_source ON credit_ledger (source);
+
+CREATE OR REPLACE TRIGGER trg_credit_ledger_updated_at
+  BEFORE UPDATE ON credit_ledger
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
 
 -- Raw provider webhook events, processed idempotently by event_id.
 CREATE TABLE IF NOT EXISTS payment_events (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  id BIGSERIAL PRIMARY KEY,
   provider VARCHAR(40) NOT NULL DEFAULT 'mock',
   event_id VARCHAR(120) NOT NULL,
   type VARCHAR(80) NOT NULL,
-  payload JSON NOT NULL,
+  payload JSONB NOT NULL,
   processed_at TIMESTAMP NULL,
   error_message TEXT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  UNIQUE KEY uq_payment_events_event (provider, event_id),
-  KEY idx_payment_events_type (type)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT uq_payment_events_event UNIQUE (provider, event_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_payment_events_type ON payment_events (type);
+
+CREATE OR REPLACE TRIGGER trg_payment_events_updated_at
+  BEFORE UPDATE ON payment_events
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();

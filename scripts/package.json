@@ -4,17 +4,19 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "migrate": "tsx src/migrate.ts",
-    "migrate:status": "tsx src/migrate-status.ts",
-    "seed": "tsx src/seed.ts",
-    "db:reset": "tsx src/db-reset.ts"
+    "migrate": "tsx src/index.ts migrate",
+    "migrate:status": "tsx src/index.ts migrate:status",
+    "seed": "tsx src/index.ts seed",
+    "db:reset": "tsx src/index.ts reset"
   },
   "dependencies": {
     "@ghostwriter/shared": "*",
     "bcryptjs": "^2.4.3",
-    "mysql2": "^3.11.4"
+    "mysql2": "^3.11.4",
+    "pg": "^8.22.0"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6"
+    "@types/bcryptjs": "^2.4.6",
+    "@types/pg": "^8.20.0"
   }
 }
