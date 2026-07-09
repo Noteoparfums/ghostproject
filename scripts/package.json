@@ -12,9 +12,10 @@
   "dependencies": {
     "@ghostwriter/shared": "*",
     "bcryptjs": "^2.4.3",
-    "mysql2": "^3.11.4"
+    "pg": "^8.16.3"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6"
+    "@types/bcryptjs": "^2.4.6",
+    "@types/pg": "^8.15.5"
   }
 }

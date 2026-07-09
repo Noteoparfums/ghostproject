@@ -1,4 +1,4 @@
-import { pool, type TransactionConnection } from '../lib/db.js';
+import { execute, type TransactionConnection } from '../lib/db.js';
 
 export interface AuditLogRaw {
   id: number;
@@ -27,8 +27,7 @@ export const auditRepository = {
     },
     tx?: TransactionConnection
   ): Promise<void> {
-    const executor = tx || pool;
-    await executor.execute(
+    await execute(
       `INSERT INTO audit_logs (actor_type, actor_id, action, target_type, target_id, properties, ip_address, user_agent)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
@@ -40,7 +39,8 @@ export const auditRepository = {
         data.properties ? JSON.stringify(data.properties) : null,
         data.ipAddress || null,
         data.userAgent || null
-      ]
+      ],
+      tx
     );
   }
 };

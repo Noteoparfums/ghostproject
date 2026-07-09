@@ -1,4 +1,4 @@
-import { query, queryOne, pool, type TransactionConnection } from '../lib/db.js';
+import { execute, query, queryOne, type TransactionConnection } from '../lib/db.js';
 import type { ProjectStatus, Paginated } from '@ghostwriter/shared';
 import { paginated } from '@ghostwriter/shared';
 
@@ -15,12 +15,12 @@ export interface ProjectRow {
 
 export const projectRepository = {
   async create(userId: number, name: string, description: string, tx?: TransactionConnection): Promise<ProjectRow> {
-    const executor = tx || pool;
-    const [result] = await executor.execute(
-      'INSERT INTO projects (user_id, name, description) VALUES (?, ?, ?)',
-      [userId, name, description]
+    const result = await execute<{ id: number }>(
+      'INSERT INTO projects (user_id, name, description) VALUES (?, ?, ?) RETURNING id',
+      [userId, name, description],
+      tx
     );
-    const id = (result as any).insertId;
+    const id = result.rows[0]!.id;
     return this.findById(id, tx) as Promise<ProjectRow>;
   },
 
@@ -29,7 +29,6 @@ export const projectRepository = {
   },
 
   async update(id: number, updates: { name?: string; description?: string; status?: ProjectStatus }, tx?: TransactionConnection): Promise<void> {
-    const executor = tx || pool;
     const fields: string[] = [];
     const params: any[] = [];
     if (updates.name !== undefined) {
@@ -51,13 +50,12 @@ export const projectRepository = {
     }
     if (fields.length > 0) {
       params.push(id);
-      await executor.execute(`UPDATE projects SET ${fields.join(', ')} WHERE id = ?`, params);
+      await execute(`UPDATE projects SET ${fields.join(', ')} WHERE id = ?`, params, tx);
     }
   },
 
   async delete(id: number, tx?: TransactionConnection): Promise<void> {
-    const executor = tx || pool;
-    await executor.execute('DELETE FROM projects WHERE id = ?', [id]);
+    await execute('DELETE FROM projects WHERE id = ?', [id], tx);
   },
 
   async list(userId: number, status?: ProjectStatus, page = 1, perPage = 20, tx?: TransactionConnection): Promise<Paginated<ProjectRow>> {
@@ -84,6 +82,6 @@ export const projectRepository = {
     }
     const countRow = await queryOne<{ count: number }>(countSql, countParams, tx);
 
-    return paginated(rows, { page, per_page: perPage }, countRow?.count ?? 0);
+    return paginated(rows, { page, per_page: perPage }, Number(countRow?.count ?? 0));
   }
 };

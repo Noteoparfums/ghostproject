@@ -1,4 +1,4 @@
-import { query, queryOne, pool, type TransactionConnection } from '../lib/db.js';
+import { execute, query, queryOne, type TransactionConnection } from '../lib/db.js';
 
 export interface TicketRow {
   id: number;
@@ -34,12 +34,12 @@ export const ticketRepository = {
     subject: string;
     priority?: 'low' | 'normal' | 'high';
   }, tx?: TransactionConnection): Promise<number> {
-    const executor = tx || pool;
-    const [result] = await executor.execute(
-      'INSERT INTO tickets (user_id, subject, priority, status) VALUES (?, ?, ?, "open")',
-      [data.userId, data.subject, data.priority || 'normal']
+    const result = await execute<{ id: number }>(
+      "INSERT INTO tickets (user_id, subject, priority, status) VALUES (?, ?, ?, 'open') RETURNING id",
+      [data.userId, data.subject, data.priority || 'normal'],
+      tx
     );
-    return (result as any).insertId;
+    return result.rows[0]!.id;
   },
 
   async findById(id: number, tx?: TransactionConnection): Promise<TicketRow | null> {
@@ -51,8 +51,7 @@ export const ticketRepository = {
   },
 
   async updateStatus(id: number, status: 'open' | 'answered' | 'closed', tx?: TransactionConnection): Promise<void> {
-    const executor = tx || pool;
-    await executor.execute('UPDATE tickets SET status = ? WHERE id = ?', [status, id]);
+    await execute('UPDATE tickets SET status = ? WHERE id = ?', [status, id], tx);
   },
 
   async addMessage(data: {
@@ -60,14 +59,13 @@ export const ticketRepository = {
     sender: 'user' | 'staff';
     message: string;
   }, tx?: TransactionConnection): Promise<number> {
-    const executor = tx || pool;
-    const [result] = await executor.execute(
-      'INSERT INTO ticket_messages (ticket_id, sender, message) VALUES (?, ?, ?)',
-      [data.ticketId, data.sender, data.message]
+    const result = await execute<{ id: number }>(
+      'INSERT INTO ticket_messages (ticket_id, sender, message) VALUES (?, ?, ?) RETURNING id',
+      [data.ticketId, data.sender, data.message],
+      tx
     );
-    // Touch the ticket to update its updated_at timestamp
-    await executor.execute('UPDATE tickets SET updated_at = NOW() WHERE id = ?', [data.ticketId]);
-    return (result as any).insertId;
+    await execute('UPDATE tickets SET updated_at = NOW() WHERE id = ?', [data.ticketId], tx);
+    return result.rows[0]!.id;
   },
 
   async getMessages(ticketId: number, tx?: TransactionConnection): Promise<TicketMessageRow[]> {
@@ -82,12 +80,12 @@ export const changelogRepository = {
     version?: string | null;
     published?: boolean;
   }, tx?: TransactionConnection): Promise<number> {
-    const executor = tx || pool;
-    const [result] = await executor.execute(
-      'INSERT INTO changelog_entries (title, body, version, published) VALUES (?, ?, ?, ?)',
-      [data.title, data.body, data.version || null, data.published ? 1 : 0]
+    const result = await execute<{ id: number }>(
+      'INSERT INTO changelog_entries (title, body, version, published) VALUES (?, ?, ?, ?) RETURNING id',
+      [data.title, data.body, data.version || null, data.published ? 1 : 0],
+      tx
     );
-    return (result as any).insertId;
+    return result.rows[0]!.id;
   },
 
   async listPublished(tx?: TransactionConnection): Promise<ChangelogEntryRow[]> {
@@ -101,12 +99,12 @@ export const changelogRepository = {
 
 export const newsletterRepository = {
   async subscribe(email: string, source?: string | null, tx?: TransactionConnection): Promise<void> {
-    const executor = tx || pool;
-    await executor.execute(
+    await execute(
       `INSERT INTO newsletter_subscribers (email, source) 
        VALUES (?, ?)
-       ON DUPLICATE KEY UPDATE updated_at = NOW()`,
-      [email, source || null]
+       ON CONFLICT (email) DO UPDATE SET updated_at = NOW()`,
+      [email, source || null],
+      tx
     );
   }
 };

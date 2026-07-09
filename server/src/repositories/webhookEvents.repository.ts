@@ -1,4 +1,4 @@
-import { query, queryOne, pool, type TransactionConnection } from '../lib/db.js';
+import { execute, queryOne, type TransactionConnection } from '../lib/db.js';
 
 export interface PaymentEventRow {
   id: number;
@@ -22,20 +22,15 @@ export const webhookEventsRepository = {
     },
     tx?: TransactionConnection
   ): Promise<boolean> {
-    const executor = tx || pool;
-    try {
-      await executor.execute(
-        `INSERT INTO payment_events (provider, event_id, type, payload) 
-         VALUES (?, ?, ?, ?)`,
-        [data.provider, data.eventId, data.type, JSON.stringify(data.payload)]
-      );
-      return true;
-    } catch (err: any) {
-      if (err.code === 'ER_DUP_ENTRY' || err.errno === 1062) {
-        return false;
-      }
-      throw err;
-    }
+    const result = await execute<{ id: number }>(
+      `INSERT INTO payment_events (provider, event_id, type, payload) 
+       VALUES (?, ?, ?, ?)
+       ON CONFLICT (provider, event_id) DO NOTHING
+       RETURNING id`,
+      [data.provider, data.eventId, data.type, JSON.stringify(data.payload)],
+      tx
+    );
+    return result.rowCount === 1;
   },
 
   async findByEventId(provider: string, eventId: string, tx?: TransactionConnection): Promise<PaymentEventRow | null> {
@@ -47,18 +42,18 @@ export const webhookEventsRepository = {
   },
 
   async markProcessed(provider: string, eventId: string, tx?: TransactionConnection): Promise<void> {
-    const executor = tx || pool;
-    await executor.execute(
+    await execute(
       'UPDATE payment_events SET processed_at = NOW(), error_message = NULL WHERE provider = ? AND event_id = ?',
-      [provider, eventId]
+      [provider, eventId],
+      tx
     );
   },
 
   async markFailed(provider: string, eventId: string, errorMsg: string, tx?: TransactionConnection): Promise<void> {
-    const executor = tx || pool;
-    await executor.execute(
+    await execute(
       'UPDATE payment_events SET error_message = ? WHERE provider = ? AND event_id = ?',
-      [errorMsg, provider, eventId]
+      [errorMsg, provider, eventId],
+      tx
     );
   }
 };

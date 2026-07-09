@@ -1,4 +1,4 @@
-import { query, queryOne, pool, type TransactionConnection } from '../lib/db.js';
+import { execute, query, queryOne, type TransactionConnection } from '../lib/db.js';
 import type { LedgerSource } from '@ghostwriter/shared';
 
 export interface LedgerRow {
@@ -27,12 +27,13 @@ export const ledgerRepository = {
   },
 
   async balanceForUpdate(userId: number, tx: TransactionConnection): Promise<number> {
-    // Acquire a row-lock on the user's credit ledger entries to prevent race conditions
-    const [rows] = await tx.execute(
-      'SELECT COALESCE(SUM(delta), 0) AS bal FROM credit_ledger WHERE user_id = ? FOR UPDATE',
-      [userId]
+    await execute('SELECT pg_advisory_xact_lock(?)', [userId], tx);
+    const row = await queryOne<{ bal: string }>(
+      'SELECT COALESCE(SUM(delta), 0) AS bal FROM credit_ledger WHERE user_id = ?',
+      [userId],
+      tx
     );
-    return Number((rows as any)[0]?.bal ?? 0);
+    return Number(row?.bal ?? 0);
   },
 
   async write(data: {
@@ -45,7 +46,7 @@ export const ledgerRepository = {
     note?: string | null;
     idempotencyKey?: string | null;
   }, tx: TransactionConnection): Promise<number> {
-    await tx.execute(
+    await execute(
       `INSERT INTO credit_ledger 
       (user_id, delta, balance_after, source, generation_id, invoice_id, note, idempotency_key) 
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -58,7 +59,8 @@ export const ledgerRepository = {
         data.invoiceId || null,
         data.note || null,
         data.idempotencyKey || null
-      ]
+      ],
+      tx
     );
     return data.balanceAfter;
   },

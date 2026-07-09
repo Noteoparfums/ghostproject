@@ -1,4 +1,4 @@
-import { query, queryOne, pool, type TransactionConnection } from '../lib/db.js';
+import { execute, query, queryOne, type TransactionConnection } from '../lib/db.js';
 import type { GenerationStatus, Paginated } from '@ghostwriter/shared';
 import { paginated } from '@ghostwriter/shared';
 
@@ -59,11 +59,10 @@ export const generationRepository = {
     creditsCharged: number;
     parentGenerationId?: number | null;
   }, tx?: TransactionConnection): Promise<GenerationRow> {
-    const executor = tx || pool;
-    const [result] = await executor.execute(
+    const result = await execute<{ id: number }>(
       `INSERT INTO generations 
       (user_id, project_id, brand_voice_id, funnel_type, input_snapshot, status, credits_charged, parent_generation_id) 
-      VALUES (?, ?, ?, ?, ?, 'queued', ?, ?)`,
+      VALUES (?, ?, ?, ?, ?, 'queued', ?, ?) RETURNING id`,
       [
         data.userId,
         data.projectId || null,
@@ -72,9 +71,10 @@ export const generationRepository = {
         JSON.stringify(data.inputSnapshot),
         data.creditsCharged,
         data.parentGenerationId || null
-      ]
+      ],
+      tx
     );
-    const id = (result as any).insertId;
+    const id = result.rows[0]!.id;
     return this.findById(id, tx) as Promise<GenerationRow>;
   },
 
@@ -92,7 +92,6 @@ export const generationRepository = {
     errorMessage?: string | null;
     version?: number;
   }, tx?: TransactionConnection): Promise<void> {
-    const executor = tx || pool;
     const fields: string[] = [];
     const params: any[] = [];
 
@@ -115,12 +114,12 @@ export const generationRepository = {
 
     if (fields.length > 0) {
       params.push(id);
-      await executor.execute(`UPDATE generations SET ${fields.join(', ')} WHERE id = ?`, params);
+      await execute(`UPDATE generations SET ${fields.join(', ')} WHERE id = ?`, params, tx);
     }
   },
 
   async setStatus(tx: TransactionConnection, id: number, status: GenerationStatus): Promise<void> {
-    await tx.execute('UPDATE generations SET status = ? WHERE id = ?', [status, id]);
+    await execute('UPDATE generations SET status = ? WHERE id = ?', [status, id], tx);
   },
 
   async listByUser(userId: number, page = 1, perPage = 20, tx?: TransactionConnection): Promise<Paginated<GenerationRow>> {
@@ -132,7 +131,7 @@ export const generationRepository = {
     );
     const countRow = await queryOne<{ count: number }>('SELECT COUNT(*) as count FROM generations WHERE user_id = ?', [userId], tx);
     
-    return paginated(rows, { page, per_page: perPage }, countRow?.count ?? 0);
+    return paginated(rows, { page, per_page: perPage }, Number(countRow?.count ?? 0));
   }
 };
 
@@ -148,11 +147,10 @@ export const generationAssetRepository = {
     scoreBreakdown?: any;
     complianceFlags?: any;
   }, tx?: TransactionConnection): Promise<number> {
-    const executor = tx || pool;
-    const [result] = await executor.execute(
+    const result = await execute<{ id: number }>(
       `INSERT INTO generation_assets 
       (generation_id, asset_type, content, variant, edited_content, framework_note, copy_score, score_breakdown, compliance_flags) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
       [
         data.generationId,
         data.assetType,
@@ -163,9 +161,10 @@ export const generationAssetRepository = {
         data.copyScore || null,
         data.scoreBreakdown ? JSON.stringify(data.scoreBreakdown) : null,
         data.complianceFlags ? JSON.stringify(data.complianceFlags) : null
-      ]
+      ],
+      tx
     );
-    return (result as any).insertId;
+    return result.rows[0]!.id;
   },
 
   async findById(id: number, tx?: TransactionConnection): Promise<GenerationAssetRow | null> {
@@ -212,7 +211,6 @@ export const generationAssetRepository = {
     scoreBreakdown?: any;
     complianceFlags?: any;
   }, tx?: TransactionConnection): Promise<void> {
-    const executor = tx || pool;
     const fields: string[] = [];
     const params: any[] = [];
 
@@ -235,7 +233,7 @@ export const generationAssetRepository = {
 
     if (fields.length > 0) {
       params.push(id);
-      await executor.execute(`UPDATE generation_assets SET ${fields.join(', ')} WHERE id = ?`, params);
+      await execute(`UPDATE generation_assets SET ${fields.join(', ')} WHERE id = ?`, params, tx);
     }
   },
 
@@ -244,20 +242,22 @@ export const generationAssetRepository = {
   },
 
   async toggleFavorite(id: number, isFavorited: boolean, tx?: TransactionConnection): Promise<void> {
-    const executor = tx || pool;
     const asset = await this.findById(id, tx);
     if (!asset) return;
 
     if (isFavorited) {
-      await executor.execute(
-        `INSERT IGNORE INTO saved_copies (user_id, generation_asset_id, title)
-         VALUES (?, ?, ?)`,
-        [asset.user_id, id, `Saved Copy #${id}`]
+      await execute(
+        `INSERT INTO saved_copies (user_id, generation_asset_id, title)
+         VALUES (?, ?, ?)
+         ON CONFLICT (generation_asset_id) DO NOTHING`,
+        [asset.user_id, id, `Saved Copy #${id}`],
+        tx
       );
     } else {
-      await executor.execute(
+      await execute(
         'DELETE FROM saved_copies WHERE generation_asset_id = ? AND user_id = ?',
-        [id, asset.user_id]
+        [id, asset.user_id],
+        tx
       );
     }
   }
@@ -272,16 +272,15 @@ export const generationStageRepository = {
     tokensUsed?: number;
     durationMs?: number;
   }, tx?: TransactionConnection): Promise<void> {
-    const executor = tx || pool;
-    await executor.execute(
+    await execute(
       `INSERT INTO generation_stages 
       (generation_id, stage, status, output, tokens_used, duration_ms) 
       VALUES (?, ?, ?, ?, ?, ?)
-      ON DUPLICATE KEY UPDATE
-        status = VALUES(status),
-        output = COALESCE(VALUES(output), output),
-        tokens_used = VALUES(tokens_used),
-        duration_ms = VALUES(duration_ms)`,
+      ON CONFLICT (generation_id, stage) DO UPDATE SET
+        status = EXCLUDED.status,
+        output = COALESCE(EXCLUDED.output, generation_stages.output),
+        tokens_used = EXCLUDED.tokens_used,
+        duration_ms = EXCLUDED.duration_ms`,
       [
         data.generationId,
         data.stage,
@@ -289,7 +288,8 @@ export const generationStageRepository = {
         data.output || null,
         data.tokensUsed || 0,
         data.durationMs || 0
-      ]
+      ],
+      tx
     );
   },
 

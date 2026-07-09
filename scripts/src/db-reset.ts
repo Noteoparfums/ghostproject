@@ -1,6 +1,6 @@
 import { pool } from './lib/db.js';
 import { loadEnv } from '@ghostwriter/shared';
-import { execSync } from 'child_process';
+import { execSync } from 'node:child_process';
 
 const env = loadEnv();
 
@@ -10,43 +10,33 @@ async function main() {
     process.exit(1);
   }
 
-  console.log('Dropping all tables from database...');
-  const connection = await pool.getConnection();
+  const client = await pool.connect();
   try {
-    // Disable foreign key checks to allow dropping tables in any order
-    await connection.execute('SET FOREIGN_KEY_CHECKS = 0');
-    const [rows] = await connection.execute(`
-      SELECT table_name
-      FROM information_schema.tables
-      WHERE table_schema = DATABASE()
-    `);
-
-    for (const r of rows as any[]) {
-      const tableName = r.TABLE_NAME;
+    await client.query('BEGIN');
+    const result = await client.query<{ tablename: string }>(
+      "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public'"
+    );
+    for (const row of result.rows) {
+      const tableName = row.tablename.replace(/"/g, '""');
       console.log(`Dropping table: ${tableName}`);
-      await connection.execute(`DROP TABLE \`${tableName}\``);
+      await client.query(`DROP TABLE "${tableName}" CASCADE`);
     }
-    await connection.execute('SET FOREIGN_KEY_CHECKS = 1');
-    console.log('All tables dropped.');
-  } catch (err) {
-    console.error('Error dropping tables:', err);
-    process.exit(1);
+    await client.query('DROP FUNCTION IF EXISTS update_updated_at_column() CASCADE');
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
   } finally {
-    connection.release();
+    client.release();
+    await pool.end();
   }
 
-  await pool.end();
-
-  console.log('Running migrations...');
   execSync('npm run migrate', { stdio: 'inherit' });
-
-  console.log('Running seeds...');
   execSync('npm run seed', { stdio: 'inherit' });
-
   console.log('Database reset successfully.');
 }
 
-main().catch((err) => {
-  console.error('Database reset failed:', err);
+main().catch((error) => {
+  console.error('Database reset failed:', error);
   process.exit(1);
 });

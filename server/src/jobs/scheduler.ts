@@ -1,21 +1,22 @@
-import { pool } from '../lib/db.js';
+import { execute, pool, query } from '../lib/db.js';
 import { logger } from '../lib/logger.js';
 import { flushMetricsToDb } from '../middleware/metrics.js';
-import type { PoolConnection } from 'mysql2/promise';
+import type { PoolClient } from 'pg';
 
 let schedulerInterval: NodeJS.Timeout | null = null;
 let electionTimeout: NodeJS.Timeout | null = null;
 let hasLock = false;
-let lockConn: any = null;
+let lockConn: PoolClient | null = null;
 
 async function tryAcquireLock(): Promise<boolean> {
   try {
     if (!lockConn) {
       lockConn = await pool.getConnection();
     }
-    const [rows] = await lockConn!.execute("SELECT GET_LOCK('gw_scheduler', 0) as locked");
-    const isLocked = (rows as any[])[0]?.locked === 1;
-    return isLocked;
+    const result = await lockConn.query<{ locked: boolean }>(
+      "SELECT pg_try_advisory_lock(hashtext('gw_scheduler')) AS locked"
+    );
+    return result.rows[0]?.locked === true;
   } catch (err) {
     logger.error({ err }, 'Failed to try-acquire scheduler lock');
     if (lockConn) {
@@ -36,11 +37,11 @@ async function runCronJob(jobName: string, jobFn: () => Promise<void>) {
   
   let runId = 0;
   try {
-    const [result] = await pool.execute(
-      "INSERT INTO job_runs (job_name, status, started_at) VALUES (?, 'running', NOW())",
+    const result = await execute<{ id: number }>(
+      "INSERT INTO job_runs (job_name, status, started_at) VALUES (?, 'running', NOW()) RETURNING id",
       [jobName]
     );
-    runId = (result as any).insertId;
+    runId = result.rows[0]!.id;
   } catch (err) {
     logger.error({ err, jobName }, 'Failed to insert job run log');
   }
@@ -53,7 +54,7 @@ async function runCronJob(jobName: string, jobFn: () => Promise<void>) {
     logger.info({ jobName, durationMs }, `Successfully completed cron job: ${jobName}`);
     
     if (runId) {
-      await pool.execute(
+      await execute(
         "UPDATE job_runs SET status = 'succeeded', finished_at = NOW(), duration_ms = ? WHERE id = ?",
         [durationMs, runId]
       );
@@ -64,7 +65,7 @@ async function runCronJob(jobName: string, jobFn: () => Promise<void>) {
     logger.error({ err, jobName, durationMs }, `Failed cron job: ${jobName}`);
     
     if (runId) {
-      await pool.execute(
+      await execute(
         "UPDATE job_runs SET status = 'failed', error_message = ?, finished_at = NOW(), duration_ms = ? WHERE id = ?",
         [err?.message || 'Unknown job failure', durationMs, runId]
       );
@@ -73,8 +74,8 @@ async function runCronJob(jobName: string, jobFn: () => Promise<void>) {
 }
 
 async function cleanExpiredTokens() {
-  await pool.execute('DELETE FROM email_verification_tokens WHERE expires_at < NOW()');
-  await pool.execute('DELETE FROM password_reset_tokens WHERE expires_at < NOW()');
+  await execute('DELETE FROM email_verification_tokens WHERE expires_at < NOW()');
+  await execute('DELETE FROM password_reset_tokens WHERE expires_at < NOW()');
 }
 
 async function expireCredits() {
@@ -82,11 +83,10 @@ async function expireCredits() {
 }
 
 async function chargePastDueSubscriptions() {
-  const [rows] = await pool.query(
+  const pastDueSubs = await query(
     "SELECT * FROM subscriptions WHERE status = 'past_due' AND dunning_attempts < 4"
   );
-  
-  const pastDueSubs = rows as any[];
+
   if (pastDueSubs.length === 0) return;
   
   logger.info({ count: pastDueSubs.length }, `Attempting dunning charges for ${pastDueSubs.length} past due subscriptions`);
@@ -144,7 +144,7 @@ export function startScheduler(config?: { env: any; pool: any; logger: any }) {
         electionTimeout = null;
       }
       if (hasLock && lockConn) {
-        lockConn!.execute("SELECT RELEASE_LOCK('gw_scheduler')")
+        lockConn.query("SELECT pg_advisory_unlock(hashtext('gw_scheduler'))")
           .catch((err: any) => logger.error({ err }, 'Failed to release scheduler lock'))
           .finally(() => {
             if (lockConn) {

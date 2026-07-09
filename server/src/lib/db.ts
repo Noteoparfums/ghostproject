@@ -1,47 +1,63 @@
-import mysql, { type Pool, type PoolConnection } from 'mysql2/promise';
+import { Pool, types, type PoolClient, type QueryResult, type QueryResultRow } from 'pg';
 import { env } from '../config/env.js';
-import dns from 'node:dns';
 
-dns.setDefaultResultOrder('ipv4first');
+types.setTypeParser(types.builtins.INT8, (value) => Number(value));
 
-function connectionOptions(connectionString: string) {
+function connectionConfig(connectionString: string) {
   const url = new URL(connectionString);
-  if (url.protocol !== 'mysql:' && url.protocol !== 'mysql2:') {
-    throw new Error('DATABASE_URL must use the mysql:// protocol');
+  if (url.protocol !== 'postgres:' && url.protocol !== 'postgresql:') {
+    throw new Error('DATABASE_URL must use the postgresql:// protocol');
   }
 
+  const sslMode = url.searchParams.get('sslmode');
+  const useTls = sslMode !== null && sslMode !== 'disable';
+  url.searchParams.delete('sslmode');
+  url.searchParams.delete('sslcert');
+  url.searchParams.delete('sslkey');
+  url.searchParams.delete('sslrootcert');
+
   return {
-    host: url.hostname,
-    port: url.port ? Number(url.port) : 3306,
-    user: decodeURIComponent(url.username),
-    password: decodeURIComponent(url.password),
-    database: decodeURIComponent(url.pathname.slice(1)),
-    ssl: url.searchParams.has('ssl')
-      ? { minVersion: 'TLSv1.2' as const, rejectUnauthorized: true }
+    connectionString: url.toString(),
+    max: 10,
+    ssl: useTls
+      ? {
+          minVersion: 'TLSv1.2' as const,
+          rejectUnauthorized: sslMode !== 'no-verify',
+        }
       : undefined,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
   };
 }
 
-export const pool = mysql.createPool(connectionOptions(env.DATABASE_URL));
-
-export type TransactionConnection = Pool | PoolConnection;
-
-export async function query<T = any>(
-  sql: string,
-  params: any[] = [],
-  tx?: TransactionConnection
-): Promise<T[]> {
-  const executor = tx || pool;
-  const [rows] = await executor.execute(sql, params);
-  return rows as T[];
+export function postgresSql(sql: string): string {
+  let index = 0;
+  return sql.replace(/\?/g, () => `$${++index}`);
 }
 
-export async function queryOne<T = any>(
+export type TransactionConnection = PoolClient;
+export type DatabaseExecutor = Pool | PoolClient;
+
+export const pool = new Pool(connectionConfig(env.DATABASE_URL));
+
+export async function execute<T extends QueryResultRow = QueryResultRow>(
   sql: string,
-  params: any[] = [],
+  params: unknown[] = [],
+  tx?: TransactionConnection
+): Promise<QueryResult<T>> {
+  return (tx ?? pool).query<T>(postgresSql(sql), params);
+}
+
+export async function query<T extends QueryResultRow = QueryResultRow>(
+  sql: string,
+  params: unknown[] = [],
+  tx?: TransactionConnection
+): Promise<T[]> {
+  const result = await execute<T>(sql, params, tx);
+  return result.rows;
+}
+
+export async function queryOne<T extends QueryResultRow = QueryResultRow>(
+  sql: string,
+  params: unknown[] = [],
   tx?: TransactionConnection
 ): Promise<T | null> {
   const rows = await query<T>(sql, params, tx);
@@ -49,22 +65,21 @@ export async function queryOne<T = any>(
 }
 
 export async function withTransaction<T>(
-  callback: (conn: any) => Promise<T>
+  callback: (client: TransactionConnection) => Promise<T>
 ): Promise<T> {
-  const conn = await pool.getConnection();
+  const client = await pool.connect();
   try {
-    await conn.beginTransaction();
-    const result = await callback(conn);
-    await conn.commit();
+    await client.query('BEGIN');
+    const result = await callback(client);
+    await client.query('COMMIT');
     return result;
-  } catch (err) {
+  } catch (error) {
     try {
-      await conn.rollback();
+      await client.query('ROLLBACK');
     } catch {
-      // ignore
     }
-    throw err;
+    throw error;
   } finally {
-    conn.release();
+    client.release();
   }
 }

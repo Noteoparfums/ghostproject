@@ -22,7 +22,7 @@ export const analyticsRepository = {
         COALESCE(MAX(pool_active), 0) as active_db_connections,
         COALESCE(MAX(pool_idle), 0) as idle_db_connections
        FROM request_metrics
-       WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)`,
+       WHERE created_at >= NOW() - INTERVAL '24 hours'`,
       [],
       tx
     );

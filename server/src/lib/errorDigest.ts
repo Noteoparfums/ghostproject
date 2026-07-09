@@ -1,4 +1,4 @@
-import { pool } from './db.js';
+import { execute } from './db.js';
 import crypto from 'node:crypto';
 
 export const errorDigest = {
@@ -13,14 +13,14 @@ export const errorDigest = {
 
       const hash = crypto.createHash('sha256').update(topFrame).digest('hex');
 
-      await pool.execute(
+      await execute(
         `INSERT INTO error_digests (frame_hash, message, stack, count, first_seen, last_seen)
          VALUES (?, ?, ?, 1, NOW(), NOW())
-         ON DUPLICATE KEY UPDATE
-           count = count + 1,
+         ON CONFLICT (frame_hash) DO UPDATE SET
+           count = error_digests.count + 1,
            last_seen = NOW(),
-           message = VALUES(message),
-           stack = VALUES(stack)`,
+           message = EXCLUDED.message,
+           stack = EXCLUDED.stack`,
         [hash, message.slice(0, 500), stack]
       );
     } catch (e) {

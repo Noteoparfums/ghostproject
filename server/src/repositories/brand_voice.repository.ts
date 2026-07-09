@@ -1,4 +1,4 @@
-import { query, queryOne, pool, type TransactionConnection } from '../lib/db.js';
+import { execute, query, queryOne, type TransactionConnection } from '../lib/db.js';
 
 export interface BrandVoiceRow {
   id: number;
@@ -21,9 +21,8 @@ export const brandVoiceRepository = {
     bannedWords: any;
     styleSummary: string;
   }, tx?: TransactionConnection): Promise<BrandVoiceRow> {
-    const executor = tx || pool;
-    const [result] = await executor.execute(
-      'INSERT INTO brand_voices (user_id, name, tone_sliders, sample_texts, banned_words, style_summary) VALUES (?, ?, ?, ?, ?, ?)',
+    const result = await execute<{ id: number }>(
+      'INSERT INTO brand_voices (user_id, name, tone_sliders, sample_texts, banned_words, style_summary) VALUES (?, ?, ?, ?, ?, ?) RETURNING id',
       [
         data.userId,
         data.name,
@@ -31,9 +30,10 @@ export const brandVoiceRepository = {
         data.sampleTexts,
         JSON.stringify(data.bannedWords),
         data.styleSummary
-      ]
+      ],
+      tx
     );
-    const id = (result as any).insertId;
+    const id = result.rows[0]!.id;
     return this.findById(id, tx) as Promise<BrandVoiceRow>;
   },
 
@@ -48,7 +48,6 @@ export const brandVoiceRepository = {
     bannedWords?: any;
     styleSummary?: string;
   }, tx?: TransactionConnection): Promise<void> {
-    const executor = tx || pool;
     const fields: string[] = [];
     const params: any[] = [];
     if (updates.name !== undefined) {
@@ -74,13 +73,12 @@ export const brandVoiceRepository = {
 
     if (fields.length > 0) {
       params.push(id);
-      await executor.execute(`UPDATE brand_voices SET ${fields.join(', ')} WHERE id = ?`, params);
+      await execute(`UPDATE brand_voices SET ${fields.join(', ')} WHERE id = ?`, params, tx);
     }
   },
 
   async delete(id: number, tx?: TransactionConnection): Promise<void> {
-    const executor = tx || pool;
-    await executor.execute('DELETE FROM brand_voices WHERE id = ?', [id]);
+    await execute('DELETE FROM brand_voices WHERE id = ?', [id], tx);
   },
 
   async list(userId: number, tx?: TransactionConnection): Promise<BrandVoiceRow[]> {

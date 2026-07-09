@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { pool } from '../lib/db.js';
+import { execute, pool } from '../lib/db.js';
 
 declare global {
   namespace Express {
@@ -62,8 +62,8 @@ function getPercentile(values: number[], pct: number): number {
 export async function flushMetricsToDb() {
   try {
     // Read pool stats safely
-    const poolActive = (pool as any)._allConnections?.length - (pool as any)._freeConnections?.length || 0;
-    const poolIdle = (pool as any)._freeConnections?.length || 0;
+    const poolActive = pool.totalCount - pool.idleCount;
+    const poolIdle = pool.idleCount;
 
     for (const [routeGroup, entries] of metricsBuffer.entries()) {
       if (entries.length === 0) continue;
@@ -82,7 +82,7 @@ export async function flushMetricsToDb() {
       const p95 = getPercentile(durations, 95);
       const p99 = getPercentile(durations, 99);
 
-      await pool.execute(
+      await execute(
         `INSERT INTO request_metrics (route_group, count, error_count, latency_p50, latency_p95, latency_p99, pool_active, pool_idle)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [routeGroup, count, errorCount, p50, p95, p99, poolActive, poolIdle]

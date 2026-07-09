@@ -1,4 +1,4 @@
-import { query, queryOne, pool, type TransactionConnection } from '../lib/db.js';
+import { execute, query, queryOne, type TransactionConnection } from '../lib/db.js';
 import type { Plan, Subscription, Invoice, SubscriptionStatus, BillingInterval, InvoiceStatus, PaymentProviderKind } from '@ghostwriter/shared';
 
 export const planRepository = {
@@ -45,17 +45,17 @@ export const subscriptionRepository = {
     currentPeriodStart?: Date;
     currentPeriodEnd?: Date;
   }, tx?: TransactionConnection): Promise<number> {
-    const executor = tx || pool;
-    const [result] = await executor.execute(
+    const result = await execute<{ id: number }>(
       `INSERT INTO subscriptions 
       (user_id, plan_id, interval_unit, status, provider, provider_subscription_id, current_period_start, current_period_end) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
       [
         data.userId, data.planId, data.interval, data.status, data.provider, 
         data.providerSubscriptionId || null, data.currentPeriodStart || null, data.currentPeriodEnd || null
-      ]
+      ],
+      tx
     );
-    return (result as any).insertId;
+    return result.rows[0]!.id;
   },
 
   async update(id: number, updates: {
@@ -71,7 +71,6 @@ export const subscriptionRepository = {
     dunningAttempts?: number;
     pastDueSince?: Date | null;
   }, tx?: TransactionConnection): Promise<void> {
-    const executor = tx || pool;
     const fields: string[] = [];
     const params: any[] = [];
 
@@ -98,7 +97,7 @@ export const subscriptionRepository = {
 
     if (fields.length > 0) {
       params.push(id);
-      await executor.execute(`UPDATE subscriptions SET ${fields.join(', ')} WHERE id = ?`, params);
+      await execute(`UPDATE subscriptions SET ${fields.join(', ')} WHERE id = ?`, params, tx);
     }
   }
 };
@@ -123,22 +122,22 @@ export const invoiceRepository = {
     billingSnapshot?: any;
     paidAt?: Date | null;
   }, tx?: TransactionConnection): Promise<number> {
-    const executor = tx || pool;
-    const [result] = await executor.execute(
+    const result = await execute<{ id: number }>(
       `INSERT INTO invoices (
         user_id, subscription_id, number, kind, status, currency, 
         subtotal_cents, tax_cents, total_cents, tax_rate_bps, tax_country, 
         reverse_charge, provider, provider_invoice_id, line_items, billing_snapshot, paid_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
       [
         data.userId, data.subscriptionId || null, data.number, data.kind, data.status, data.currency,
         data.subtotalCents, data.taxCents, data.totalCents, data.taxRateBps, data.taxCountry || null,
         data.reverseCharge || false, data.provider, data.providerInvoiceId || null, 
         JSON.stringify(data.lineItems), data.billingSnapshot ? JSON.stringify(data.billingSnapshot) : null,
         data.paidAt || null
-      ]
+      ],
+      tx
     );
-    return (result as any).insertId;
+    return result.rows[0]!.id;
   },
 
   async findById(id: number, tx?: TransactionConnection): Promise<Invoice | null> {
@@ -150,7 +149,6 @@ export const invoiceRepository = {
   },
 
   async updateStatus(id: number, status: InvoiceStatus, updates?: { paidAt?: Date | null; refundedAt?: Date | null }, tx?: TransactionConnection): Promise<void> {
-    const executor = tx || pool;
     const fields = ['status = ?'];
     const params: any[] = [status];
     if (updates?.paidAt !== undefined) {
@@ -162,7 +160,7 @@ export const invoiceRepository = {
       params.push(updates.refundedAt);
     }
     params.push(id);
-    await executor.execute(`UPDATE invoices SET ${fields.join(', ')} WHERE id = ?`, params);
+    await execute(`UPDATE invoices SET ${fields.join(', ')} WHERE id = ?`, params, tx);
   },
 
   async listByUser(userId: number, limit = 20, tx?: TransactionConnection): Promise<Invoice[]> {
@@ -176,17 +174,18 @@ export const billingProfileRepository = {
   },
 
   async upsert(userId: number, data: any, tx?: TransactionConnection): Promise<void> {
-    const executor = tx || pool;
     const existing = await this.get(userId, tx);
     if (existing) {
-      await executor.execute(
+      await execute(
         `UPDATE billing_profiles SET company = ?, billing_email = ?, address_line1 = ?, address_line2 = ?, city = ?, postal_code = ?, country = ?, vat_id = ?, vat_valid = ? WHERE user_id = ?`,
-        [data.company || null, data.billingEmail || null, data.addressLine1 || null, data.addressLine2 || null, data.city || null, data.postalCode || null, data.country || null, data.vatId || null, data.vatValid ? 1 : 0, userId]
+        [data.company || null, data.billingEmail || null, data.addressLine1 || null, data.addressLine2 || null, data.city || null, data.postalCode || null, data.country || null, data.vatId || null, data.vatValid ? 1 : 0, userId],
+        tx
       );
     } else {
-      await executor.execute(
+      await execute(
         `INSERT INTO billing_profiles (user_id, company, billing_email, address_line1, address_line2, city, postal_code, country, vat_id, vat_valid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [userId, data.company || null, data.billingEmail || null, data.addressLine1 || null, data.addressLine2 || null, data.city || null, data.postalCode || null, data.country || null, data.vatId || null, data.vatValid ? 1 : 0]
+        [userId, data.company || null, data.billingEmail || null, data.addressLine1 || null, data.addressLine2 || null, data.city || null, data.postalCode || null, data.country || null, data.vatId || null, data.vatValid ? 1 : 0],
+        tx
       );
     }
   }
@@ -212,12 +211,12 @@ export const refundRepository = {
     reason?: string | null;
     status: 'requested' | 'approved' | 'rejected' | 'processed';
   }, tx?: TransactionConnection): Promise<number> {
-    const executor = tx || pool;
-    const [result] = await executor.execute(
-      'INSERT INTO refunds (invoice_id, user_id, amount_cents, reason, status) VALUES (?, ?, ?, ?, ?)',
-      [data.invoiceId, data.userId, data.amountCents, data.reason || null, data.status]
+    const result = await execute<{ id: number }>(
+      'INSERT INTO refunds (invoice_id, user_id, amount_cents, reason, status) VALUES (?, ?, ?, ?, ?) RETURNING id',
+      [data.invoiceId, data.userId, data.amountCents, data.reason || null, data.status],
+      tx
     );
-    return (result as any).insertId;
+    return result.rows[0]!.id;
   },
 
   async findById(id: number, tx?: TransactionConnection): Promise<any> {
@@ -225,7 +224,6 @@ export const refundRepository = {
   },
 
   async updateStatus(id: number, status: 'requested' | 'approved' | 'rejected' | 'processed', processedAt?: Date | null, tx?: TransactionConnection): Promise<void> {
-    const executor = tx || pool;
     const fields = ['status = ?'];
     const params: any[] = [status];
     if (processedAt !== undefined) {
@@ -233,6 +231,6 @@ export const refundRepository = {
       params.push(processedAt);
     }
     params.push(id);
-    await executor.execute(`UPDATE refunds SET ${fields.join(', ')} WHERE id = ?`, params);
+    await execute(`UPDATE refunds SET ${fields.join(', ')} WHERE id = ?`, params, tx);
   }
 };

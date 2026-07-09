@@ -1,7 +1,7 @@
 import type { SubscriptionStatus } from '@ghostwriter/shared';
 import { isLegalSubscriptionTransition } from '@ghostwriter/shared';
 import { subscriptionRepository } from '../../repositories/billing.repository.js';
-import type { TransactionConnection } from '../../lib/db.js';
+import { queryOne, type TransactionConnection } from '../../lib/db.js';
 import { AppError } from '../../lib/errors.js';
 
 export async function transitionSubscription(
@@ -10,11 +10,11 @@ export async function transitionSubscription(
   tx: TransactionConnection,
   updates: any = {}
 ): Promise<void> {
-  const [rows] = await tx.execute(
+  const sub = await queryOne<{ status: SubscriptionStatus }>(
     'SELECT * FROM subscriptions WHERE id = ? FOR UPDATE',
-    [subscriptionId]
+    [subscriptionId],
+    tx
   );
-  const sub = (rows as any[])[0];
   if (!sub) {
     throw new AppError('NOT_FOUND', 'Subscription not found');
   }
