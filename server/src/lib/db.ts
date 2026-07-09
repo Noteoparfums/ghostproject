@@ -1,142 +1,33 @@
-import pg from 'pg';
+import mysql, { type Pool, type PoolConnection } from 'mysql2/promise';
 import { env } from '../config/env.js';
 import dns from 'node:dns';
 
 dns.setDefaultResultOrder('ipv4first');
 
-// Setup connection details
-const pgPool = new pg.Pool({
-  connectionString: env.DATABASE_URL,
-  max: 10,
-});
-
-function convertSql(sql: string, params: any[]): { sql: string; isInsert: boolean; isModify: boolean } {
-  let paramIndex = 1;
-  let inSingleQuote = false;
-  let inDoubleQuote = false;
-  let inBacktick = false;
-  let resultSql = '';
-
-  for (let i = 0; i < sql.length; i++) {
-    const char = sql[i];
-    if (char === "'" && sql[i - 1] !== '\\') {
-      if (!inDoubleQuote && !inBacktick) inSingleQuote = !inSingleQuote;
-      resultSql += char;
-    } else if (char === '"' && sql[i - 1] !== '\\') {
-      if (!inSingleQuote && !inBacktick) inDoubleQuote = !inDoubleQuote;
-      resultSql += char;
-    } else if (char === '`') {
-      if (!inSingleQuote && !inDoubleQuote) {
-        inBacktick = !inBacktick;
-        resultSql += '"'; // Replace backticks with double quotes
-      } else {
-        resultSql += char;
-      }
-    } else if (char === '?' && !inSingleQuote && !inDoubleQuote && !inBacktick) {
-      resultSql += `$${paramIndex++}`;
-    } else {
-      resultSql += char;
-    }
+function connectionOptions(connectionString: string) {
+  const url = new URL(connectionString);
+  if (url.protocol !== 'mysql:' && url.protocol !== 'mysql2:') {
+    throw new Error('DATABASE_URL must use the mysql:// protocol');
   }
 
-  // Translate MySQL specific functions: DATE_ADD and DATE_SUB
-  resultSql = resultSql.replace(/DATE_ADD\(([^,]+),\s*INTERVAL\s+(\d+)\s+([A-Z]+)\)/gi, "$1 + INTERVAL '$2 $3'");
-  resultSql = resultSql.replace(/DATE_SUB\(([^,]+),\s*INTERVAL\s+(\d+)\s+([A-Z]+)\)/gi, "$1 - INTERVAL '$2 $3'");
-
-  // Translate MySQL lock functions to PostgreSQL advisory locks
-  if (/GET_LOCK\(\s*'gw_scheduler'\s*,\s*0\s*\)/i.test(resultSql)) {
-    resultSql = "SELECT CASE WHEN pg_try_advisory_lock(738392) THEN 1 ELSE 0 END as locked";
-  }
-  if (/RELEASE_LOCK\(\s*'gw_scheduler'\s*\)/i.test(resultSql)) {
-    resultSql = "SELECT CASE WHEN pg_advisory_unlock(738392) THEN 1 ELSE 0 END as released";
-  }
-
-  const trimmed = resultSql.trim();
-  const isInsert = /^insert\s+into/i.test(trimmed);
-  const isModify = /^(update|delete)\s+/i.test(trimmed);
-
-  if (isInsert && !/returning/i.test(trimmed)) {
-    resultSql = resultSql.trim() + ' RETURNING id';
-  }
-
-  return { sql: resultSql, isInsert, isModify };
+  return {
+    host: url.hostname,
+    port: url.port ? Number(url.port) : 3306,
+    user: decodeURIComponent(url.username),
+    password: decodeURIComponent(url.password),
+    database: decodeURIComponent(url.pathname.slice(1)),
+    ssl: url.searchParams.has('ssl')
+      ? { minVersion: 'TLSv1.2' as const, rejectUnauthorized: true }
+      : undefined,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+  };
 }
 
-async function runQuery(
-  executor: pg.Pool | pg.PoolClient,
-  rawSql: string,
-  params: any[] = []
-): Promise<[any, any]> {
-  const { sql, isInsert, isModify } = convertSql(rawSql, params);
-  
-  const res = await executor.query(sql, params);
-  
-  if (isInsert) {
-    const insertId = res.rows[0]?.id ? Number(res.rows[0].id) : null;
-    return [{ insertId, affectedRows: res.rowCount }, null] as any;
-  }
-  
-  if (isModify) {
-    return [{ affectedRows: res.rowCount }, null] as any;
-  }
-  
-  return [res.rows, null];
-}
+export const pool = mysql.createPool(connectionOptions(env.DATABASE_URL));
 
-class pgConnectionWrapper {
-  constructor(public client: pg.PoolClient) {}
-
-  async execute(sql: string, params: any[] = []) {
-    return runQuery(this.client, sql, params);
-  }
-
-  async query(sql: string, params: any[] = []) {
-    return runQuery(this.client, sql, params);
-  }
-
-  async beginTransaction() {
-    await this.client.query('BEGIN');
-  }
-
-  async commit() {
-    await this.client.query('COMMIT');
-  }
-
-  async rollback() {
-    await this.client.query('ROLLBACK');
-  }
-
-  release() {
-    this.client.release();
-  }
-
-  async end() {
-    this.client.release();
-  }
-}
-
-class pgPoolWrapper {
-  async execute(sql: string, params: any[] = []) {
-    return runQuery(pgPool, sql, params);
-  }
-
-  async query(sql: string, params: any[] = []) {
-    return runQuery(pgPool, sql, params);
-  }
-
-  async getConnection(): Promise<pgConnectionWrapper> {
-    const client = await pgPool.connect();
-    return new pgConnectionWrapper(client);
-  }
-
-  async end() {
-    await pgPool.end();
-  }
-}
-
-export const pool = new pgPoolWrapper() as any;
-
-export type TransactionConnection = pgConnectionWrapper | pgPoolWrapper | any;
+export type TransactionConnection = Pool | PoolConnection;
 
 export async function query<T = any>(
   sql: string,

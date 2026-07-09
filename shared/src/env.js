@@ -12,9 +12,11 @@ export const envSchema = z
     APP_URL: z.string().url().default('http://localhost:5173'),
     APP_VERSION: z.string().default('0.0.0-dev'),
     JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters').optional(),
-    AI_PROVIDER: z.enum(['mock', 'openai', 'anthropic']).default('mock'),
+    AI_PROVIDER: z.enum(['mock', 'groq', 'openai', 'anthropic']).default('mock'),
     AI_API_KEY: z.string().optional(),
+    GROQ_API_KEY: z.string().optional(),
     AI_MODEL: z.string().optional(),
+    AI_FALLBACK_MODELS: z.string().optional(),
     STRIPE_SECRET_KEY: z.string().optional(),
     STRIPE_WEBHOOK_SECRET: z.string().optional(),
     MOCK_WEBHOOK_SECRET: z.string().default('dev-webhook-secret'),
@@ -32,11 +34,14 @@ export const envSchema = z
             message: 'JWT_SECRET is required in production',
         });
     }
-    if (v.AI_PROVIDER !== 'mock' && !v.AI_API_KEY) {
+    const providerApiKey = v.AI_PROVIDER === 'groq'
+        ? v.GROQ_API_KEY ?? v.AI_API_KEY
+        : v.AI_API_KEY;
+    if (v.AI_PROVIDER !== 'mock' && !providerApiKey) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            path: ['AI_API_KEY'],
-            message: `AI_API_KEY is required when AI_PROVIDER=${v.AI_PROVIDER}`,
+            path: [v.AI_PROVIDER === 'groq' ? 'GROQ_API_KEY' : 'AI_API_KEY'],
+            message: `${v.AI_PROVIDER === 'groq' ? 'GROQ_API_KEY or AI_API_KEY' : 'AI_API_KEY'} is required when AI_PROVIDER=${v.AI_PROVIDER}`,
         });
     }
     if (v.NODE_ENV === 'production' && v.STRIPE_SECRET_KEY && !v.STRIPE_WEBHOOK_SECRET) {
@@ -58,6 +63,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 function loadDotEnv() {
     const paths = [
+        path.resolve(process.cwd(), '.env.local'),
+        path.resolve(process.cwd(), '../.env.local'),
         path.resolve(process.cwd(), '.env'),
         path.resolve(process.cwd(), '../.env')
     ];

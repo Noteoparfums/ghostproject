@@ -11,11 +11,11 @@ export const errorDigest = {
             const hash = crypto.createHash('sha256').update(topFrame).digest('hex');
             await pool.execute(`INSERT INTO error_digests (frame_hash, message, stack, count, first_seen, last_seen)
          VALUES (?, ?, ?, 1, NOW(), NOW())
-         ON CONFLICT (frame_hash) DO UPDATE SET
-           count = error_digests.count + 1,
+         ON DUPLICATE KEY UPDATE
+           count = count + 1,
            last_seen = NOW(),
-           message = EXCLUDED.message,
-           stack = EXCLUDED.stack`, [hash, message.slice(0, 500), stack]);
+           message = VALUES(message),
+           stack = VALUES(stack)`, [hash, message.slice(0, 500), stack]);
         }
         catch (e) {
             console.error('Failed to log error digest:', e);

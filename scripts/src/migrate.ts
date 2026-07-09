@@ -22,11 +22,36 @@ async function getAppliedMigrations(): Promise<Set<string>> {
 }
 
 function splitSqlStatements(sql: string): string[] {
-  // Simple regex-based splitter that splits on semicolon at the end of lines
   return sql
     .split(/;\s*$/m)
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
+}
+
+function toMySql(sql: string): string {
+  return sql
+    .replace(
+      /CREATE OR REPLACE FUNCTION update_updated_at_column\(\)[\s\S]*?\$\$ language 'plpgsql';/gi,
+      '',
+    )
+    .replace(
+      /CREATE OR REPLACE TRIGGER[\s\S]*?EXECUTE FUNCTION update_updated_at_column\(\);/gi,
+      '',
+    )
+    .replace(/\bBIGSERIAL\b/gi, 'BIGINT AUTO_INCREMENT')
+    .replace(/\bJSONB\b/gi, 'JSON')
+    .replace(
+      /updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP/gi,
+      'updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP',
+    )
+    .replace(/CREATE INDEX IF NOT EXISTS/gi, 'CREATE INDEX');
+}
+
+function isDuplicateIndexError(error: unknown): boolean {
+  return typeof error === 'object'
+    && error !== null
+    && 'code' in error
+    && (error as { code?: string }).code === 'ER_DUP_KEYNAME';
 }
 
 async function main() {
@@ -47,14 +72,18 @@ async function main() {
 
     console.log(`Applying migration: ${file}...`);
     const sqlPath = path.join(migrationsDir, file);
-    const sql = fs.readFileSync(sqlPath, 'utf-8');
+    const sql = toMySql(fs.readFileSync(sqlPath, 'utf-8'));
     const statements = splitSqlStatements(sql);
 
     const connection = await pool.getConnection();
     try {
       await connection.beginTransaction();
       for (const statement of statements) {
-        await connection.execute(statement);
+        try {
+          await connection.query(statement);
+        } catch (error) {
+          if (!isDuplicateIndexError(error)) throw error;
+        }
       }
       await connection.execute('INSERT INTO schema_migrations (filename) VALUES (?)', [file]);
       await connection.commit();

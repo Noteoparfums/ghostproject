@@ -23,6 +23,23 @@ describe('Shared Library Suite', () => {
       });
       expect(result.ok).toBe(true);
     });
+
+    it('accepts Groq when an API key is configured', () => {
+      const result = parseEnv({
+        DATABASE_URL: 'mysql://root:root@127.0.0.1:3306/ghostwriter_dev',
+        AI_PROVIDER: 'groq',
+        GROQ_API_KEY: 'test-groq-key',
+      });
+      expect(result.ok).toBe(true);
+    });
+
+    it('rejects Groq without an API key', () => {
+      const result = parseEnv({
+        DATABASE_URL: 'mysql://root:root@127.0.0.1:3306/ghostwriter_dev',
+        AI_PROVIDER: 'groq',
+      });
+      expect(result.ok).toBe(false);
+    });
   });
 
   describe('Money utilities', () => {

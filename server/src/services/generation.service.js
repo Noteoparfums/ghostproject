@@ -4,6 +4,7 @@ import { sseRegistry, openSse } from '../lib/sse.js';
 import { AppError } from '../lib/errors.js';
 import { logger } from '../lib/logger.js';
 import { buildBrief, buildAssets } from '../engine/copyBanks.js';
+import { aiAdapter } from '../adapters/ai.adapter.js';
 import { withTransaction } from '../lib/db.js';
 export const generationService = {
     async startGeneration(userId, payload, res) {
@@ -136,6 +137,20 @@ export const generationService = {
                 status: 'running'
             });
             const generatedAssets = buildAssets(payload.funnelType, brief);
+            let totalTokensUsed = 0;
+            for (const asset of generatedAssets) {
+                if (signal.aborted)
+                    return;
+                const result = await aiAdapter.generate(JSON.stringify({
+                    offer: brief.product,
+                    target_audience: brief.audience,
+                    tone: brief.tone,
+                    funnel_type: payload.funnelType,
+                    awareness_stage: brief.awareness,
+                }), asset.asset_type, brief.tone, []);
+                asset.content = result.content;
+                totalTokensUsed += result.providerInfo.tokensUsed;
+            }
             // Stream tokens representing the assets
             const fullCopy = generatedAssets.map(a => `[${a.label}]\n\n${a.content}`).join('\n\n====================\n\n');
             const tokens = fullCopy.split(' ');
@@ -155,7 +170,7 @@ export const generationService = {
                 stage: 'draft',
                 status: 'complete',
                 output: 'Draft fully streamed.',
-                tokensUsed: Math.ceil(fullCopy.length / 4),
+                tokensUsed: totalTokensUsed || Math.ceil(fullCopy.length / 4),
                 durationMs: streamedCount * 5
             });
             // Stage 5: Polish
@@ -238,11 +253,11 @@ export const generationService = {
         await withTransaction(async (tx) => {
             await creditService.charge(userId, cost, 'section_regen', { generationId: asset.generation_id }, `Regenerated section based on instruction: ${instruction}`);
         });
-        const mockContent = `[REGENERATED variant based on: ${instruction}]\n\n${asset.content}`;
+        const regenerated = await aiAdapter.generate(`Original copy:\n${asset.content}\n\nRevision instruction:\n${instruction}`, asset.asset_type, 'direct', []);
         const newAssetId = await generationAssetRepository.create({
             generationId: asset.generation_id,
             assetType: asset.asset_type,
-            content: mockContent,
+            content: regenerated.content,
             variant: 'B',
             frameworkNote: `Regenerated from instruction: "${instruction}"`
         });

@@ -105,7 +105,7 @@ export const newsletterRepository = {
     await executor.execute(
       `INSERT INTO newsletter_subscribers (email, source) 
        VALUES (?, ?)
-       ON CONFLICT (email) DO UPDATE SET updated_at = NOW()`,
+       ON DUPLICATE KEY UPDATE updated_at = NOW()`,
       [email, source || null]
     );
   }

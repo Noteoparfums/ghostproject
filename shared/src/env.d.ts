@@ -11,9 +11,11 @@ export declare const envSchema: z.ZodEffects<z.ZodObject<{
     APP_URL: z.ZodDefault<z.ZodString>;
     APP_VERSION: z.ZodDefault<z.ZodString>;
     JWT_SECRET: z.ZodOptional<z.ZodString>;
-    AI_PROVIDER: z.ZodDefault<z.ZodEnum<["mock", "openai", "anthropic"]>>;
+    AI_PROVIDER: z.ZodDefault<z.ZodEnum<["mock", "groq", "openai", "anthropic"]>>;
     AI_API_KEY: z.ZodOptional<z.ZodString>;
+    GROQ_API_KEY: z.ZodOptional<z.ZodString>;
     AI_MODEL: z.ZodOptional<z.ZodString>;
+    AI_FALLBACK_MODELS: z.ZodOptional<z.ZodString>;
     STRIPE_SECRET_KEY: z.ZodOptional<z.ZodString>;
     STRIPE_WEBHOOK_SECRET: z.ZodOptional<z.ZodString>;
     MOCK_WEBHOOK_SECRET: z.ZodDefault<z.ZodString>;
@@ -23,18 +25,20 @@ export declare const envSchema: z.ZodEffects<z.ZodObject<{
     ALERT_WEBHOOK_URL: z.ZodOptional<z.ZodString>;
     SENTRY_DSN: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    NODE_ENV: "development" | "staging" | "production";
     DATABASE_URL: string;
     PORT: number;
+    NODE_ENV: "development" | "staging" | "production";
     APP_URL: string;
     APP_VERSION: string;
-    AI_PROVIDER: "mock" | "openai" | "anthropic";
+    AI_PROVIDER: "groq" | "mock" | "openai" | "anthropic";
     MOCK_WEBHOOK_SECRET: string;
     MAINTENANCE_MODE: boolean;
     LOG_LEVEL: "debug" | "info" | "warn" | "error";
     JWT_SECRET?: string | undefined;
     AI_API_KEY?: string | undefined;
+    GROQ_API_KEY?: string | undefined;
     AI_MODEL?: string | undefined;
+    AI_FALLBACK_MODELS?: string | undefined;
     STRIPE_SECRET_KEY?: string | undefined;
     STRIPE_WEBHOOK_SECRET?: string | undefined;
     SMTP_URL?: string | undefined;
@@ -42,14 +46,16 @@ export declare const envSchema: z.ZodEffects<z.ZodObject<{
     SENTRY_DSN?: string | undefined;
 }, {
     DATABASE_URL: string;
-    NODE_ENV?: "development" | "staging" | "production" | undefined;
     PORT?: number | undefined;
+    NODE_ENV?: "development" | "staging" | "production" | undefined;
     APP_URL?: string | undefined;
     APP_VERSION?: string | undefined;
     JWT_SECRET?: string | undefined;
-    AI_PROVIDER?: "mock" | "openai" | "anthropic" | undefined;
+    AI_PROVIDER?: "groq" | "mock" | "openai" | "anthropic" | undefined;
     AI_API_KEY?: string | undefined;
+    GROQ_API_KEY?: string | undefined;
     AI_MODEL?: string | undefined;
+    AI_FALLBACK_MODELS?: string | undefined;
     STRIPE_SECRET_KEY?: string | undefined;
     STRIPE_WEBHOOK_SECRET?: string | undefined;
     MOCK_WEBHOOK_SECRET?: string | undefined;
@@ -59,18 +65,20 @@ export declare const envSchema: z.ZodEffects<z.ZodObject<{
     ALERT_WEBHOOK_URL?: string | undefined;
     SENTRY_DSN?: string | undefined;
 }>, {
-    NODE_ENV: "development" | "staging" | "production";
     DATABASE_URL: string;
     PORT: number;
+    NODE_ENV: "development" | "staging" | "production";
     APP_URL: string;
     APP_VERSION: string;
-    AI_PROVIDER: "mock" | "openai" | "anthropic";
+    AI_PROVIDER: "groq" | "mock" | "openai" | "anthropic";
     MOCK_WEBHOOK_SECRET: string;
     MAINTENANCE_MODE: boolean;
     LOG_LEVEL: "debug" | "info" | "warn" | "error";
     JWT_SECRET?: string | undefined;
     AI_API_KEY?: string | undefined;
+    GROQ_API_KEY?: string | undefined;
     AI_MODEL?: string | undefined;
+    AI_FALLBACK_MODELS?: string | undefined;
     STRIPE_SECRET_KEY?: string | undefined;
     STRIPE_WEBHOOK_SECRET?: string | undefined;
     SMTP_URL?: string | undefined;
@@ -78,14 +86,16 @@ export declare const envSchema: z.ZodEffects<z.ZodObject<{
     SENTRY_DSN?: string | undefined;
 }, {
     DATABASE_URL: string;
-    NODE_ENV?: "development" | "staging" | "production" | undefined;
     PORT?: number | undefined;
+    NODE_ENV?: "development" | "staging" | "production" | undefined;
     APP_URL?: string | undefined;
     APP_VERSION?: string | undefined;
     JWT_SECRET?: string | undefined;
-    AI_PROVIDER?: "mock" | "openai" | "anthropic" | undefined;
+    AI_PROVIDER?: "groq" | "mock" | "openai" | "anthropic" | undefined;
     AI_API_KEY?: string | undefined;
+    GROQ_API_KEY?: string | undefined;
     AI_MODEL?: string | undefined;
+    AI_FALLBACK_MODELS?: string | undefined;
     STRIPE_SECRET_KEY?: string | undefined;
     STRIPE_WEBHOOK_SECRET?: string | undefined;
     MOCK_WEBHOOK_SECRET?: string | undefined;

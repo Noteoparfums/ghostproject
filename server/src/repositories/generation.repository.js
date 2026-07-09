@@ -133,9 +133,8 @@ export const generationAssetRepository = {
         if (!asset)
             return;
         if (isFavorited) {
-            await executor.execute(`INSERT INTO saved_copies (user_id, generation_asset_id, title)
-         VALUES (?, ?, ?)
-         ON CONFLICT (generation_asset_id) DO NOTHING`, [asset.user_id, id, `Saved Copy #${id}`]);
+            await executor.execute(`INSERT IGNORE INTO saved_copies (user_id, generation_asset_id, title)
+         VALUES (?, ?, ?)`, [asset.user_id, id, `Saved Copy #${id}`]);
         }
         else {
             await executor.execute('DELETE FROM saved_copies WHERE generation_asset_id = ? AND user_id = ?', [id, asset.user_id]);
@@ -148,11 +147,11 @@ export const generationStageRepository = {
         await executor.execute(`INSERT INTO generation_stages 
       (generation_id, stage, status, output, tokens_used, duration_ms) 
       VALUES (?, ?, ?, ?, ?, ?)
-      ON CONFLICT (generation_id, stage) DO UPDATE SET
-        status = EXCLUDED.status,
-        output = COALESCE(EXCLUDED.output, generation_stages.output),
-        tokens_used = EXCLUDED.tokens_used,
-        duration_ms = EXCLUDED.duration_ms`, [
+      ON DUPLICATE KEY UPDATE
+        status = VALUES(status),
+        output = COALESCE(VALUES(output), output),
+        tokens_used = VALUES(tokens_used),
+        duration_ms = VALUES(duration_ms)`, [
             data.generationId,
             data.stage,
             data.status,

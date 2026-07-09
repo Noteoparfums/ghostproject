@@ -9,7 +9,8 @@ export const runtime = {
     provider: env.SMTP_URL ? 'smtp' : 'mock',
   },
   ai: {
-    provider: env.AI_PROVIDER, // 'mock' | 'openai' | 'anthropic'
+    provider: env.AI_PROVIDER,
+    model: env.AI_MODEL,
   },
   payment: {
     provider: env.STRIPE_SECRET_KEY ? 'stripe' : 'mock',
