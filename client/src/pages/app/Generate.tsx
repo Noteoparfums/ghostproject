@@ -48,10 +48,9 @@ export function Generate() {
   const { 
     state, 
     start, 
-    chooseAngle, 
-    cancel, 
+    cancel,
+    createVariant,
     regenerateSection, 
-    createVariant, 
     reset 
   } = useGenerationStream();
 
@@ -129,8 +128,7 @@ export function Generate() {
     product.length < 20 || 
     !audience.trim() || 
     parsedCredits < 1.0 || 
-    state.status === 'running' || 
-    state.status === 'queued';
+    state.status === 'running';
 
   return (
     <div className="flex flex-col gap-6 h-full min-w-0 select-none">

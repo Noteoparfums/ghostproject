@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ReactNode } from 'react';
-import { createBrowserRouter, RouterProvider, Navigate, Outlet, Link, useLocation } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import ErrorBoundary from './components/system/ErrorBoundary';
 import CookieBanner from './components/system/CookieBanner';
@@ -7,11 +7,17 @@ import CookiePreferencesModal from './components/system/CookiePreferencesModal';
 import MarketingNav from './components/layout/MarketingNav';
 import Footer from './components/layout/Footer';
 import AppShell from './components/layout/AppShell';
-import Button from './components/ui/Button';
 
 // Lazy load pages for chunk budget optimization
-const Landing = lazy(() => import('./pages/marketing/Landing'));
+const Landing = lazy(() => import('./pages/marketing/LandingRedesign'));
 const Pricing = lazy(() => import('./pages/marketing/Pricing'));
+const About = lazy(() => import('./pages/marketing/About'));
+const Blog = lazy(() => import('./pages/marketing/Blog'));
+const Changelog = lazy(() => import('./pages/marketing/Changelog'));
+const Privacy = lazy(() => import('./pages/legal/Privacy'));
+const Terms = lazy(() => import('./pages/legal/Terms'));
+const Refund = lazy(() => import('./pages/legal/Refund'));
+const StatusPage = lazy(() => import('./pages/marketing/StatusPage'));
 const Login = lazy(() => import('./pages/auth/Login'));
 const Signup = lazy(() => import('./pages/auth/Signup'));
 const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
@@ -50,18 +56,7 @@ function FullPageSkeleton() {
 
 // Branded Forbidden Page (403)
 function ForbiddenPage() {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
-      <h2 className="text-3xl font-extrabold text-red-500">403</h2>
-      <h3 className="text-base font-bold text-zinc-200 mt-2">Access Denied</h3>
-      <p className="text-xs text-zinc-500 mt-1 max-w-xs leading-relaxed">
-        You do not have administrative permissions to view this secure panel.
-      </p>
-      <Link to="/app" className="mt-4">
-        <Button variant="secondary" size="sm">Go to Dashboard</Button>
-      </Link>
-    </div>
-  );
+  return <StatusPage code="403" title="Access denied" body="This account does not have permission to open the requested workspace." />;
 }
 
 // ─── Layout wrappers ─────────────────────────────────────────────────────────
@@ -118,18 +113,6 @@ function RequireAuth({ role, children }: { role?: 'admin'; children: ReactNode }
   return <>{children}</>;
 }
 
-// Mock pages for general navigation routes
-function MockMarketingPage({ title }: { title: string }) {
-  return (
-    <div className="max-w-3xl mx-auto px-6 py-20 text-center select-none">
-      <h1 className="text-3xl font-extrabold dark:text-zinc-50 text-zinc-900">{title}</h1>
-      <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-4 leading-relaxed">
-        This is a mock page representing the marketing portal segment. Full content will be populated in production.
-      </p>
-    </div>
-  );
-}
-
 // ─── Routing Router definition ───────────────────────────────────────────────
 
 const router = createBrowserRouter([
@@ -138,12 +121,12 @@ const router = createBrowserRouter([
     children: [
       { path: '/', element: <Landing /> },
       { path: '/pricing', element: <Pricing /> },
-      { path: '/about', element: <MockMarketingPage title="About Us" /> },
-      { path: '/blog', element: <MockMarketingPage title="Marketing Blog" /> },
-      { path: '/changelog', element: <MockMarketingPage title="Product Changelog" /> },
-      { path: '/legal/privacy', element: <MockMarketingPage title="Privacy Policy" /> },
-      { path: '/legal/terms', element: <MockMarketingPage title="Terms of Service" /> },
-      { path: '/legal/refund', element: <MockMarketingPage title="Refund Policy" /> },
+      { path: '/about', element: <About /> },
+      { path: '/blog', element: <Blog /> },
+      { path: '/changelog', element: <Changelog /> },
+      { path: '/legal/privacy', element: <Privacy /> },
+      { path: '/legal/terms', element: <Terms /> },
+      { path: '/legal/refund', element: <Refund /> },
     ],
   },
   {
@@ -176,17 +159,11 @@ const router = createBrowserRouter([
       },
     ],
   },
+  { path: '/403', element: <ForbiddenPage /> },
+  { path: '/404', element: <StatusPage code="404" title="Page not found" body="The page may have moved, or the address may be incomplete." /> },
   {
     path: '*',
-    element: (
-      <div className="flex flex-col items-center justify-center min-h-screen text-center p-6 bg-zinc-950 text-zinc-100">
-        <h1 className="text-4xl font-extrabold text-zinc-400">404</h1>
-        <h2 className="text-base font-bold mt-2">Page Not Found</h2>
-        <a href="/" className="mt-4 text-xs font-semibold text-blue-400 hover:underline">
-          Return to Homepage
-        </a>
-      </div>
-    ),
+    element: <StatusPage code="404" title="Page not found" body="The page may have moved, or the address may be incomplete." />,
   },
 ]);
 

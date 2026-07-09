@@ -1,15 +1,13 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { streamSse } from '../api/sse';
-import type { SseEvent } from '../api/sse';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { FunnelType, PipelineStage, StageStatus } from '@ghostwriter/shared';
+import { CREDIT_COSTS } from '@ghostwriter/shared';
+import { streamSse, type SseEvent } from '../api/sse';
 import { generationsApi } from '../api/endpoints/generations';
-import type { GeneratedAsset } from '../api/endpoints/generations';
 import { useBilling } from '../contexts/BillingContext';
 import { useToast } from '../contexts/ToastContext';
-import { api } from '../api/client';
 import { track } from '../lib/analytics';
-import type { FunnelType, StageStatus } from '@ghostwriter/shared';
 
-export type StageId = 'analysis' | 'angles' | 'framework' | 'draft' | 'polish';
+export type StageId = PipelineStage;
 
 export interface AssetState {
   id: number;
@@ -19,46 +17,25 @@ export interface AssetState {
   edited_content: string | null;
   framework_note: string | null;
   copy_score: number | null;
-  score_breakdown: {
-    hook_strength: number;
-    clarity: number;
-    cta_presence: number;
-    reading_level: number;
-  } | null;
+  score_breakdown: Record<string, number> | null;
   variants?: Array<{ id: number; content: string; label: string }>;
   activeVariantIndex?: number;
 }
 
-export interface StrategyBrief {
-  title: string;
-  awareness_stage: number;
-  core_hook: string;
-  target_audience_pain: string;
-}
-
-export interface AngleOption {
-  id: string;
-  name: string;
-  rationale: string;
-  recommended: boolean;
-}
-
 export interface StreamState {
-  status: 'idle' | 'queued' | 'running' | 'awaiting_angle' | 'complete' | 'cancelled' | 'error';
+  status: 'idle' | 'queued' | 'running' | 'complete' | 'cancelled' | 'error';
   generationId: number | null;
-  queuePosition: number | null;
+  currentStage: StageId | null;
   currentProgress: number;
-  stages: Record<
-    StageId,
-    {
-      status: StageStatus;
-      startedAt?: number;
-      durationMs?: number;
-    }
-  >;
-  brief: StrategyBrief | null;
-  angleOptions: AngleOption[] | null;
+  stages: Record<StageId, { status: StageStatus; output?: string }>;
+  streamedContent: string;
   assets: AssetState[];
+  brief: {
+    title: string;
+    awareness_stage: number;
+    core_hook: string;
+    target_audience_pain: string;
+  } | null;
   error: { code: string; message: string; requestId?: string } | null;
 }
 
@@ -73,76 +50,86 @@ const initialStages = (): StreamState['stages'] => ({
 const initialState = (): StreamState => ({
   status: 'idle',
   generationId: null,
-  queuePosition: null,
+  currentStage: null,
   currentProgress: 0,
   stages: initialStages(),
-  brief: null,
-  angleOptions: null,
+  streamedContent: '',
   assets: [],
+  brief: null,
   error: null,
 });
 
 export function useGenerationStream() {
   const [state, setState] = useState<StreamState>(initialState);
-  const stateRef = useRef<StreamState>(state);
-  
-  // Keep stateRef in sync so callbacks can read fresh state
-  useEffect(() => {
-    stateRef.current = state;
-  }, [state]);
-
   const abortControllerRef = useRef<AbortController | null>(null);
-  const tokenBufferRef = useRef<string>('');
-  const rafIdRef = useRef<number | null>(null);
+  const tokenBufferRef = useRef('');
+  const frameRef = useRef<number | null>(null);
   const billing = useBilling();
   const toast = useToast();
 
-  const startFlushAnimation = useCallback(() => {
-    if (rafIdRef.current) return;
-
-    const flushTokens = () => {
-      if (tokenBufferRef.current) {
-        const textToAppend = tokenBufferRef.current;
-        tokenBufferRef.current = '';
-
-        setState((prev) => {
-          if (prev.assets.length === 0) return prev;
-          
-          const nextAssets = [...prev.assets];
-          const activeIndex = nextAssets.length - 1;
-          const activeAsset = nextAssets[activeIndex];
-          
-          if (activeAsset) {
-            nextAssets[activeIndex] = {
-              ...activeAsset,
-              content: activeAsset.content + textToAppend,
-            };
-          }
-          
-          return {
-            ...prev,
-            assets: nextAssets,
-          };
-        });
-      }
-      rafIdRef.current = requestAnimationFrame(flushTokens);
-    };
-
-    rafIdRef.current = requestAnimationFrame(flushTokens);
+  const stopBuffer = useCallback(() => {
+    if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+    frameRef.current = null;
   }, []);
 
-  const stopFlushAnimation = useCallback(() => {
-    if (rafIdRef.current) {
-      cancelAnimationFrame(rafIdRef.current);
-      rafIdRef.current = null;
-    }
+  const flushBuffer = useCallback(() => {
+    if (frameRef.current !== null) return;
+    const flush = () => {
+      if (tokenBufferRef.current) {
+        const content = tokenBufferRef.current;
+        tokenBufferRef.current = '';
+        setState((previous) => ({
+          ...previous,
+          streamedContent: previous.streamedContent + content,
+          assets: [
+            {
+              id: 0,
+              asset_type: 'streamed_campaign',
+              content: previous.streamedContent + content,
+              variant: null,
+              edited_content: null,
+              framework_note: null,
+              copy_score: null,
+              score_breakdown: null,
+            },
+          ],
+        }));
+      }
+      frameRef.current = requestAnimationFrame(flush);
+    };
+    frameRef.current = requestAnimationFrame(flush);
+  }, []);
+
+  const drainBuffer = useCallback(() => {
+    const content = tokenBufferRef.current;
+    tokenBufferRef.current = '';
+    if (!content) return;
+    setState((previous) => {
+      const streamedContent = previous.streamedContent + content;
+      return {
+        ...previous,
+        streamedContent,
+        assets: [{
+          id: 0,
+          asset_type: 'streamed_campaign',
+          content: streamedContent,
+          variant: null,
+          edited_content: null,
+          framework_note: null,
+          copy_score: null,
+          score_breakdown: null,
+        }],
+      };
+    });
   }, []);
 
   const reset = useCallback(() => {
-    stopFlushAnimation();
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+    stopBuffer();
     tokenBufferRef.current = '';
     setState(initialState());
-  }, [stopFlushAnimation]);
+  }, [stopBuffer]);
 
   const start = useCallback(async (input: {
     project_id?: number | null;
@@ -153,325 +140,161 @@ export function useGenerationStream() {
     tone?: string;
   }) => {
     reset();
-    
     const controller = new AbortController();
     abortControllerRef.current = controller;
-
-    setState((prev) => ({
-      ...prev,
-      status: 'queued',
-      queuePosition: 1,
-    }));
+    setState({ ...initialState(), status: 'running' });
+    flushBuffer();
+    const startedAt = Date.now();
 
     track('generation_started', {
       funnel_type: input.funnel_type,
-      has_brand_voice: !!input.brand_voice_id,
+      has_brand_voice: Boolean(input.brand_voice_id),
       template_id: null,
     });
 
-    const startTime = Date.now();
-
     try {
-      startFlushAnimation();
+      await streamSse('/api/generate', input, (message: SseEvent) => {
+        if (controller.signal.aborted) return;
+        const { event, data } = message;
 
-      await streamSse(
-        '/api/generate',
-        input,
-        (e: SseEvent) => {
-          if (controller.signal.aborted) return;
-          const { event, data } = e;
+        if (event === 'stage') {
+          const stage = data.stage as StageId;
+          if (!Object.prototype.hasOwnProperty.call(initialStages(), stage)) return;
+          setState((previous) => ({
+            ...previous,
+            status: 'running',
+            currentStage: data.status === 'complete' ? null : stage,
+            currentProgress: data.status === 'complete'
+              ? Object.values(previous.stages).filter((value) => value.status === 'complete').length * 20 + 20
+              : previous.currentProgress,
+            stages: {
+              ...previous.stages,
+              [stage]: {
+                status: data.status === 'complete' ? 'complete' : 'running',
+                output: typeof data.output === 'string' ? data.output : undefined,
+              },
+            },
+          }));
+          return;
+        }
 
-          switch (event) {
-            case 'queued':
-              setState((prev) => ({
-                ...prev,
-                status: 'queued',
-                queuePosition: data.position || 1,
-              }));
-              break;
+        if (event === 'token') {
+          tokenBufferRef.current += typeof data.token === 'string' ? data.token : '';
+          return;
+        }
 
-            case 'status': {
-              const stage = data.stage;
-              const progress = data.progress || 0;
+        if (event === 'complete') {
+          stopBuffer();
+          drainBuffer();
+          setState((previous) => ({
+            ...previous,
+            status: 'complete',
+            currentStage: null,
+            currentProgress: 100,
+            assets: previous.assets.map((asset) => ({
+              ...asset,
+              id: Number.isFinite(Number(data.assetId)) ? Number(data.assetId) : 0,
+            })),
+          }));
+          void billing.refresh();
+          track('generation_completed', {
+            duration_ms: Date.now() - startedAt,
+            copy_score: 0,
+            credits: CREDIT_COSTS.FULL_FUNNEL,
+          });
+          return;
+        }
 
-              setState((prev) => {
-                const nextStages = { ...prev.stages };
-                
-                // Map backend stages to client Stages
-                // backend stages: analyzing_brief -> analysis, applying_voice -> angles, generating_assets -> draft/framework
-                let clientStage: StageId = 'analysis';
-                if (stage === 'analyzing_brief') clientStage = 'analysis';
-                else if (stage === 'applying_voice') clientStage = 'angles';
-                else if (stage === 'generating_assets') clientStage = 'draft';
-                else if (stage === 'finalizing') clientStage = 'polish';
-
-                // Complete previous stages
-                Object.keys(nextStages).forEach((k) => {
-                  const sKey = k as StageId;
-                  if (sKey !== clientStage && nextStages[sKey].status === 'running') {
-                    nextStages[sKey] = {
-                      status: 'complete',
-                      durationMs: Date.now() - (nextStages[sKey].startedAt || Date.now()),
-                    };
-                  }
-                });
-
-                if (nextStages[clientStage].status !== 'running') {
-                  nextStages[clientStage] = {
-                    status: 'running',
-                    startedAt: Date.now(),
-                  };
-                }
-
-                // If brief completed, mock brief data
-                let brief = prev.brief;
-                if (stage === 'applying_voice' && !brief) {
-                  brief = {
-                    title: `${input.funnel_type.replace('_', ' ').toUpperCase()} Strategy Brief`,
-                    awareness_stage: 3,
-                    core_hook: `Leverage direct pain points in ${input.audience}`,
-                    target_audience_pain: input.product.slice(0, 80) + '...',
-                  };
-                }
-
-                // If generating assets, mock start of assets
-                let assets = prev.assets;
-                if (stage === 'generating_assets' && assets.length === 0) {
-                  assets = [
-                    {
-                      id: 1001,
-                      asset_type: 'ad_hooks',
-                      content: '',
-                      variant: null,
-                      edited_content: null,
-                      framework_note: 'Hook-Story-Offer',
-                      copy_score: null,
-                      score_breakdown: null,
-                    },
-                  ];
-                }
-
-                return {
-                  ...prev,
-                  status: 'running',
-                  currentProgress: progress,
-                  stages: nextStages,
-                  brief,
-                  assets,
-                };
-              });
-              break;
-            }
-
-            case 'chunk':
-            case 'token': {
-              const text = data.text || '';
-              tokenBufferRef.current += text;
-              break;
-            }
-
-            case 'complete': {
-              stopFlushAnimation();
-              setState((prev) => {
-                const finalAssets = prev.assets.map((a, idx) => {
-                  if (idx === prev.assets.length - 1) {
-                    return {
-                      ...a,
-                      id: data.assetId || a.id,
-                      copy_score: 85,
-                      score_breakdown: {
-                        hook_strength: 88,
-                        clarity: 90,
-                        cta_presence: 82,
-                        reading_level: 80,
-                      },
-                      variants: [
-                        { id: data.assetId || a.id, content: a.content, label: 'Variant A' }
-                      ],
-                      activeVariantIndex: 0,
-                    };
-                  }
-                  return a;
-                });
-
-                const nextStages = { ...prev.stages };
-                Object.keys(nextStages).forEach((k) => {
-                  nextStages[k as StageId].status = 'complete';
-                });
-
-                return {
-                  ...prev,
-                  status: 'complete',
-                  currentProgress: 100,
-                  stages: nextStages,
-                  assets: finalAssets,
-                };
-              });
-
-              billing.refresh();
-              
-              track('generation_completed', {
-                duration_ms: Date.now() - startTime,
-                copy_score: 85,
-                credits: 1.0,
-              });
-              break;
-            }
-
-            case 'error': {
-              stopFlushAnimation();
-              const errCode = data.code || 'INTERNAL';
-              const errMsg = data.message || 'Something went wrong';
-              
-              setState((prev) => ({
-                ...prev,
-                status: 'error',
-                error: { code: errCode, message: errMsg },
-              }));
-
-              track('generation_failed', { code: errCode });
-              break;
-            }
-          }
+        if (event === 'error') {
+          stopBuffer();
+          drainBuffer();
+          const code = typeof data.code === 'string' ? data.code : 'INTERNAL';
+          setState((previous) => ({
+            ...previous,
+            status: 'error',
+            currentStage: null,
+            error: {
+              code,
+              message: typeof data.message === 'string' ? data.message : 'Generation failed.',
+              requestId: typeof data.requestId === 'string' ? data.requestId : undefined,
+            },
+          }));
+          void billing.refresh();
+          track('generation_failed', { code });
+        }
+      }, controller.signal);
+    } catch (error: any) {
+      stopBuffer();
+      drainBuffer();
+      if (controller.signal.aborted) return;
+      const code = typeof error?.code === 'string' ? error.code : 'CONNECTION_INTERRUPTED';
+      setState((previous) => ({
+        ...previous,
+        status: 'error',
+        currentStage: null,
+        error: {
+          code,
+          message: error?.message || 'The generation connection was interrupted. Your balance will refresh automatically.',
+          requestId: error?.requestId,
         },
-        controller.signal
-      );
-    } catch (err: any) {
-      stopFlushAnimation();
-      if (!controller.signal.aborted) {
-        setState((prev) => ({
-          ...prev,
-          status: 'error',
-          error: { code: err.code || 'INTERNAL', message: err.message || 'Connection failed' },
-        }));
-      }
+      }));
+      void billing.refresh();
+      track('generation_failed', { code });
     }
-  }, [reset, startFlushAnimation, stopFlushAnimation, billing]);
+  }, [billing, drainBuffer, flushBuffer, reset, stopBuffer]);
 
-  const chooseAngle = useCallback(async (angleId: string) => {
-    // Stage 2 override
-    setState((prev) => ({ ...prev, status: 'running' }));
-    track('angle_overridden', { angle_id: angleId });
-  }, []);
-
-  const cancel = useCallback(async () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
+  const regenerateSection = useCallback(async (assetId: number, instruction?: string) => {
+    if (!assetId) {
+      toast.info('Regeneration is available only when a persisted asset identifier is returned.');
+      return;
     }
-    
-    setState((prev) => ({ ...prev, status: 'cancelled' }));
-    
     try {
-      // Mock or call cancel endpoint
-      await api('/api/generate/cancel', { method: 'POST' }).catch(() => {});
-    } catch (e) {
-      // Ignored
-    }
-
-    toast.info('Generation cancelled. Credits refunded.');
-    billing.refresh();
-    track('generation_cancelled');
-  }, [billing, toast]);
-
-  const regenerateAssetSection = useCallback(async (assetId: number, instruction?: string) => {
-    try {
-      toast.info('Regenerating section (charging 0.25 credit)...');
-      
-      const newAsset = await generationsApi.regenerateSection(assetId, { instruction });
-      
-      setState((prev) => {
-        const nextAssets = prev.assets.map((a) => {
-          if (a.id === assetId) {
-            // Append the new content or create a tabbed variant
-            const vars = a.variants || [{ id: a.id, content: a.content, label: 'Variant A' }];
-            const newVar = { 
-              id: newAsset.id, 
-              content: newAsset.content, 
-              label: `Variant ${String.fromCharCode(65 + vars.length)}` 
-            };
-            return {
-              ...a,
-              variants: [...vars, newVar],
-              activeVariantIndex: vars.length,
-              // Update root content to show active variant
-              content: newAsset.content,
-            };
-          }
-          return a;
-        });
-        
-        return {
-          ...prev,
-          assets: nextAssets,
-        };
-      });
-
-      toast.success('Section regenerated successfully!');
-      billing.refresh();
-      track('section_regenerated', { asset_type: 'ad_hooks' });
-    } catch (err: any) {
-      toast.error(`Regeneration failed: ${err.message}`);
+      toast.info(`Regenerating this section for ${CREDIT_COSTS.SECTION_REGEN} credit…`);
+      const asset = await generationsApi.regenerateSection(assetId, { instruction });
+      setState((previous) => ({
+        ...previous,
+        streamedContent: asset.content,
+        assets: [{
+          id: asset.id,
+          asset_type: asset.asset_type,
+          content: asset.content,
+          variant: null,
+          edited_content: null,
+          framework_note: null,
+          copy_score: asset.copy_score,
+          score_breakdown: null,
+        }],
+      }));
+      void billing.refresh();
+      track('section_regenerated', { asset_type: asset.asset_type });
+    } catch (error: any) {
+      toast.error(error?.message || 'Section regeneration failed.');
     }
   }, [billing, toast]);
 
-  const createVariant = useCallback(async (assetId: number) => {
-    // Generate new A/B Variant
-    try {
-      toast.info('Creating A/B hook variant (charging 0.10 credit)...');
-      
-      const newAsset = await api<{ id: number; content: string }>('/api/generations/variants', {
-        method: 'POST',
-        body: { asset_id: assetId },
-      });
+  const cancel = useCallback(() => {
+    toast.info('Generation cancellation is not supported by the current service. This run will continue in the background.');
+  }, [toast]);
 
-      setState((prev) => {
-        const nextAssets = prev.assets.map((a) => {
-          if (a.id === assetId) {
-            const vars = a.variants || [{ id: a.id, content: a.content, label: 'Variant A' }];
-            const newVar = { 
-              id: newAsset.id, 
-              content: newAsset.content, 
-              label: `Variant ${String.fromCharCode(65 + vars.length)}` 
-            };
-            return {
-              ...a,
-              variants: [...vars, newVar],
-              activeVariantIndex: vars.length,
-              content: newAsset.content,
-            };
-          }
-          return a;
-        });
-        
-        return {
-          ...prev,
-          assets: nextAssets,
-        };
-      });
+  const createVariant = useCallback((_assetId?: number) => {
+    toast.info('A/B variants are not available in this workspace.');
+  }, [toast]);
 
-      toast.success('A/B variant created!');
-      billing.refresh();
-      track('variant_created', { asset_type: 'ad_hooks' });
-    } catch (err: any) {
-      toast.error(`Failed to create variant: ${err.message}`);
-    }
-  }, [billing, toast]);
-
-  // Clears refs on unmount
-  useEffect(() => {
-    return () => {
-      stopFlushAnimation();
-    };
-  }, [stopFlushAnimation]);
+  useEffect(() => () => {
+    abortControllerRef.current?.abort();
+    stopBuffer();
+    tokenBufferRef.current = '';
+  }, [stopBuffer]);
 
   return {
     state,
     start,
-    chooseAngle,
     cancel,
-    regenerateSection: regenerateAssetSection,
     createVariant,
+    chooseAngle: () => undefined,
+    regenerateSection,
     reset,
   };
 }
+
 export default useGenerationStream;

@@ -7,12 +7,12 @@ export function Footer() {
   const { openPreferences } = useConsent();
 
   return (
-    <footer className="border-t border-zinc-200/50 dark:border-zinc-900/50 bg-zinc-50 dark:bg-zinc-950/20 py-12 shrink-0 select-none">
+    <footer className="shrink-0 select-none border-t border-[#dcd3c5] bg-[#efe9df] py-12 dark:border-[#374a42] dark:bg-[#131d19]">
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Brand */}
         <div className="flex flex-col gap-3">
           <BrandLockup className="text-zinc-900 dark:text-zinc-50" />
-          <p className="text-xs text-zinc-400 dark:text-zinc-500 max-w-[200px] leading-relaxed">
+          <p className="max-w-[220px] text-xs leading-relaxed text-[#727a74] dark:text-[#9facA4]">
             {BRAND.positioning}
           </p>
         </div>

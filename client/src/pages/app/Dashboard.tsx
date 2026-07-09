@@ -151,7 +151,7 @@ export function Dashboard() {
               Manage Subscription
             </h4>
             <p className="text-xs text-zinc-400 dark:text-zinc-500 leading-relaxed">
-              View active plan details, invoice receipts, purchase top-up credits, and request refunds.
+              View active plan details, invoice receipts, purchase top-up credits, and provider options.
             </p>
           </Link>
         </div>

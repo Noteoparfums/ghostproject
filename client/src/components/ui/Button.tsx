@@ -10,12 +10,12 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', loading, children, disabled, ...props }, ref) => {
-    const baseStyles = 'inline-flex items-center justify-center font-semibold rounded-xl transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 focus-visible:ring-offset-2 active:scale-95 disabled:pointer-events-none disabled:opacity-50 select-none';
+    const baseStyles = 'inline-flex items-center justify-center gap-1.5 font-semibold rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b9573b]/60 focus-visible:ring-offset-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 select-none';
     
     const variants = {
-      primary: 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md shadow-blue-500/10 hover:shadow-lg hover:shadow-blue-500/20 active:from-blue-700 active:to-indigo-700',
-      secondary: 'bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-100 text-zinc-800 border border-zinc-200 dark:border-zinc-700',
-      ghost: 'bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300',
+      primary: 'bg-[#b9573b] hover:bg-[#9f4933] text-white shadow-[0_8px_24px_rgba(185,87,59,0.22)] dark:bg-[#d8795c] dark:hover:bg-[#c66a50]',
+      secondary: 'bg-[#fffdf8] hover:bg-[#eee8de] dark:bg-[#263b33] dark:hover:bg-[#30483f] dark:text-[#f8f3e9] text-[#263b33] border border-[#d4c9ba] dark:border-[#40564c]',
+      ghost: 'bg-transparent hover:bg-[#eee8de] dark:hover:bg-[#2b3b35] text-[#42534c] dark:text-[#d9ddd7]',
       danger: 'bg-red-600 hover:bg-red-500 text-white shadow-md shadow-red-500/10 hover:shadow-lg active:bg-red-700',
     };
 

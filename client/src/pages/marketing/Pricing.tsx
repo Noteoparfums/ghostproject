@@ -4,10 +4,11 @@ import { useAuth } from '../../contexts/AuthContext';
 import { billingApi } from '../../api/endpoints/billing';
 import { useToast } from '../../contexts/ToastContext';
 import Button from '../../components/ui/Button';
-import { CheckCircle, ShieldCheck, HelpCircle } from 'lucide-react';
+import { CheckCircle, ShieldCheck } from 'lucide-react';
 import { cn } from '../../lib/cn';
 import { track } from '../../lib/analytics';
 import { BRAND } from '../../config/brand';
+import { PRICING_PLANS } from '../../config/pricing';
 
 export function Pricing() {
   useDocumentMeta({
@@ -19,57 +20,6 @@ export function Pricing() {
   const { status } = useAuth();
   const toast = useToast();
   const [billingInterval, setBillingInterval] = useState<'monthly' | 'annual'>('monthly');
-
-  // Modular plans constants (prices in integer cents)
-  const plans = [
-    {
-      name: 'Starter',
-      slug: 'free',
-      monthly_price: 0,
-      annual_price: 0,
-      credits: '5.00',
-      description: 'Ideal for drafting copy concepts and initial research.',
-      features: [
-        '5 monthly credits included',
-        'VSL copy funnel engine',
-        'AIDA & PAS structures',
-        'Save up to 5 copies',
-        'Standard generation speed',
-      ],
-    },
-    {
-      name: 'Pro Copywriter',
-      slug: 'pro',
-      monthly_price: 4900,
-      annual_price: 47000, // $39/mo billed annually
-      credits: '50.00',
-      description: 'Designed for full-time direct response copywriters.',
-      features: [
-        '50 monthly credits included',
-        'All copy funnel types (VSL, Magnet, PDP...)',
-        'Create custom Brand Voice profiles',
-        'Regenerate sections and generate A/B variants',
-        'Export drafts as Markdown / HTML / TXT',
-        'Priority email support',
-      ],
-    },
-    {
-      name: 'Agency Hub',
-      slug: 'agency',
-      monthly_price: 19900,
-      annual_price: 191000, // $159/mo billed annually
-      credits: '250.00',
-      description: 'Built for scaling campaigns across creative teams.',
-      features: [
-        '250 monthly credits included',
-        'Team seats (up to 5 editors)',
-        'Shared Brand Voice profiles and assets',
-        'Advanced API keys configuration',
-        'Custom fine-tuned copywriting model',
-        'Dedicated Slack channel access',
-      ],
-    },
-  ];
 
   const handleChoosePlan = async (slug: string) => {
     if (slug === 'free') {
@@ -95,14 +45,7 @@ export function Pricing() {
       if (response && response.url) {
         window.location.href = response.url;
       } else {
-        // Complete mock checkout directly if no URL returned (dev environment fallback)
-        await billingApi.completeMockCheckout({
-          type: 'subscription',
-          planSlug: slug,
-          interval: billingInterval,
-        });
-        toast.success(`Mock subscription activated for ${slug}!`);
-        window.location.href = '/app/billing/success?session=mock';
+        throw new Error('The payment provider did not return a checkout URL. Please try again later.');
       }
     } catch (err: any) {
       toast.error(`Checkout failed: ${err.message}`);
@@ -159,13 +102,13 @@ export function Pricing() {
 
         {/* Pricing Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full mt-16 max-w-6xl">
-          {plans.map((p) => {
-            const price = billingInterval === 'monthly' ? p.monthly_price : p.annual_price;
+          {PRICING_PLANS.map((p) => {
+            const price = billingInterval === 'monthly' ? p.monthlyPriceCents : p.annualPriceCents;
             const displayPrice = price === 0 ? '0' : (price / 100 / (billingInterval === 'monthly' ? 1 : 12)).toFixed(0);
             
-            const originalYearlyValue = p.monthly_price * 12;
+            const originalYearlyValue = p.monthlyPriceCents * 12;
             const savingsPercent = originalYearlyValue > 0 
-              ? Math.round(((originalYearlyValue - p.annual_price) / originalYearlyValue) * 100)
+              ? Math.round(((originalYearlyValue - p.annualPriceCents) / originalYearlyValue) * 100)
               : 0;
 
             return (
@@ -179,7 +122,7 @@ export function Pricing() {
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-bold text-base text-zinc-100">{p.name}</h3>
-                    <p className="text-xs text-zinc-500 mt-1">{p.credits} monthly credits</p>
+                    <p className="text-xs text-zinc-500 mt-1">{p.monthlyCredits} monthly credits</p>
                   </div>
                   {p.slug === 'pro' && (
                     <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-blue-600/20 text-blue-400 rounded">
@@ -197,9 +140,9 @@ export function Pricing() {
                   <span className="text-xs text-zinc-500">/mo</span>
                 </div>
 
-                {billingInterval === 'annual' && p.annual_price > 0 && (
+                {billingInterval === 'annual' && p.annualPriceCents > 0 && (
                   <div className="text-[11px] font-semibold text-emerald-400">
-                    Billed annually (${(p.annual_price / 100).toFixed(0)}/yr) — saves {savingsPercent}%
+                    Billed annually (${(p.annualPriceCents / 100).toFixed(0)}/yr) — saves {savingsPercent}%
                   </div>
                 )}
 
@@ -232,9 +175,9 @@ export function Pricing() {
             <ShieldCheck className="w-6 h-6" />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-zinc-100">14-Day Money-Back Guarantee</h4>
+            <h4 className="text-sm font-bold text-zinc-100">Questions before upgrading?</h4>
             <p className="mt-1 text-xs text-zinc-400 leading-relaxed">
-              If {BRAND.name} doesn't improve your campaign conversions, drop us a line within 14 days of upgrade for a full refund of your invoice. Reversed charges apply instantly.
+              Review the refund-policy draft and current provider terms before purchase. Refund submission is not available inside the workspace; {BRAND.support.contactLabel.toLowerCase()} for help.
             </p>
           </div>
         </div>

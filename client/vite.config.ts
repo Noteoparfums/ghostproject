@@ -9,7 +9,7 @@ export default defineConfig({
     host: '0.0.0.0',
     allowedHosts: true,
     hmr: {
-      host: 'e7d841ba-5173-2-base.preview.verdent.ai',
+      host: '90832479-5173-2-base.preview.verdent.ai',
       protocol: 'wss',
       clientPort: 443,
     },

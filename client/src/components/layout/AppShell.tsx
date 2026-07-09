@@ -15,7 +15,8 @@ import {
   Menu, 
   X,
   Sun,
-  Moon
+  Moon,
+  Monitor
 } from 'lucide-react';
 import { cn } from '../../lib/cn';
 import BrandLockup from '../brand/BrandLockup';
@@ -23,11 +24,11 @@ import BrandLockup from '../brand/BrandLockup';
 export function AppShell() {
   const { user, logout } = useAuth();
   const { credits } = useBilling();
-  const { theme, setTheme } = useTheme();
+  const { theme, resolvedTheme, setTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
+    setTheme(theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system');
   };
 
   const navItems = [
@@ -42,16 +43,17 @@ export function AppShell() {
   const parsedCredits = parseFloat(credits) || 0.00;
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full bg-white dark:bg-zinc-950 border-r border-zinc-200/50 dark:border-zinc-900 select-none">
+    <div className="flex h-full flex-col border-r border-[#ddd3c5] bg-[#fffdf8] selection:bg-[#d8795c] dark:border-[#374a42] dark:bg-[#17211d]">
       {/* Brand logo */}
-      <div className="h-16 flex items-center px-6 border-b border-zinc-100 dark:border-zinc-900 shrink-0">
+      <div className="flex h-16 shrink-0 items-center border-b border-[#e4dcd0] px-6 dark:border-[#374a42]">
         <Link to="/app" className="flex items-center gap-2">
           <BrandLockup className="text-zinc-900 dark:text-zinc-50" />
         </Link>
       </div>
 
       {/* Nav items */}
-      <nav className="flex-1 px-4 py-6 flex flex-col gap-1.5 overflow-y-auto">
+      <nav className="flex flex-1 flex-col gap-1.5 overflow-y-auto px-4 py-6">
+        <span className="eyebrow mb-2 px-4 text-[#9a8978] dark:text-[#a89a8a]">Workspace</span>
         {navItems.map((item) => (
           <NavLink
             key={item.to}
@@ -59,10 +61,10 @@ export function AppShell() {
             onClick={() => setMobileMenuOpen(false)}
             className={({ isActive }) =>
               cn(
-                'flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors',
+                'flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors',
                 isActive
-                  ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/20 dark:text-blue-400'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900/40 hover:text-zinc-900 dark:hover:text-zinc-100'
+                  ? 'bg-[#efe2d9] text-[#a94c34] dark:bg-[#53372f] dark:text-[#ef9a7f]'
+                  : 'text-[#627069] hover:bg-[#f2ece3] hover:text-[#263b33] dark:text-[#aeb8b2] dark:hover:bg-[#263730] dark:hover:text-[#f8f3e9]'
               )
             }
           >
@@ -73,9 +75,9 @@ export function AppShell() {
       </nav>
 
       {/* Footer / Profile */}
-      <div className="p-4 border-t border-zinc-100 dark:border-zinc-900 flex flex-col gap-4 shrink-0 bg-zinc-50/30 dark:bg-zinc-950/40">
+      <div className="flex shrink-0 flex-col gap-4 border-t border-[#e4dcd0] bg-[#f7f3eb] p-4 dark:border-[#374a42] dark:bg-[#15201b]">
         {/* Credits usage widget */}
-        <div className="flex items-center gap-3 p-3 rounded-xl border dark:border-zinc-900 border-zinc-200 bg-white dark:bg-zinc-950/50">
+        <div className="flex items-center gap-3 rounded-xl border border-[#ded4c6] bg-[#fffdf8] p-3 dark:border-[#374a42] dark:bg-[#1e2c27]">
           <ProgressRing value={parsedCredits} max={100} size={44} strokeWidth={4} />
           <div className="flex flex-col min-w-0">
             <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
@@ -90,7 +92,7 @@ export function AppShell() {
         {/* User profile & Actions */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
-            <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 select-none uppercase">
+            <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full bg-[#b9573b] text-xs font-bold uppercase text-white">
               {user?.name.slice(0, 2) || 'Me'}
             </div>
             <div className="flex flex-col min-w-0">
@@ -116,7 +118,7 @@ export function AppShell() {
   );
 
   return (
-    <div className="flex min-h-screen dark:bg-zinc-950 bg-zinc-50 overflow-hidden">
+    <div className="flex min-h-screen overflow-hidden bg-[#f7f3eb] dark:bg-[#17211d]">
       {/* Desktop Sidebar (hidden on mobile) */}
       <aside className="w-64 shrink-0 max-md:hidden h-screen sticky top-0">
         <SidebarContent />
@@ -125,7 +127,7 @@ export function AppShell() {
       {/* Main viewport */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
         {/* Topbar Header */}
-        <header className="h-16 flex items-center justify-between px-6 bg-white dark:bg-zinc-950 border-b border-zinc-200/50 dark:border-zinc-900 shrink-0 sticky top-0 z-30 select-none">
+        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-[#ddd3c5] bg-[#f7f3eb]/90 px-6 backdrop-blur-xl dark:border-[#374a42] dark:bg-[#17211d]/90">
           {/* Mobile hamburger menu toggle */}
           <button
             onClick={() => setMobileMenuOpen(true)}
@@ -142,13 +144,14 @@ export function AppShell() {
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-xl border dark:border-zinc-800 border-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-500 dark:text-zinc-400 transition-colors"
-              title="Toggle Theme"
+              className="rounded-full border border-[#d7ccbd] p-2 text-[#657169] transition-colors hover:bg-[#eee8de] dark:border-[#40564c] dark:text-[#b7c0ba] dark:hover:bg-[#263730]"
+              title={`Theme: ${theme}. Activate to change.`}
+              aria-label={`Theme preference: ${theme}`}
             >
-              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {theme === 'system' ? <Monitor className="w-4 h-4" /> : resolvedTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
             <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800" />
-            <span className="text-xs font-semibold dark:text-zinc-300 text-zinc-600 bg-zinc-100 dark:bg-zinc-900 px-3 py-1 rounded-full uppercase tracking-wider">
+            <span className="rounded-full bg-[#e9e2d6] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#657169] dark:bg-[#263730] dark:text-[#b7c0ba]">
               {user?.role || 'user'}
             </span>
           </div>

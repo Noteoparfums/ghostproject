@@ -1,7 +1,7 @@
 import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, Monitor } from 'lucide-react';
 import Button from '../ui/Button';
 import { cn } from '../../lib/cn';
 import BrandLockup from '../brand/BrandLockup';
@@ -9,14 +9,14 @@ import { BRAND } from '../../config/brand';
 
 export function MarketingNav() {
   const { status } = useAuth();
-  const { theme, setTheme } = useTheme();
+  const { theme, resolvedTheme, setTheme } = useTheme();
 
   const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
+    setTheme(theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system');
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b backdrop-blur-md bg-white/70 dark:bg-zinc-950/70 border-zinc-200/50 dark:border-zinc-900/50">
+    <header className="sticky top-0 z-40 w-full border-b border-[#ddd3c5]/80 bg-[#fffdf8]/85 backdrop-blur-xl dark:border-[#374a42] dark:bg-[#17211d]/85">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
         <Link to="/" className="flex items-center gap-2 hover:opacity-90 active:scale-98 transition-all select-none">
           <BrandLockup className="text-zinc-900 dark:text-zinc-50" />
@@ -32,8 +32,8 @@ export function MarketingNav() {
                 cn(
                   'text-sm font-semibold transition-colors hover:text-zinc-900 dark:hover:text-zinc-50',
                   isActive 
-                    ? 'text-blue-600 dark:text-blue-400' 
-                    : 'text-zinc-600 dark:text-zinc-400'
+                    ? 'text-[#b9573b] dark:text-[#e58b70]'
+                    : 'text-[#657169] dark:text-[#aeb8b2]'
                 )
               }
             >
@@ -47,10 +47,11 @@ export function MarketingNav() {
           {/* Theme switcher */}
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-xl border dark:border-zinc-800 border-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-500 dark:text-zinc-400 transition-colors"
-            title="Toggle Theme"
+            className="rounded-full border border-[#d7ccbd] p-2 text-[#657169] transition-colors hover:bg-[#eee8de] dark:border-[#40564c] dark:text-[#b7c0ba] dark:hover:bg-[#263730]"
+            title={`Theme: ${theme}. Activate to change.`}
+            aria-label={`Theme preference: ${theme}`}
           >
-            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            {theme === 'system' ? <Monitor className="w-4 h-4" /> : resolvedTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
 
           {status === 'loading' ? (

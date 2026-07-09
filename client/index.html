@@ -15,6 +15,20 @@
       content="Turn a focused campaign brief into coordinated direct-response copy with Briefloom."
     />
     <meta property="og:image" content="/brand/briefloom-social-preview.svg" />
+    <script>
+      (() => {
+        const preference = localStorage.getItem('briefloom_theme') || 'system';
+        const resolved =
+          preference === 'system'
+            ? matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light'
+            : preference;
+        document.documentElement.classList.add(resolved);
+        document.documentElement.dataset.theme = preference;
+        document.documentElement.style.colorScheme = resolved;
+      })();
+    </script>
     <title>Briefloom — Direct-response copy intelligence</title>
   </head>
   <body>
