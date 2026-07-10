@@ -15,11 +15,11 @@ import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Badge from '../../components/ui/Badge';
 import Modal from '../../components/ui/Modal';
-import { 
-  Sparkles, 
+import {
+  Sparkles,
   Layers,
-  RotateCw, 
-  Copy, 
+  RotateCw,
+  Copy,
   History,
 } from 'lucide-react';
 import { cn } from '../../lib/cn';
@@ -31,13 +31,13 @@ export function Generate() {
 
   const { credits } = useBilling();
   const toast = useToast();
-  
+
   // Stream state hook
-  const { 
-    state, 
-    start, 
-    regenerateSection, 
-    reset 
+  const {
+    state,
+    start,
+    regenerateSection,
+    reset
   } = useGenerationStream();
 
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
@@ -85,10 +85,10 @@ export function Generate() {
   }, [state.assets]);
 
   const parsedCredits = parseFloat(credits) || 0;
-  const isGenerateDisabled = 
-    product.length < 20 || 
-    !audience.trim() || 
-    parsedCredits < 1.0 || 
+  const isGenerateDisabled =
+    product.length < 20 ||
+    !audience.trim() ||
+    parsedCredits < 1.0 ||
     state.status === 'running';
 
   return (
@@ -96,8 +96,8 @@ export function Generate() {
       {/* Top action bar */}
       <div className="flex justify-between items-center shrink-0">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight dark:text-zinc-50 text-zinc-900 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-blue-500" />
+          <h1 className="text-xl font-extrabold tracking-tight text-[var(--color-text-strong)] flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-[var(--color-accent-primary)]" />
             Generate Workspace
           </h1>
         </div>
@@ -117,8 +117,8 @@ export function Generate() {
       {/* Main Workspace Layout Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6 items-start flex-1 min-h-0">
         {/* Input Panel (Left Column) */}
-        <div className="flex flex-col gap-5 border rounded-2xl dark:border-zinc-900 border-zinc-200 bg-white dark:bg-zinc-950/20 p-6 max-h-[85vh] overflow-y-auto">
-          <h3 className="font-bold text-sm dark:text-zinc-200 text-zinc-800">
+        <div className="flex flex-col gap-5 border rounded-2xl border-[var(--color-border-subtle)] bg-[var(--color-surface-raised)] p-6 max-h-[85vh] overflow-y-auto">
+          <h3 className="font-bold text-sm text-[var(--color-text-strong)]">
             Funnel Inputs
           </h3>
 
@@ -130,7 +130,7 @@ export function Generate() {
               onChange={(e) => setSelectedProjectId(parseInt(e.target.value, 10) || null)}
             >
               <option value="">No Project (Standalone)</option>
-              {projects.map((p) => (
+              {projects.map((p: any) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
                 </option>
@@ -140,7 +140,7 @@ export function Generate() {
 
           {/* Funnel Type Radio Options */}
           <div className="flex flex-col gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider dark:text-zinc-400 text-zinc-500">
+            <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-subtle)]">
               Funnel Strategy
             </span>
             <div className="flex flex-col gap-2">
@@ -158,28 +158,28 @@ export function Generate() {
                   className={cn(
                     'p-3.5 border rounded-xl text-left transition-all flex items-center justify-between gap-4',
                     funnelType === item.type
-                      ? 'border-blue-600/50 bg-blue-600/5 dark:bg-blue-950/20'
-                      : 'border-zinc-200 dark:border-zinc-900 bg-zinc-50/50 dark:bg-zinc-950/10 hover:bg-zinc-100/30'
+                      ? 'border-[var(--color-accent-primary)]/50 bg-[var(--color-accent-primary)]/5'
+                      : 'border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)] hover:bg-[var(--color-surface-overlay)]'
                   )}
                 >
                   <div>
-                    <h4 className="font-bold text-xs dark:text-zinc-300 text-zinc-700">
+                    <h4 className="font-bold text-xs text-[var(--color-text-strong)]">
                       {item.label}
                     </h4>
-                    <span className="text-[10px] text-zinc-500 mt-0.5">
+                    <span className="text-[10px] text-[var(--color-text-muted)] mt-0.5">
                       {item.count} campaign deliverables
                     </span>
                   </div>
-                  <Layers className={cn('w-4 h-4', funnelType === item.type ? 'text-blue-500' : 'text-zinc-400')} />
+                  <Layers className={cn('w-4 h-4', funnelType === item.type ? 'text-[var(--color-accent-primary)]' : 'text-[var(--color-text-subtle)]')} />
                 </button>
               ))}
             </div>
           </div>
 
           {/* Product description */}
-          <Field 
-            label="Product description" 
-            id="product" 
+          <Field
+            label="Product description"
+            id="product"
             hint={`${product.length} chars (minimum 20)`}
           >
             <Input
@@ -219,8 +219,8 @@ export function Generate() {
           </Field>
 
           {/* Credits notice */}
-          <div className="p-3 bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 rounded-xl text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
-            This will charge <span className="text-blue-500">1.00 credit</span>. You have {credits} credits.
+          <div className="p-3 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[11px] font-semibold text-[var(--color-text-subtle)]">
+            This will charge <span className="text-[var(--color-accent-primary)]">1.00 credit</span>. You have {credits} credits.
           </div>
 
           <Button
@@ -246,12 +246,12 @@ export function Generate() {
 
           {/* Status Pipeline Tracker */}
           {(state.status === 'running' || state.status === 'queued' || state.status === 'complete') && (
-            <div className="p-5 rounded-2xl border dark:border-zinc-900 border-zinc-200 bg-white dark:bg-zinc-950/20 flex flex-col gap-4 shrink-0">
+            <div className="p-5 rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-raised)] flex flex-col gap-4 shrink-0">
               <div className="flex justify-between items-center">
-                <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-subtle)]">
                   Funnel Compiler Pipeline
                 </span>
-                <span className="text-xs font-bold text-blue-500 font-mono" aria-live="polite">
+                <span className="text-xs font-bold text-[var(--color-accent-primary)] font-mono" aria-live="polite">
                   {state.status === 'complete' ? 'Complete' : state.currentStage?.replace('_', ' ') || 'Starting'}
                 </span>
               </div>
@@ -272,9 +272,9 @@ export function Generate() {
                       key={step.id}
                       className={cn(
                         'p-2 rounded-lg border flex items-center justify-center gap-1.5',
-                        isComplete && 'border-emerald-500/30 bg-emerald-500/5 text-emerald-500',
-                        isRunning && 'border-blue-600/30 bg-blue-600/5 text-blue-500 animate-pulse',
-                        !isComplete && !isRunning && 'border-zinc-100 dark:border-zinc-900 text-zinc-400 dark:text-zinc-600'
+                        isComplete && 'border-[var(--color-status-success)]/30 bg-[var(--color-status-success)]/10 text-[var(--color-status-success)]',
+                        isRunning && 'border-[var(--color-accent-primary)]/30 bg-[var(--color-accent-primary)]/10 text-[var(--color-accent-primary)] animate-pulse',
+                        !isComplete && !isRunning && 'border-[var(--color-border-subtle)] text-[var(--color-text-subtle)]'
                       )}
                     >
                       {isComplete && '✓'}
@@ -286,7 +286,7 @@ export function Generate() {
 
               {state.status === 'running' && (
                 <div className="flex justify-end mt-1 select-none">
-                  <span className="text-xs text-muted-foreground">This run continues if you leave the page.</span>
+                  <span className="text-xs text-[var(--color-text-muted)]">This run continues if you leave the page.</span>
                 </div>
               )}
             </div>
@@ -294,18 +294,18 @@ export function Generate() {
 
           {/* Autoplay briefs card */}
           {state.brief && (
-            <div className="p-6 rounded-2xl border border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-950/20 flex flex-col gap-4">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-blue-500">
+            <div className="p-6 rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-raised)] flex flex-col gap-4">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--color-accent-primary)]">
                 {state.brief.title}
               </h4>
               <div className="grid grid-cols-2 gap-4 text-xs">
                 <div>
-                  <span className="text-[10px] font-semibold dark:text-zinc-500 text-zinc-400 uppercase">Schwartz Awareness Stage</span>
-                  <p className="font-bold dark:text-zinc-300 text-zinc-700 mt-0.5">Stage {state.brief.awareness_stage} (Solution-Aware)</p>
+                  <span className="text-[10px] font-semibold text-[var(--color-text-subtle)] uppercase">Schwartz Awareness Stage</span>
+                  <p className="font-bold text-[var(--color-text-strong)] mt-0.5">Stage {state.brief.awareness_stage} (Solution-Aware)</p>
                 </div>
                 <div>
-                  <span className="text-[10px] font-semibold dark:text-zinc-500 text-zinc-400 uppercase">Core Marketing Hook</span>
-                  <p className="font-bold dark:text-zinc-300 text-zinc-700 mt-0.5">{state.brief.core_hook}</p>
+                  <span className="text-[10px] font-semibold text-[var(--color-text-subtle)] uppercase">Core Marketing Hook</span>
+                  <p className="font-bold text-[var(--color-text-strong)] mt-0.5">{state.brief.core_hook}</p>
                 </div>
               </div>
             </div>
@@ -318,12 +318,12 @@ export function Generate() {
             return (
               <div
                 key={asset.id}
-                className="border rounded-2xl dark:border-zinc-900 border-zinc-200 bg-white dark:bg-zinc-950/20 overflow-hidden flex flex-col shadow-sm"
+                className="border rounded-2xl border-[var(--color-border-subtle)] bg-[var(--color-surface-raised)] overflow-hidden flex flex-col shadow-[var(--shadow-sm)]"
               >
                 {/* Header */}
-                <div className="flex justify-between items-center px-6 py-4 border-b dark:border-zinc-900 border-zinc-100 bg-zinc-50/50 dark:bg-zinc-950/40">
+                <div className="flex justify-between items-center px-6 py-4 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)]">
                   <div className="flex items-center gap-3">
-                    <span className="font-extrabold text-sm dark:text-zinc-100 text-zinc-800 capitalize">
+                    <span className="font-extrabold text-sm text-[var(--color-text-strong)] capitalize">
                       {asset.asset_type.replace('_', ' ')}
                     </span>
                     {asset.framework_note && (
@@ -331,12 +331,12 @@ export function Generate() {
                     )}
                   </div>
                   {hasScore && (
-                    <Badge 
+                    <Badge
                       tone={
-                        asset.copy_score! >= 80 
-                          ? 'success' 
-                          : asset.copy_score! >= 60 
-                            ? 'warning' 
+                        asset.copy_score! >= 80
+                          ? 'success'
+                          : asset.copy_score! >= 60
+                            ? 'warning'
                             : 'danger'
                       }
                       className="font-mono"
@@ -347,18 +347,18 @@ export function Generate() {
                 </div>
 
                 {/* Body Content */}
-                <div className="p-6 text-sm dark:text-zinc-200 text-zinc-700 leading-relaxed font-normal whitespace-pre-wrap select-text">
-                  {asset.content || <span className="text-zinc-400 dark:text-zinc-600 italic">Writing draft...</span>}
+                <div className="p-6 text-sm text-[var(--color-text-default)] leading-relaxed font-normal whitespace-pre-wrap select-text">
+                  {asset.content || <span className="text-[var(--color-text-subtle)] italic">Writing draft...</span>}
                 </div>
 
                 {/* Footer Controls */}
                 {state.status === 'complete' && (
-                  <div className="flex justify-between items-center px-6 py-3.5 border-t dark:border-zinc-900 border-zinc-100 bg-zinc-50/30 dark:bg-zinc-950/20 select-none">
+                  <div className="flex justify-between items-center px-6 py-3.5 border-t border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)] select-none">
                     <div className="flex gap-2">
                       <>
                         <button
                           onClick={() => handleCopyText(asset.content)}
-                          className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-lg text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
+                          className="p-2 hover:bg-[var(--color-surface-overlay)] rounded-[var(--radius-md)] text-[var(--color-text-subtle)] hover:text-[var(--color-text-strong)] transition-colors"
                           title="Copy to clipboard"
                         >
                           <Copy className="w-4 h-4" />
@@ -366,7 +366,7 @@ export function Generate() {
                         {asset.id > 0 && (
                           <button
                             onClick={() => regenerateSection(asset.id)}
-                            className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-lg text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
+                            className="p-2 hover:bg-[var(--color-surface-overlay)] rounded-[var(--radius-md)] text-[var(--color-text-subtle)] hover:text-[var(--color-text-strong)] transition-colors"
                             title="Regenerate Section (0.25 credit)"
                           >
                             <RotateCw className="w-4 h-4" />
@@ -376,25 +376,25 @@ export function Generate() {
                     </div>
 
                     {asset.variants && asset.variants.length > 1 && (
-                      <div className="flex gap-1 items-center bg-zinc-100 dark:bg-zinc-900 p-0.5 rounded-lg border dark:border-zinc-800">
+                      <div className="flex gap-1 items-center bg-[var(--color-surface-overlay)] p-0.5 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)]">
                         {asset.variants.map((v, vIdx) => (
                           <button
                             key={v.id}
                             onClick={() => {
                               // Switch active variant content
-                              setStateAssets((prev) => 
-                                prev.map((a) => a.id === asset.id ? { 
-                                  ...a, 
+                              setStateAssets((prev) =>
+                                prev.map((a) => a.id === asset.id ? {
+                                  ...a,
                                   activeVariantIndex: vIdx,
                                   content: v.content
                                 } : a)
                               );
                             }}
                             className={cn(
-                              'px-2.5 py-1 text-[10px] font-bold rounded-md transition-all',
+                              'px-2.5 py-1 text-[10px] font-bold rounded-[var(--radius-sm)] transition-all',
                               asset.activeVariantIndex === vIdx
-                                ? 'bg-white dark:bg-zinc-950 shadow-sm text-zinc-800 dark:text-zinc-100'
-                                : 'text-zinc-500 hover:text-zinc-700'
+                                ? 'bg-[var(--color-surface-raised)] shadow-[var(--shadow-sm)] text-[var(--color-text-strong)]'
+                                : 'text-[var(--color-text-subtle)] hover:text-[var(--color-text-strong)]'
                             )}
                           >
                             {v.label}
@@ -418,27 +418,27 @@ export function Generate() {
         size="md"
       >
         <div className="flex flex-col gap-4 select-none">
-          <p className="text-xs dark:text-zinc-400 text-zinc-500">
+          <p className="text-xs text-[var(--color-text-subtle)]">
             View details of previously generated campaign sequences.
           </p>
 
           <div className="flex flex-col gap-3 max-h-[400px] overflow-y-auto pr-1">
             {history.length === 0 ? (
-              <p className="text-xs italic text-zinc-500 text-center py-8">No generation history found.</p>
+              <p className="text-xs italic text-[var(--color-text-subtle)] text-center py-8">No generation history found.</p>
             ) : (
-              history.map((h) => (
+              history.map((h: any) => (
                 <div
                   key={h.id}
-                  className="p-4 rounded-xl border dark:border-zinc-900 border-zinc-200 bg-zinc-50/50 dark:bg-zinc-950/40 flex justify-between items-center gap-4"
+                  className="p-4 rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)] flex justify-between items-center gap-4"
                 >
-                  <div className="min-w-0">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-subtle)]">
                       Campaign #{h.id}
                     </span>
-                    <h4 className="font-bold text-xs text-zinc-800 dark:text-zinc-200 capitalize truncate mt-0.5">
+                    <h4 className="font-bold text-xs text-[var(--color-text-strong)] capitalize truncate mt-0.5">
                       {h.funnel_type.replace('_', ' ')}
                     </h4>
-                    <p className="text-[10px] text-zinc-400 truncate mt-1">
+                    <p className="text-[10px] text-[var(--color-text-muted)] truncate mt-1">
                       {h.brief}
                     </p>
                   </div>
