@@ -176,14 +176,15 @@ verified_head_at_session_start: 2713142
 remote_parity_at_session_start: main matches origin/main
 working_tree_at_session_start: only untracked .verdent/
 phase: frontend-rebuild
-current_plan_step: 10
-current_step_name: Billing and settings
+current_plan_step: 11
+current_step_name: Routing and publishing
 step_status: not-started
-next_executable_action: Inspect the billing and settings pages against Step 10 plan targets before implementing.
+next_executable_action: Inspect routing, App.tsx, and vite.config.ts against Step 11 plan targets before implementing.
 first_files_to_read:
   - AGENTS.md
 
-  - client/src/pages/app/Settings.tsx
+  - client/src/App.tsx
+  - client/vite.config.ts
 files_to_ignore:
   - .verdent/
 verification_completed:
@@ -246,8 +247,9 @@ do_not_repeat:
 
 | File | Purpose | State | Next action |
 |---|---|---|---|
-| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Step 9 checkpoint recorded | Commit with ledger update |
-| `client/src/pages/app/Settings.tsx` | Billing and Settings | Needs Step 10 migration | Inspect and rebuild |
+| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Step 10 checkpoint recorded | Commit with ledger update |
+| `client/src/App.tsx` | Routing inventory | Needs Step 11 migration | Inspect and rebuild |
+| `client/vite.config.ts` | Proxy/HMR configuration | Needs Step 11 migration | Inspect and rebuild |
 
 ## 4) Changes Made
 
@@ -287,6 +289,7 @@ do_not_repeat:
 | 2026-07-10 | 7 | Migrated AppShell and Dashboard to use semantic design tokens and improved mobile layout. All existing contracts (Auth, Billing, hooks) preserved. | Isolated file tsc passed; lint returned 0 errors; client build passed. | 77270a8 pushed to origin/main |
 | 2026-07-10 | 8 | Migrated Generate workspace to semantic design tokens. Preserved real SSE generation hook. | Isolated file tsc passed; lint returned 0 errors; client build passed. | 7795ed1 pushed to origin/main |
 | 2026-07-10 | 9 | Migrated Projects and BrandVoices workspaces to semantic design tokens. Preserved all CRUD hooks. | Isolated file tsc passed; lint returned 0 errors; client build passed. | 85623ef pushed to origin/main |
+| 2026-07-10 | 10 | Migrated Billing, BillingSuccess, and Settings pages to semantic design tokens. Preserved all API endpoints. | Isolated file tsc passed; lint returned 0 errors; client build passed. | fc4755c pushed to origin/main |
 
 When recording future work, append a row; do not erase historical rows. Keep entries short and link each change to one plan step.
 
@@ -331,7 +334,7 @@ For every future failure, append: date, plan step, command or approach, exact er
 - [x] **7. App shell/dashboard:** document scrolling, mobile sheet, exact nav, real account state.
 - [x] **8. Generation:** honest Brief → Generate → Review workspace using actual SSE payloads only.
 - [x] **9. Projects/voice:** existing CRUD contracts, accessible controls, detail and wizard states.
-- [ ] **10. Billing/settings:** provider-backed behavior only; remove all simulated operations.
+- [x] **10. Billing/settings:** provider-backed behavior only; remove all simulated operations.
 - [ ] **11. Routing/publishing:** lazy boundaries, status surfaces, proxy/HMR configuration, route inventory.
 - [ ] **12. Quality:** static, behavioral, accessibility, visual, responsive, bundle, and preview verification.
 
