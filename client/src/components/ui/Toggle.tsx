@@ -5,11 +5,21 @@ export interface ToggleProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
   label?: string;
+  'aria-label'?: string;
+  'aria-labelledby'?: string;
   className?: string;
   disabled?: boolean;
 }
 
-export function Toggle({ checked, onChange, label, className, disabled }: ToggleProps) {
+export function Toggle({
+  checked,
+  onChange,
+  label,
+  className,
+  disabled = false,
+  'aria-label': ariaLabel,
+  'aria-labelledby': ariaLabelledBy,
+}: ToggleProps) {
   const id = useId();
 
   const handleToggle = () => {
@@ -33,20 +43,30 @@ export function Toggle({ checked, onChange, label, className, disabled }: Toggle
         type="button"
         role="switch"
         aria-checked={checked}
+        aria-label={ariaLabel}
+        aria-labelledby={ariaLabelledBy}
         disabled={disabled}
         onClick={handleToggle}
         className={cn(
-          'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
-          checked ? 'bg-blue-600' : 'bg-zinc-200 dark:bg-zinc-800',
-          disabled && 'opacity-50 pointer-events-none'
+          'group relative inline-flex h-11 w-[52px] shrink-0 cursor-pointer items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b9573b]/60 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
         )}
       >
         <span
+          aria-hidden="true"
           className={cn(
-            'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-            checked ? 'translate-x-5' : 'translate-x-0'
+            'pointer-events-none relative h-6 w-11 rounded-full border border-transparent transition-colors duration-200 ease-in-out',
+            checked
+              ? 'bg-[#b9573b] group-hover:bg-[#9f4933] dark:bg-[#d8795c] dark:group-hover:bg-[#c66a50]'
+              : 'bg-zinc-300 group-hover:bg-zinc-400 dark:bg-zinc-700 dark:group-hover:bg-zinc-600'
           )}
-        />
+        >
+          <span
+            className={cn(
+              'absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out group-active:scale-95 motion-reduce:transition-none',
+              checked ? 'translate-x-5' : 'translate-x-0'
+            )}
+          />
+        </span>
       </button>
     </div>
   );
