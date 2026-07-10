@@ -1,0 +1,75 @@
+@font-face {
+  font-family: "Briefloom Interface";
+  src: url("/fonts/inter-latin.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Briefloom Display";
+  src: url("/fonts/fraunces-latin.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Briefloom Display";
+  src: url("/fonts/fraunces-latin-italic.woff2") format("woff2");
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Briefloom Reading";
+  src: url("/fonts/source-serif-4-latin.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+}
+
+@layer base {
+  html {
+    font-family: "Briefloom Interface", ui-sans-serif, system-ui, sans-serif;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    font-family: inherit;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
+    font-variation-settings: "opsz" 14;
+    -webkit-font-smoothing: antialiased;
+    text-wrap: pretty;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: "Briefloom Display", Georgia, serif;
+    font-variation-settings:
+      "opsz" 72,
+      "SOFT" 20,
+      "WONK" 1;
+    letter-spacing: -0.045em;
+  }
+
+  .font-reading {
+    font-family: "Briefloom Reading", Georgia, serif;
+    font-variation-settings: "opsz" 16;
+  }
+
+  .measure-reading {
+    max-width: 68ch;
+  }
+}

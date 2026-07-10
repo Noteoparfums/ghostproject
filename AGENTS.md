@@ -62,7 +62,7 @@ The work is frontend-only with respect to product contracts:
 
 **Branch:** `main` tracking `origin/main`
 
-**Verified HEAD at current session start:** `40f545d` (`Update AGENTS.md`)
+**Verified HEAD at current session start:** `1665c15` (`Merge branch 'main' of https://github.com/Noteoparfums/ghostproject`)
 
 **Working tree at current session start:** only untracked `.verdent/`; it is unrelated and must not be committed.
 
@@ -80,8 +80,8 @@ The work is frontend-only with respect to product contracts:
 
 ### Confirmed incomplete or not yet verified
 
-- Step 1 brand work is only **partially evidenced by files**; stale-brand search, metadata behavior, SVG rendering, and contract-name preservation have not been verified in this ledger.
-- Dedicated semantic style files under `client/src/styles/` are absent from the tracked file inventory.
+- Step 1 brand work is implemented, verified, committed, and pushed.
+- Step 2 semantic style files and local font assets are implemented, verified, committed, and pushed.
 - Three/WebGL packages are absent from `client/package.json`; the progressive hero work is not complete.
 - The planned auth shell and generation component split are absent from the tracked file inventory.
 - Steps 2-12 have not been behaviorally, visually, or contract-verified in this ledger.
@@ -94,7 +94,34 @@ The work is frontend-only with respect to product contracts:
 - The unsupported fatal-error claim that engineers had been notified was removed.
 - Targeted source search now finds no visible `Ghostwriter OS`, `GhostwriterOS`, or `New to Ghostwriter` strings under `client/`.
 - Operational identifiers `ghostwriter-os`, `@ghostwriter/shared`, and `gw_*` analytics/consent storage keys remain unchanged.
-- Client build and lint are blocked until workspace dependencies are installed; both commands failed because local binaries are absent.
+- Locked workspace dependencies are installed locally; the client production build passes.
+- Client lint completes with zero errors and 24 warnings; the Step 1 metadata-hook dependency warnings were removed, while the remaining warnings are outside the Step 1 files.
+- All six static SVG variants render successfully in browser inspection at desktop or mobile viewport sizes.
+- Browser inspection confirms Briefloom page titles and responsive branded public surfaces. Frontend-only preview inspection records expected `/api/auth/refresh` 404 responses and a Vite HMR host mismatch that belongs to Step 11.
+- Step 1 implementation and verification were committed and pushed as `9779f1f`.
+
+### Current Step 2 findings
+
+- Added dedicated semantic color, status, chart, radius, spacing, shadow, z-index, typography, surface, and motion tokens.
+- Added self-hosted variable Inter, Fraunces normal/italic, and Source Serif 4 fonts with SIL Open Font License texts.
+- Theme persistence now uses brand-neutral `ui_theme`, migrates the legacy key, tolerates blocked storage, and exposes preference plus resolved theme on the root element.
+- The pre-render bootstrap resolves and applies system/light/dark before React loads.
+- Client production build passes; lint completes with zero errors and the same 24 warnings outside the new Step 2 styles.
+- Desktop and mobile light-mode browser inspection passes; local interface and display font requests return 200.
+- Persisted dark bootstrap was verified with a temporary same-origin harness: the root had class, preference, resolved mode, and color scheme set to `dark`, with computed body background `rgb(23, 33, 29)`.
+- Static review confirms system and reduced-motion media listeners update state and clean up; the agent browser does not expose media emulation, so live OS preference switching remains pending for the final quality step.
+- Source Serif 4 is locally served and built but no current route uses the new `.font-reading` utility, so its network request remains pending until a document-reading surface adopts it.
+- Step 2 was committed and pushed as `752b480`.
+
+### Current Step 3 findings
+
+- Modal now exposes labelled dialog semantics, optional description wiring, explicit initial focus, escape/backdrop controls, and a 44px close target.
+- Focus trapping now filters unavailable elements, handles empty and escaped focus, supports preferred initial focus, and restores the trigger after close.
+- Body scroll locking is reference-counted for nested dialogs, compensates for scrollbar width, and makes non-top-level body content inert.
+- ConfirmDialog now describes itself, focuses the safest action by default, focuses the required text field when applicable, and prevents dismissal while confirmation is loading.
+- Client production build passes; lint completes with zero errors and the same 24 warnings outside the changed overlay files.
+- Runtime keyboard interaction remains pending because the available agent browser controls do not expose click, key input, or script evaluation in this session.
+- The overlay foundation was committed and pushed as `9e5fd7f`; the working tree then contained only untracked `.verdent/`.
 
 ### Contract boundary
 
@@ -107,60 +134,57 @@ Unsupported and never simulated: generation cancellation, A/B variants, generati
 ```yaml
 last_updated: 2026-07-10
 branch: main
-verified_head_at_session_start: 40f545d
+verified_head_at_session_start: 1665c15
 remote_parity_at_session_start: main matches origin/main
 working_tree_at_session_start: only untracked .verdent/
 phase: frontend-rebuild
-current_plan_step: 1
-current_step_name: Centralize Briefloom identity and brand assets
-step_status: partial-unverified
-next_executable_action: Audit only the Step 1 brand targets, patch missing brand requirements, then run targeted client checks.
+current_plan_step: 3
+current_step_name: Rebuild shared UI, overlay, feedback, and responsive data primitives
+step_status: overlay-foundation-pushed-control-audit-next
+next_executable_action: Audit Button, Field, Input, Select, and Toggle for complete semantic states and touch targets; patch only confirmed Step 3 gaps.
 first_files_to_read:
   - AGENTS.md
-  - client/src/config/brand.ts
-  - client/src/components/brand/BrandMark.tsx
-  - client/src/components/brand/BrandLockup.tsx
-  - client/index.html
-  - client/src/hooks/useDocumentMeta.ts
-  - docs/brand-identity.md
-  - README.md
+  - client/src/components/ui/Button.tsx
+  - client/src/components/ui/Field.tsx
+  - client/src/components/ui/Input.tsx
+  - client/src/components/ui/Select.tsx
+  - client/src/components/ui/Toggle.tsx
 files_to_ignore:
   - .verdent/
-known_blockers: []
-verification_completed: []
-verification_pending:
-  - stale visible Ghostwriter OS search
-  - SVG variant rendering
-  - metadata defaults and canonical behavior
+verification_completed:
+  - stale visible Ghostwriter OS source and built HTML search
+  - all six SVG variants rendered in desktop or mobile browser viewports
+  - metadata defaults and route title behavior
   - internal contract identifier preservation
-  - client build
-  - client lint
-known_blockers:
-  - workspace dependencies are not installed; client build cannot find tsc and client lint cannot find oxlint
+  - client production build
+  - client lint with zero errors and 24 unrelated warnings
+  - Step 1 commit 9779f1f pushed to origin/main
+  - Step 2 light-mode desktop and mobile rendering
+  - Step 2 persisted dark bootstrap
+  - Step 2 local interface and display font loading
+  - Step 2 production build and lint
+  - Step 2 commit 752b480 pushed to origin/main
+  - Step 3 overlay build and lint
+  - Step 3 overlay commit 9e5fd7f pushed to origin/main
+verification_pending: []
+known_blockers: []
 do_not_repeat:
   - broad repository inventory already captured on 2026-07-10
-  - client build or lint before installing workspace dependencies
+  - Step 1 brand audit and SVG inspection unless Step 1 files change
+  - Step 2 client build and lint unless Step 2 files change
+  - Step 3 overlay build and lint unless overlay files change
 ```
 
 ## 3) Active Files
 
 | File | Purpose | State | Next action |
 |---|---|---|---|
-| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Tracked; continuity correction committed and pushed as `bba5a5b` | Record exact Step 1 audit, verification, and handoff state |
-| `client/src/config/brand.ts` | Central public identity, metadata, navigation, support, and legal copy | Present; targeted audit in progress | Patch only confirmed centralization or helper gaps |
-| `client/src/components/brand/BrandMark.tsx` | Accessible inline brand mark variants | Present; targeted audit in progress | Verify primary, compact, and monochrome rendering |
-| `client/src/components/brand/BrandLockup.tsx` | Public lockup composition | Present; targeted audit in progress | Verify compact and full lockups |
-| `client/index.html` | Initial document identity and metadata | Present; targeted audit in progress | Verify defaults and built HTML |
-| `client/src/hooks/useDocumentMeta.ts` | Route metadata and canonical lifecycle | Present; targeted audit in progress | Verify defaults, canonical behavior, and cleanup |
-| `docs/brand-identity.md` | Naming matrix and operational naming boundary | Present; targeted audit in progress | Verify launch caveat and preserved identifiers |
-| `README.md` | Public identity and operational terminology | Present; targeted audit in progress | Verify terminology boundary |
-| `client/public/brand/*.svg` | Six static mark, favicon, social, and hero variants | Present; targeted audit in progress | Render and inspect all variants |
-| `client/src/App.tsx` | Explicit 403, 404, and wildcard labels | Stale inline status copy confirmed | Source labels from central brand configuration |
-| `client/src/components/system/CookieBanner.tsx` | User-visible consent identity copy | Hard-coded public name confirmed | Source public identity from central brand configuration |
-| `client/src/components/system/CookiePreferencesModal.tsx` | User-visible cookie labels and explanations | Targeted audit complete | Keep accurate consent behavior; normalize copy only if required |
-| `client/src/components/system/ErrorBoundary.tsx` | Fatal error identity and recovery copy | Unsupported notification claim confirmed | Replace with honest branded recovery copy |
-| `client/src/pages/auth/Login.tsx` | User-visible sign-in transactional copy | Stale "Ghostwriter" label confirmed | Replace with centralized Briefloom identity |
-| `client/src/pages/marketing/StatusPage.tsx` | Branded 403/404 presentation | Targeted audit complete | Keep metadata and mark behavior while centralizing labels upstream |
+| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Overlay push and low-context handoff recorded | Keep current during the control audit |
+| `client/src/components/ui/Button.tsx` | Shared button states and touch targets | Audit pending | Verify variants, loading, disabled, focus, and target size |
+| `client/src/components/ui/Field.tsx` | Shared labels, hints, and errors | Audit pending | Verify described-by and invalid wiring |
+| `client/src/components/ui/Input.tsx` | Shared text controls | Audit pending | Verify semantic states and target size |
+| `client/src/components/ui/Select.tsx` | Shared selection control | Audit pending | Verify semantic states and target size |
+| `client/src/components/ui/Toggle.tsx` | Shared binary control | Audit pending | Verify switch semantics, labels, and target size |
 
 ## 4) Changes Made
 
@@ -168,6 +192,14 @@ do_not_repeat:
 |---|---:|---|---|---|
 | 2026-07-10 | Continuity setup | Added this root continuity ledger with mandatory session-start, low-credit checkpoint, atomic commit/push, failure logging, and exact resume rules. Captured only repository facts verified from Git and targeted files. | Initial unstaged check did not cover the untracked file; staged `git diff --cached --check` passed after whitespace fix | Present in verified `HEAD` `40f545d`; session-start status confirmed `main` matches `origin/main` |
 | 2026-07-10 | Continuity correction | Replaced stale HEAD and working-tree claims with the Git state verified at the current session start. | Session-start `git status --short --branch`, `git log -5 --oneline --decorate`, `git show HEAD:AGENTS.md`, scoped diff inspection, and `git diff --check` passed | Commit without explicit identity failed; retry pending with existing repository author identity |
+| 2026-07-10 | Continuity correction | Corrected the current session HEAD from stale `40f545d` to Git-verified `1665c15`; confirmed `main` matches `origin/main` and only `.verdent/` is untracked. | Session-start `git status --short --branch`, `git log -5 --oneline --decorate`, and `git show HEAD:AGENTS.md` | Included in this checkpoint; push required before Step 1 resumes |
+| 2026-07-10 | 1 | Completed the targeted brand audit, centralized the login metadata description, and normalized document metadata dependencies without changing public or operational contracts. | Stale-name searches clean; six SVGs rendered; client build passed; lint returned zero errors and 24 unrelated warnings; desktop/mobile public pages inspected | Commit and push pending |
+| 2026-07-10 | 1 | Completed the Step 1 checkpoint and activated Step 2. | Commit `9779f1f` and push output confirmed `main -> main`; working tree then contained only untracked `.verdent/` | `9779f1f` pushed to `origin/main` |
+| 2026-07-10 | 2 | Added the semantic theme foundation, locally hosted fonts, resilient three-mode persistence, and reduced-motion rules. | Client build passed; lint returned zero errors and 24 unchanged unrelated warnings; desktop/mobile light mode rendered; interface/display fonts loaded with 200 responses | Verification and checkpoint pending |
+| 2026-07-10 | 2 | Verified persisted dark bootstrap with a temporary same-origin harness, then removed the harness. | Root preference, class, resolved mode, color scheme, and computed dark background matched; static listener review covered live system and reduced-motion updates | Commit and push pending |
+| 2026-07-10 | 2 | Completed the Step 2 checkpoint and activated Step 3. | Commit `752b480` and push output confirmed `main -> main`; working tree then contained only untracked `.verdent/` | `752b480` pushed to `origin/main` |
+| 2026-07-10 | 3 | Rebuilt the shared modal focus, dismissal, inert-background, and nested scroll-lock foundation; updated ConfirmDialog to use safe initial focus and loading guards. | Client build passed; lint returned zero errors and 24 unchanged unrelated warnings; `git diff --check` passed | Commit and push pending |
+| 2026-07-10 | 3 | Completed the overlay-foundation checkpoint. | Commit `9e5fd7f` and push output confirmed `main -> main`; working tree then contained only untracked `.verdent/` | `9e5fd7f` pushed to `origin/main` |
 
 When recording future work, append a row; do not erase historical rows. Keep entries short and link each change to one plan step.
 
@@ -179,29 +211,25 @@ When recording future work, append a row; do not erase historical rows. Keep ent
 | 2026-07-10 | Continuity setup | Ran the validated commit without an explicit author identity | Git could not auto-detect `user.name` and `user.email`; commit and push did not run | No files changed at failure time | Resolved in a prior session: `AGENTS.md` is present in verified `HEAD` `40f545d`, and `main` matches `origin/main`; do not repeat the failed identity-less command |
 | 2026-07-10 | Continuity correction | Ran `git commit` without explicit author environment variables because the ledger said the prior identity failure was resolved | Git again could not auto-detect `user.name` and `user.email`; commit and push did not run | `AGENTS.md` remained staged; no product files changed | Retry with `GIT_AUTHOR_*` and `GIT_COMMITTER_*` set from the existing `HEAD` author; do not modify Git configuration |
 | 2026-07-10 | 1 | Ran client build and lint before workspace dependencies were installed | Build could not find `tsc`; lint could not find `oxlint`; both exited 127 | No files changed by either command | Install locked workspace dependencies, then retry because the environment will have changed |
+| 2026-07-10 | 1 | First locked dependency installation attempt used the default 120-second command limit | `npm ci` timed out after 120 seconds; no tracked files changed | No tracked files changed; partial local dependency installation occurred | Resolved by rerunning with a 600-second limit; 348 packages installed in 17 seconds |
+| 2026-07-10 | 1 | Inspected public pages through the frontend-only Vite server | `/api/auth/refresh` returned 404 because the backend was not running; HMR attempted the stale configured preview host and returned 404 | No files changed | Record as expected frontend-only preview limitation; correct HMR host in Step 11 and use full-stack preview for final verification |
 
 For every future failure, append: date, plan step, command or approach, exact error summary, whether files changed, and the condition required before retrying. Never delete a failure merely because it is later resolved; mark it resolved and reference the successful change.
 
 ## 6) Next steps
 
-### Next executable action — Step 1 only
+### Next executable action — Step 3 control states
 
-The continuity-ledger setup is complete once the current factual correction is committed and pushed. The next product action remains:
-
-1. Audit only the brand files listed in the **Resume Point**.
-2. Search user-visible client source and built HTML for stale `Ghostwriter OS` naming while excluding intentional internal identifiers.
-3. Compare the existing implementation against Step 1 requirements: centralized copy/navigation/support/legal metadata, brand variants, favicon/social/hero assets, document metadata, cookie/error labels, naming caveat documentation, and README terminology.
-4. Patch only confirmed Step 1 gaps.
-5. Run the smallest targeted checks first, then client build and client lint.
-6. Update every mutable section of this ledger with exact results.
-7. Commit the Step 1 code and this ledger together, then push to the tracked branch.
-8. Only after a successful push, mark Step 1 complete and activate Step 2.
+1. Read only `Button.tsx`, `Field.tsx`, `Input.tsx`, `Select.tsx`, and `Toggle.tsx`.
+2. Audit hover, active, focus-visible, disabled, loading, invalid, selected, destructive, and minimum touch-target behavior.
+3. Patch only confirmed gaps while preserving current component APIs where possible.
+4. Run client build and lint, record exact results, commit with this ledger, and push.
 
 ### Ordered project queue
 
-- [~] **1. Brand:** central identity, marks/assets, metadata, legal naming caveat. Partial and unverified.
-- [ ] **2. Theme:** semantic tokens, typography, surfaces, motion, system/light/dark, no-flash bootstrap.
-- [ ] **3. UI system:** shared primitives, overlays, focus handling, feedback, responsive data patterns.
+- [x] **1. Brand:** central identity, marks/assets, metadata, legal naming caveat.
+- [x] **2. Theme:** semantic tokens, typography, surfaces, motion, system/light/dark, no-flash bootstrap.
+- [~] **3. UI system:** shared primitives, overlays, focus handling, feedback, responsive data patterns. Active.
 - [ ] **4. Marketing:** public shell, truthful landing narrative, progressive WebGL hero, unified pricing.
 - [ ] **5. Public/legal:** complete editorial, legal, forbidden, and not-found routes with metadata.
 - [ ] **6. Auth:** unified auth shell while preserving real auth behavior and safe redirects.

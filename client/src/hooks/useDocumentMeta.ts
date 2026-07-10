@@ -15,50 +15,55 @@ export interface DocumentMetaOptions {
 }
 
 export function useDocumentMeta(options: DocumentMetaOptions) {
+  const { title, description, canonical, jsonLd, og } = options;
+  const ogType = og?.type;
+  const ogImage = og?.image;
+  const ogTitle = og?.title;
+  const ogDescription = og?.description;
+  const jsonLdContent = jsonLd ? JSON.stringify(jsonLd) : undefined;
+
   useEffect(() => {
     const prevTitle = document.title;
-    document.title = formatDocumentTitle(options.title);
+    document.title = formatDocumentTitle(title);
 
     let descMeta = document.querySelector('meta[name="description"]');
     const prevDesc = descMeta?.getAttribute('content') || '';
-    const description = options.description || BRAND.metadata.description;
-    if (description) {
+    const resolvedDescription = description || BRAND.metadata.description;
+    if (resolvedDescription) {
       if (!descMeta) {
         descMeta = document.createElement('meta');
         descMeta.setAttribute('name', 'description');
         document.head.appendChild(descMeta);
       }
-      descMeta.setAttribute('content', description);
+      descMeta.setAttribute('content', resolvedDescription);
     }
 
     let canonicalLink = document.querySelector('link[rel="canonical"]');
     const prevCanonical = canonicalLink?.getAttribute('href') || '';
-    if (options.canonical) {
+    if (canonical) {
       if (!canonicalLink) {
         canonicalLink = document.createElement('link');
         canonicalLink.setAttribute('rel', 'canonical');
         document.head.appendChild(canonicalLink);
       }
-      const absoluteUrl = options.canonical.startsWith('http')
-        ? options.canonical
-        : canonicalUrl(options.canonical);
+      const absoluteUrl = canonical.startsWith('http') ? canonical : canonicalUrl(canonical);
       canonicalLink.setAttribute('href', absoluteUrl);
     }
 
-    const image = options.og?.image || BRAND.metadata.socialImage;
+    const image = ogImage || BRAND.metadata.socialImage;
     const ogTags: { name: string; value: string }[] = [
-      { name: 'og:type', value: options.og?.type || 'website' },
+      { name: 'og:type', value: ogType || 'website' },
       {
         name: 'og:image',
         value: image.startsWith('http') ? image : canonicalUrl(image),
       },
       {
         name: 'og:title',
-        value: formatDocumentTitle(options.og?.title || options.title),
+        value: formatDocumentTitle(ogTitle || title),
       },
       {
         name: 'og:description',
-        value: options.og?.description || description,
+        value: ogDescription || resolvedDescription,
       },
     ];
 
@@ -78,10 +83,10 @@ export function useDocumentMeta(options: DocumentMetaOptions) {
     });
 
     let ldScript: HTMLScriptElement | null = null;
-    if (options.jsonLd) {
+    if (jsonLdContent) {
       ldScript = document.createElement('script');
       ldScript.setAttribute('type', 'application/ld+json');
-      ldScript.textContent = JSON.stringify(options.jsonLd);
+      ldScript.textContent = jsonLdContent;
       document.head.appendChild(ldScript);
     }
 
@@ -105,12 +110,6 @@ export function useDocumentMeta(options: DocumentMetaOptions) {
         ldScript.remove();
       }
     };
-  }, [
-    options.title,
-    options.description,
-    options.canonical,
-    JSON.stringify(options.og),
-    JSON.stringify(options.jsonLd),
-  ]);
+  }, [title, description, canonical, ogType, ogImage, ogTitle, ogDescription, jsonLdContent]);
 }
 export default useDocumentMeta;

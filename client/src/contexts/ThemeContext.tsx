@@ -12,17 +12,26 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-const THEME_KEY = 'briefloom_theme';
+const THEME_KEY = 'ui_theme';
+const LEGACY_THEME_KEY = 'briefloom_theme';
+
+function getStoredTheme(): ThemePreference {
+  try {
+    const saved = localStorage.getItem(THEME_KEY) || localStorage.getItem(LEGACY_THEME_KEY);
+    return saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'system';
+  } catch {
+    return 'system';
+  }
+}
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<ThemePreference>(() => {
-    const saved = localStorage.getItem(THEME_KEY);
-    return saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'system';
-  });
+  const [theme, setThemeState] = useState<ThemePreference>(getStoredTheme);
   const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(() =>
     window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   );
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(
+    () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
   const resolvedTheme = theme === 'system' ? systemTheme : theme;
 
   useEffect(() => {
@@ -31,7 +40,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     root.classList.add(resolvedTheme);
     root.style.colorScheme = resolvedTheme;
     root.dataset.theme = theme;
-    localStorage.setItem(THEME_KEY, theme);
+    root.dataset.resolvedTheme = resolvedTheme;
+    try {
+      localStorage.setItem(THEME_KEY, theme);
+      localStorage.removeItem(LEGACY_THEME_KEY);
+    } catch {
+      return;
+    }
   }, [resolvedTheme, theme]);
 
   useEffect(() => {
@@ -39,7 +54,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const handleColor = (event: MediaQueryListEvent) => setSystemTheme(event.matches ? 'dark' : 'light');
     const handleMotion = (event: MediaQueryListEvent) => setReducedMotion(event.matches);
-    setReducedMotion(motionQuery.matches);
     colorQuery.addEventListener('change', handleColor);
     motionQuery.addEventListener('change', handleMotion);
     return () => {
