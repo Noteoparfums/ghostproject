@@ -81,7 +81,7 @@ The work is frontend-only with respect to product contracts:
 ### Confirmed incomplete or not yet verified
 
 - Step 1 brand work is implemented, verified, committed, and pushed.
-- Step 2 semantic style files and local font assets are implemented and verified in the working tree; checkpoint commit and push remain.
+- Step 2 semantic style files and local font assets are implemented, verified, committed, and pushed.
 - Three/WebGL packages are absent from `client/package.json`; the progressive hero work is not complete.
 - The planned auth shell and generation component split are absent from the tracked file inventory.
 - Steps 2-12 have not been behaviorally, visually, or contract-verified in this ledger.
@@ -111,6 +111,16 @@ The work is frontend-only with respect to product contracts:
 - Persisted dark bootstrap was verified with a temporary same-origin harness: the root had class, preference, resolved mode, and color scheme set to `dark`, with computed body background `rgb(23, 33, 29)`.
 - Static review confirms system and reduced-motion media listeners update state and clean up; the agent browser does not expose media emulation, so live OS preference switching remains pending for the final quality step.
 - Source Serif 4 is locally served and built but no current route uses the new `.font-reading` utility, so its network request remains pending until a document-reading surface adopts it.
+- Step 2 was committed and pushed as `752b480`.
+
+### Current Step 3 findings
+
+- Modal now exposes labelled dialog semantics, optional description wiring, explicit initial focus, escape/backdrop controls, and a 44px close target.
+- Focus trapping now filters unavailable elements, handles empty and escaped focus, supports preferred initial focus, and restores the trigger after close.
+- Body scroll locking is reference-counted for nested dialogs, compensates for scrollbar width, and makes non-top-level body content inert.
+- ConfirmDialog now describes itself, focuses the safest action by default, focuses the required text field when applicable, and prevents dismissal while confirmation is loading.
+- Client production build passes; lint completes with zero errors and the same 24 warnings outside the changed overlay files.
+- Runtime keyboard interaction remains pending because the available agent browser controls do not expose click, key input, or script evaluation in this session.
 
 ### Contract boundary
 
@@ -127,15 +137,15 @@ verified_head_at_session_start: 1665c15
 remote_parity_at_session_start: main matches origin/main
 working_tree_at_session_start: only untracked .verdent/
 phase: frontend-rebuild
-current_plan_step: 2
-current_step_name: Establish semantic tokens, typography, texture, motion, and three-mode theming
-step_status: implementation-verified-checkpoint-pending
-next_executable_action: Inspect the scoped Step 2 diff, run final changed-file checks, commit and push Step 2, then activate Step 3.
+current_plan_step: 3
+current_step_name: Rebuild shared UI, overlay, feedback, and responsive data primitives
+step_status: overlay-foundation-verified-checkpoint-pending
+next_executable_action: Commit and push the verified Step 3 overlay foundation, then audit the shared control state primitives.
 first_files_to_read:
   - AGENTS.md
-  - client/index.html
-  - client/src/index.css
-  - client/src/contexts/ThemeContext.tsx
+  - client/src/components/ui/Modal.tsx
+  - client/src/components/ui/ConfirmDialog.tsx
+  - client/src/hooks/useFocusTrap.ts
 files_to_ignore:
   - .verdent/
 verification_completed:
@@ -150,8 +160,8 @@ verification_completed:
   - Step 2 persisted dark bootstrap
   - Step 2 local interface and display font loading
   - Step 2 production build and lint
-verification_pending:
-  - Step 2 commit and push
+  - Step 2 commit 752b480 pushed to origin/main
+verification_pending: []
 known_blockers: []
 do_not_repeat:
   - broad repository inventory already captured on 2026-07-10
@@ -163,15 +173,10 @@ do_not_repeat:
 
 | File | Purpose | State | Next action |
 |---|---|---|---|
-| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Step 2 implementation and verification recorded | Commit and push with Step 2 |
-| `client/index.html` | Initial document identity and theme bootstrap | Hardened no-flash bootstrap verified | Commit and push |
-| `client/src/index.css` | Global stylesheet entry and base behavior | Dedicated styles imported and built | Commit and push |
-| `client/src/contexts/ThemeContext.tsx` | Theme preference, resolved mode, and motion state | Brand-neutral persistence and resilient media handling implemented | Commit and push |
-| `client/src/styles/tokens.css` | Semantic color, spacing, radius, shadow, focus, chart, and z-index tokens | Implemented and built | Commit and push |
-| `client/src/styles/typography.css` | Self-hosted font faces and readable type roles | Implemented with normal and italic display faces | Commit and push |
-| `client/src/styles/surfaces.css` | Texture, canvas, surface, and selection rules | Implemented and visually verified | Commit and push |
-| `client/src/styles/motion.css` | Motion tokens and reduced-motion behavior | Implemented and statically verified | Commit and push |
-| `client/public/fonts/*` | Open-license local display, interface, and reading fonts | Four valid WOFF2 files and three license files present | Commit and push |
+| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Step 3 overlay results recorded | Commit and push with overlay foundation |
+| `client/src/components/ui/Modal.tsx` | Shared dialog and overlay primitive | Labeling, dismissal, inert background, and nested scroll locking implemented | Commit and push |
+| `client/src/components/ui/ConfirmDialog.tsx` | Destructive confirmation surface | Description, safe initial focus, and loading dismissal guards implemented | Commit and push |
+| `client/src/hooks/useFocusTrap.ts` | Dialog focus containment and restoration | Initial focus, tab containment, and restoration implemented | Commit and push |
 
 ## 4) Changes Made
 
@@ -184,6 +189,8 @@ do_not_repeat:
 | 2026-07-10 | 1 | Completed the Step 1 checkpoint and activated Step 2. | Commit `9779f1f` and push output confirmed `main -> main`; working tree then contained only untracked `.verdent/` | `9779f1f` pushed to `origin/main` |
 | 2026-07-10 | 2 | Added the semantic theme foundation, locally hosted fonts, resilient three-mode persistence, and reduced-motion rules. | Client build passed; lint returned zero errors and 24 unchanged unrelated warnings; desktop/mobile light mode rendered; interface/display fonts loaded with 200 responses | Verification and checkpoint pending |
 | 2026-07-10 | 2 | Verified persisted dark bootstrap with a temporary same-origin harness, then removed the harness. | Root preference, class, resolved mode, color scheme, and computed dark background matched; static listener review covered live system and reduced-motion updates | Commit and push pending |
+| 2026-07-10 | 2 | Completed the Step 2 checkpoint and activated Step 3. | Commit `752b480` and push output confirmed `main -> main`; working tree then contained only untracked `.verdent/` | `752b480` pushed to `origin/main` |
+| 2026-07-10 | 3 | Rebuilt the shared modal focus, dismissal, inert-background, and nested scroll-lock foundation; updated ConfirmDialog to use safe initial focus and loading guards. | Client build passed; lint returned zero errors and 24 unchanged unrelated warnings; `git diff --check` passed | Commit and push pending |
 
 When recording future work, append a row; do not erase historical rows. Keep entries short and link each change to one plan step.
 
@@ -202,18 +209,18 @@ For every future failure, append: date, plan step, command or approach, exact er
 
 ## 6) Next steps
 
-### Next executable action — Step 2 only
+### Next executable action — Step 3 overlay checkpoint
 
-1. Inspect the scoped Step 2 diff and run final changed-file checks.
-2. Commit the Step 2 files and this ledger together.
+1. Inspect the scoped overlay diff.
+2. Commit `AGENTS.md`, `Modal.tsx`, `ConfirmDialog.tsx`, and `useFocusTrap.ts`.
 3. Push to tracked `main`.
-4. After push confirmation, mark Step 2 complete and activate Step 3.
+4. Continue Step 3 with the shared control state primitives.
 
 ### Ordered project queue
 
 - [x] **1. Brand:** central identity, marks/assets, metadata, legal naming caveat.
-- [~] **2. Theme:** semantic tokens, typography, surfaces, motion, system/light/dark, no-flash bootstrap. Active.
-- [ ] **3. UI system:** shared primitives, overlays, focus handling, feedback, responsive data patterns.
+- [x] **2. Theme:** semantic tokens, typography, surfaces, motion, system/light/dark, no-flash bootstrap.
+- [~] **3. UI system:** shared primitives, overlays, focus handling, feedback, responsive data patterns. Active.
 - [ ] **4. Marketing:** public shell, truthful landing narrative, progressive WebGL hero, unified pricing.
 - [ ] **5. Public/legal:** complete editorial, legal, forbidden, and not-found routes with metadata.
 - [ ] **6. Auth:** unified auth shell while preserving real auth behavior and safe redirects.
