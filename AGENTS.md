@@ -121,6 +121,7 @@ The work is frontend-only with respect to product contracts:
 - ConfirmDialog now describes itself, focuses the safest action by default, focuses the required text field when applicable, and prevents dismissal while confirmation is loading.
 - Client production build passes; lint completes with zero errors and the same 24 warnings outside the changed overlay files.
 - Runtime keyboard interaction remains pending because the available agent browser controls do not expose click, key input, or script evaluation in this session.
+- The overlay foundation was committed and pushed as `9e5fd7f`; the working tree then contained only untracked `.verdent/`.
 
 ### Contract boundary
 
@@ -139,13 +140,15 @@ working_tree_at_session_start: only untracked .verdent/
 phase: frontend-rebuild
 current_plan_step: 3
 current_step_name: Rebuild shared UI, overlay, feedback, and responsive data primitives
-step_status: overlay-foundation-verified-checkpoint-pending
-next_executable_action: Commit and push the verified Step 3 overlay foundation, then audit the shared control state primitives.
+step_status: overlay-foundation-pushed-control-audit-next
+next_executable_action: Audit Button, Field, Input, Select, and Toggle for complete semantic states and touch targets; patch only confirmed Step 3 gaps.
 first_files_to_read:
   - AGENTS.md
-  - client/src/components/ui/Modal.tsx
-  - client/src/components/ui/ConfirmDialog.tsx
-  - client/src/hooks/useFocusTrap.ts
+  - client/src/components/ui/Button.tsx
+  - client/src/components/ui/Field.tsx
+  - client/src/components/ui/Input.tsx
+  - client/src/components/ui/Select.tsx
+  - client/src/components/ui/Toggle.tsx
 files_to_ignore:
   - .verdent/
 verification_completed:
@@ -161,22 +164,27 @@ verification_completed:
   - Step 2 local interface and display font loading
   - Step 2 production build and lint
   - Step 2 commit 752b480 pushed to origin/main
+  - Step 3 overlay build and lint
+  - Step 3 overlay commit 9e5fd7f pushed to origin/main
 verification_pending: []
 known_blockers: []
 do_not_repeat:
   - broad repository inventory already captured on 2026-07-10
   - Step 1 brand audit and SVG inspection unless Step 1 files change
   - Step 2 client build and lint unless Step 2 files change
+  - Step 3 overlay build and lint unless overlay files change
 ```
 
 ## 3) Active Files
 
 | File | Purpose | State | Next action |
 |---|---|---|---|
-| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Step 3 overlay results recorded | Commit and push with overlay foundation |
-| `client/src/components/ui/Modal.tsx` | Shared dialog and overlay primitive | Labeling, dismissal, inert background, and nested scroll locking implemented | Commit and push |
-| `client/src/components/ui/ConfirmDialog.tsx` | Destructive confirmation surface | Description, safe initial focus, and loading dismissal guards implemented | Commit and push |
-| `client/src/hooks/useFocusTrap.ts` | Dialog focus containment and restoration | Initial focus, tab containment, and restoration implemented | Commit and push |
+| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Overlay push and low-context handoff recorded | Keep current during the control audit |
+| `client/src/components/ui/Button.tsx` | Shared button states and touch targets | Audit pending | Verify variants, loading, disabled, focus, and target size |
+| `client/src/components/ui/Field.tsx` | Shared labels, hints, and errors | Audit pending | Verify described-by and invalid wiring |
+| `client/src/components/ui/Input.tsx` | Shared text controls | Audit pending | Verify semantic states and target size |
+| `client/src/components/ui/Select.tsx` | Shared selection control | Audit pending | Verify semantic states and target size |
+| `client/src/components/ui/Toggle.tsx` | Shared binary control | Audit pending | Verify switch semantics, labels, and target size |
 
 ## 4) Changes Made
 
@@ -191,6 +199,7 @@ do_not_repeat:
 | 2026-07-10 | 2 | Verified persisted dark bootstrap with a temporary same-origin harness, then removed the harness. | Root preference, class, resolved mode, color scheme, and computed dark background matched; static listener review covered live system and reduced-motion updates | Commit and push pending |
 | 2026-07-10 | 2 | Completed the Step 2 checkpoint and activated Step 3. | Commit `752b480` and push output confirmed `main -> main`; working tree then contained only untracked `.verdent/` | `752b480` pushed to `origin/main` |
 | 2026-07-10 | 3 | Rebuilt the shared modal focus, dismissal, inert-background, and nested scroll-lock foundation; updated ConfirmDialog to use safe initial focus and loading guards. | Client build passed; lint returned zero errors and 24 unchanged unrelated warnings; `git diff --check` passed | Commit and push pending |
+| 2026-07-10 | 3 | Completed the overlay-foundation checkpoint. | Commit `9e5fd7f` and push output confirmed `main -> main`; working tree then contained only untracked `.verdent/` | `9e5fd7f` pushed to `origin/main` |
 
 When recording future work, append a row; do not erase historical rows. Keep entries short and link each change to one plan step.
 
@@ -209,12 +218,12 @@ For every future failure, append: date, plan step, command or approach, exact er
 
 ## 6) Next steps
 
-### Next executable action — Step 3 overlay checkpoint
+### Next executable action — Step 3 control states
 
-1. Inspect the scoped overlay diff.
-2. Commit `AGENTS.md`, `Modal.tsx`, `ConfirmDialog.tsx`, and `useFocusTrap.ts`.
-3. Push to tracked `main`.
-4. Continue Step 3 with the shared control state primitives.
+1. Read only `Button.tsx`, `Field.tsx`, `Input.tsx`, `Select.tsx`, and `Toggle.tsx`.
+2. Audit hover, active, focus-visible, disabled, loading, invalid, selected, destructive, and minimum touch-target behavior.
+3. Patch only confirmed gaps while preserving current component APIs where possible.
+4. Run client build and lint, record exact results, commit with this ledger, and push.
 
 ### Ordered project queue
 
