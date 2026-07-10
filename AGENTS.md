@@ -80,8 +80,8 @@ The work is frontend-only with respect to product contracts:
 
 ### Confirmed incomplete or not yet verified
 
-- Step 1 brand work is only **partially evidenced by files**; stale-brand search, metadata behavior, SVG rendering, and contract-name preservation have not been verified in this ledger.
-- Dedicated semantic style files under `client/src/styles/` are absent from the tracked file inventory.
+- Step 1 brand work is implemented, verified, committed, and pushed.
+- Step 2 semantic style files and local font assets are implemented and verified in the working tree; checkpoint commit and push remain.
 - Three/WebGL packages are absent from `client/package.json`; the progressive hero work is not complete.
 - The planned auth shell and generation component split are absent from the tracked file inventory.
 - Steps 2-12 have not been behaviorally, visually, or contract-verified in this ledger.
@@ -98,7 +98,19 @@ The work is frontend-only with respect to product contracts:
 - Client lint completes with zero errors and 24 warnings; the Step 1 metadata-hook dependency warnings were removed, while the remaining warnings are outside the Step 1 files.
 - All six static SVG variants render successfully in browser inspection at desktop or mobile viewport sizes.
 - Browser inspection confirms Briefloom page titles and responsive branded public surfaces. Frontend-only preview inspection records expected `/api/auth/refresh` 404 responses and a Vite HMR host mismatch that belongs to Step 11.
-- Step 1 implementation and verification are complete; commit and push are the remaining checkpoint actions.
+- Step 1 implementation and verification were committed and pushed as `9779f1f`.
+
+### Current Step 2 findings
+
+- Added dedicated semantic color, status, chart, radius, spacing, shadow, z-index, typography, surface, and motion tokens.
+- Added self-hosted variable Inter, Fraunces normal/italic, and Source Serif 4 fonts with SIL Open Font License texts.
+- Theme persistence now uses brand-neutral `ui_theme`, migrates the legacy key, tolerates blocked storage, and exposes preference plus resolved theme on the root element.
+- The pre-render bootstrap resolves and applies system/light/dark before React loads.
+- Client production build passes; lint completes with zero errors and the same 24 warnings outside the new Step 2 styles.
+- Desktop and mobile light-mode browser inspection passes; local interface and display font requests return 200.
+- Persisted dark bootstrap was verified with a temporary same-origin harness: the root had class, preference, resolved mode, and color scheme set to `dark`, with computed body background `rgb(23, 33, 29)`.
+- Static review confirms system and reduced-motion media listeners update state and clean up; the agent browser does not expose media emulation, so live OS preference switching remains pending for the final quality step.
+- Source Serif 4 is locally served and built but no current route uses the new `.font-reading` utility, so its network request remains pending until a document-reading surface adopts it.
 
 ### Contract boundary
 
@@ -115,10 +127,10 @@ verified_head_at_session_start: 1665c15
 remote_parity_at_session_start: main matches origin/main
 working_tree_at_session_start: only untracked .verdent/
 phase: frontend-rebuild
-current_plan_step: 1
-current_step_name: Centralize Briefloom identity and brand assets
-step_status: implementation-verified-push-pending
-next_executable_action: Commit and push the verified Step 1 changes with this ledger, then activate Step 2.
+current_plan_step: 2
+current_step_name: Establish semantic tokens, typography, texture, motion, and three-mode theming
+step_status: implementation-verified-checkpoint-pending
+next_executable_action: Inspect the scoped Step 2 diff, run final changed-file checks, commit and push Step 2, then activate Step 3.
 first_files_to_read:
   - AGENTS.md
   - client/index.html
@@ -133,28 +145,33 @@ verification_completed:
   - internal contract identifier preservation
   - client production build
   - client lint with zero errors and 24 unrelated warnings
+  - Step 1 commit 9779f1f pushed to origin/main
+  - Step 2 light-mode desktop and mobile rendering
+  - Step 2 persisted dark bootstrap
+  - Step 2 local interface and display font loading
+  - Step 2 production build and lint
 verification_pending:
-  - Step 1 commit and push
+  - Step 2 commit and push
 known_blockers: []
 do_not_repeat:
   - broad repository inventory already captured on 2026-07-10
   - Step 1 brand audit and SVG inspection unless Step 1 files change
+  - Step 2 client build and lint unless Step 2 files change
 ```
 
 ## 3) Active Files
 
 | File | Purpose | State | Next action |
 |---|---|---|---|
-| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Current Step 1 verification recorded | Commit and push with Step 1 changes |
-| `client/src/config/brand.ts` | Central public identity, metadata, navigation, support, and legal copy | Audited; requirements present | No change required |
-| `client/src/components/brand/BrandMark.tsx` | Accessible inline brand mark variants | Audited and rendered | No change required |
-| `client/src/components/brand/BrandLockup.tsx` | Public lockup composition | Audited and rendered | No change required |
-| `client/index.html` | Initial document identity and metadata | Audited and built successfully | Step 2 will add no-flash theme bootstrap refinements |
-| `client/src/hooks/useDocumentMeta.ts` | Route metadata and canonical lifecycle | Dependency handling normalized; build and lint pass | Commit and push |
-| `docs/brand-identity.md` | Naming matrix and operational naming boundary | Audited; launch caveat and preserved identifiers present | No change required |
-| `README.md` | Public identity and operational terminology | Audited; boundary present | No change required |
-| `client/public/brand/*.svg` | Six static mark, favicon, social, and hero variants | All six rendered successfully | No change required |
-| `client/src/pages/auth/Login.tsx` | User-visible sign-in transactional copy | Metadata description now sources `BRAND.name` | Commit and push |
+| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Step 2 implementation and verification recorded | Commit and push with Step 2 |
+| `client/index.html` | Initial document identity and theme bootstrap | Hardened no-flash bootstrap verified | Commit and push |
+| `client/src/index.css` | Global stylesheet entry and base behavior | Dedicated styles imported and built | Commit and push |
+| `client/src/contexts/ThemeContext.tsx` | Theme preference, resolved mode, and motion state | Brand-neutral persistence and resilient media handling implemented | Commit and push |
+| `client/src/styles/tokens.css` | Semantic color, spacing, radius, shadow, focus, chart, and z-index tokens | Implemented and built | Commit and push |
+| `client/src/styles/typography.css` | Self-hosted font faces and readable type roles | Implemented with normal and italic display faces | Commit and push |
+| `client/src/styles/surfaces.css` | Texture, canvas, surface, and selection rules | Implemented and visually verified | Commit and push |
+| `client/src/styles/motion.css` | Motion tokens and reduced-motion behavior | Implemented and statically verified | Commit and push |
+| `client/public/fonts/*` | Open-license local display, interface, and reading fonts | Four valid WOFF2 files and three license files present | Commit and push |
 
 ## 4) Changes Made
 
@@ -164,6 +181,9 @@ do_not_repeat:
 | 2026-07-10 | Continuity correction | Replaced stale HEAD and working-tree claims with the Git state verified at the current session start. | Session-start `git status --short --branch`, `git log -5 --oneline --decorate`, `git show HEAD:AGENTS.md`, scoped diff inspection, and `git diff --check` passed | Commit without explicit identity failed; retry pending with existing repository author identity |
 | 2026-07-10 | Continuity correction | Corrected the current session HEAD from stale `40f545d` to Git-verified `1665c15`; confirmed `main` matches `origin/main` and only `.verdent/` is untracked. | Session-start `git status --short --branch`, `git log -5 --oneline --decorate`, and `git show HEAD:AGENTS.md` | Included in this checkpoint; push required before Step 1 resumes |
 | 2026-07-10 | 1 | Completed the targeted brand audit, centralized the login metadata description, and normalized document metadata dependencies without changing public or operational contracts. | Stale-name searches clean; six SVGs rendered; client build passed; lint returned zero errors and 24 unrelated warnings; desktop/mobile public pages inspected | Commit and push pending |
+| 2026-07-10 | 1 | Completed the Step 1 checkpoint and activated Step 2. | Commit `9779f1f` and push output confirmed `main -> main`; working tree then contained only untracked `.verdent/` | `9779f1f` pushed to `origin/main` |
+| 2026-07-10 | 2 | Added the semantic theme foundation, locally hosted fonts, resilient three-mode persistence, and reduced-motion rules. | Client build passed; lint returned zero errors and 24 unchanged unrelated warnings; desktop/mobile light mode rendered; interface/display fonts loaded with 200 responses | Verification and checkpoint pending |
+| 2026-07-10 | 2 | Verified persisted dark bootstrap with a temporary same-origin harness, then removed the harness. | Root preference, class, resolved mode, color scheme, and computed dark background matched; static listener review covered live system and reduced-motion updates | Commit and push pending |
 
 When recording future work, append a row; do not erase historical rows. Keep entries short and link each change to one plan step.
 
@@ -182,17 +202,17 @@ For every future failure, append: date, plan step, command or approach, exact er
 
 ## 6) Next steps
 
-### Next executable action — Step 1 checkpoint
+### Next executable action — Step 2 only
 
-1. Inspect the scoped Step 1 diff and run `git diff --check`.
-2. Commit `AGENTS.md`, `client/src/hooks/useDocumentMeta.ts`, and `client/src/pages/auth/Login.tsx`.
-3. Push the commit to tracked `main`.
-4. After push confirmation, mark Step 1 complete and activate Step 2.
+1. Inspect the scoped Step 2 diff and run final changed-file checks.
+2. Commit the Step 2 files and this ledger together.
+3. Push to tracked `main`.
+4. After push confirmation, mark Step 2 complete and activate Step 3.
 
 ### Ordered project queue
 
-- [~] **1. Brand:** implementation and verification complete; checkpoint commit and push pending.
-- [ ] **2. Theme:** semantic tokens, typography, surfaces, motion, system/light/dark, no-flash bootstrap.
+- [x] **1. Brand:** central identity, marks/assets, metadata, legal naming caveat.
+- [~] **2. Theme:** semantic tokens, typography, surfaces, motion, system/light/dark, no-flash bootstrap. Active.
 - [ ] **3. UI system:** shared primitives, overlays, focus handling, feedback, responsive data patterns.
 - [ ] **4. Marketing:** public shell, truthful landing narrative, progressive WebGL hero, unified pricing.
 - [ ] **5. Public/legal:** complete editorial, legal, forbidden, and not-found routes with metadata.

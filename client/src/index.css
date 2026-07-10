@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@import "./styles/tokens.css";
+@import "./styles/typography.css";
+@import "./styles/surfaces.css";
+@import "./styles/motion.css";
 
 @theme {
   --color-background: var(--background);
@@ -27,98 +31,18 @@
 }
 
 @layer base {
-  :root {
-    --background: #f7f3eb;
-    --foreground: #1e2c27;
-    --card: #fffdf8;
-    --card-foreground: #1e2c27;
-    --popover: #fffdf8;
-    --popover-foreground: #1e2c27;
-    --primary: #b9573b;
-    --primary-foreground: #ffffff;
-    --secondary: #e9e2d6;
-    --secondary-foreground: #263b33;
-    --muted: #eee8de;
-    --muted-foreground: #6f766f;
-    --accent: #ead4c8;
-    --accent-foreground: #7c3826;
-    --destructive: #ef4444;
-    --destructive-foreground: #fafafa;
-    --border: #dcd3c5;
-    --input: #dcd3c5;
-    --ring: #b9573b;
-    --radius: 0.75rem;
-  }
-
-  .dark {
-    --background: #17211d;
-    --foreground: #f8f3e9;
-    --card: #1e2c27;
-    --card-foreground: #f8f3e9;
-    --popover: #1e2c27;
-    --popover-foreground: #f8f3e9;
-    --primary: #d8795c;
-    --primary-foreground: #ffffff;
-    --secondary: #2b3b35;
-    --secondary-foreground: #f8f3e9;
-    --muted: #2b3b35;
-    --muted-foreground: #b7b7ae;
-    --accent: #53372f;
-    --accent-foreground: #f5c6b5;
-    --destructive: #7f1d1d;
-    --destructive-foreground: #f9fafb;
-    --border: #374a42;
-    --input: #374a42;
-    --ring: #d8795c;
-  }
-}
-
-@layer base {
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     min-width: 320px;
     margin: 0;
-    -webkit-font-smoothing: antialiased;
-  }
-  
-  /* Glassmorphism utilities */
-  .glass {
-    @apply bg-background/60 backdrop-blur-md border border-white/10;
   }
 }
 
 @layer utilities {
-  .font-display {
-    font-family: Georgia, "Times New Roman", serif;
-    letter-spacing: -0.045em;
-  }
-
-  .paper-grid {
-    background-image:
-      linear-gradient(to right, rgb(38 59 51 / 0.055) 1px, transparent 1px),
-      linear-gradient(to bottom, rgb(38 59 51 / 0.055) 1px, transparent 1px);
-    background-size: 32px 32px;
-  }
-
   .eyebrow {
     @apply text-[11px] font-bold uppercase tracking-[0.2em];
   }
-
-  .surface-card {
-    @apply border border-[#dcd3c5] bg-[#fffdf8] shadow-[0_20px_60px_rgba(56,45,33,0.08)] dark:border-[#374a42] dark:bg-[#1e2c27];
-  }
-}
-
-::selection {
-  background: #d8795c;
-  color: #fff;
-}
-
-html {
-  scroll-behavior: smooth;
 }
