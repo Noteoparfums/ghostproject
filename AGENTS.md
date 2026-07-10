@@ -176,14 +176,15 @@ verified_head_at_session_start: 2713142
 remote_parity_at_session_start: main matches origin/main
 working_tree_at_session_start: only untracked .verdent/
 phase: frontend-rebuild
-current_plan_step: 8
-current_step_name: Generation
+current_plan_step: 9
+current_step_name: Projects and voice
 step_status: not-started
-next_executable_action: Inspect the generation workspace components against Step 8 plan targets before implementing.
+next_executable_action: Inspect the project and brand voice pages against Step 9 plan targets before implementing.
 first_files_to_read:
   - AGENTS.md
 
-  - client/src/pages/app/Generate.tsx
+  - client/src/pages/app/Projects.tsx
+  - client/src/pages/app/BrandVoices.tsx
 files_to_ignore:
   - .verdent/
 verification_completed:
@@ -246,8 +247,9 @@ do_not_repeat:
 
 | File | Purpose | State | Next action |
 |---|---|---|---|
-| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Step 7 checkpoint recorded | Commit with ledger update |
-| `client/src/pages/app/Generate.tsx` | Main generation workspace | Needs Step 8 migration | Inspect and rebuild |
+| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Step 8 checkpoint recorded | Commit with ledger update |
+| `client/src/pages/app/Projects.tsx` | Projects CRUD | Needs Step 9 migration | Inspect and rebuild |
+| `client/src/pages/app/BrandVoices.tsx` | Voice profiles | Needs Step 9 migration | Inspect and rebuild |
 
 ## 4) Changes Made
 
@@ -285,6 +287,7 @@ do_not_repeat:
 | 2026-07-10 | 4 | Installed three, @react-three/fiber, @react-three/drei (63 packages); created 7 marketing section components; rebuilt MarketingNav with mobile menu; rebuilt Footer and Pricing with semantic tokens; updated pricing.ts config; updated App.tsx layouts; rebuilt LandingRedesign as thin composition. | Vite build passed (388ms); lint 0 errors 24 warnings (all pre-existing); LoomSculpture chunk isolated (935KB); git diff --check passed; dev server metadata verified | Committed and pushed as `88d95c7` |
 | 2026-07-10 | 5 | Migrated EditorialLayout and StatusPage to semantic tokens; removed dangling prose-briefloom, eyebrow, and paper-grid classes; added AlertTriangle icon to legal notice; added meta descriptions to Privacy, Terms, and Refund pages. Content in About, Blog, Changelog reviewed and confirmed honest. | Vite build passed (385ms); lint 0 errors 24 warnings (all pre-existing); git diff --check passed | Commit and push pending |
 | 2026-07-10 | 7 | Migrated AppShell and Dashboard to use semantic design tokens and improved mobile layout. All existing contracts (Auth, Billing, hooks) preserved. | Isolated file tsc passed; lint returned 0 errors; client build passed. | 77270a8 pushed to origin/main |
+| 2026-07-10 | 8 | Migrated Generate workspace to semantic design tokens. Preserved real SSE generation hook. | Isolated file tsc passed; lint returned 0 errors; client build passed. | 7795ed1 pushed to origin/main |
 
 When recording future work, append a row; do not erase historical rows. Keep entries short and link each change to one plan step.
 
@@ -327,7 +330,7 @@ For every future failure, append: date, plan step, command or approach, exact er
 - [x] **5. Public/legal:** complete editorial, legal, forbidden, and not-found routes with metadata.
 - [x] **6. Auth:** unified auth shell while preserving real auth behavior and safe redirects.
 - [x] **7. App shell/dashboard:** document scrolling, mobile sheet, exact nav, real account state.
-- [ ] **8. Generation:** honest Brief → Generate → Review workspace using actual SSE payloads only.
+- [x] **8. Generation:** honest Brief → Generate → Review workspace using actual SSE payloads only.
 - [ ] **9. Projects/voice:** existing CRUD contracts, accessible controls, detail and wizard states.
 - [ ] **10. Billing/settings:** provider-backed behavior only; remove all simulated operations.
 - [ ] **11. Routing/publishing:** lazy boundaries, status surfaces, proxy/HMR configuration, route inventory.
