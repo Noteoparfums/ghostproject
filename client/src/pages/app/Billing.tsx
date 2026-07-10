@@ -61,30 +61,30 @@ export function Billing() {
   return (
     <div className="flex min-w-0 flex-col gap-7">
       <header>
-        <p className="eyebrow text-[#b9573b]">Plan and usage</p>
-        <h1 className="font-display mt-2 text-4xl">Billing</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Manage your real provider subscription, invoices, and one-time credit packs.</p>
+        <p className="eyebrow text-[var(--color-accent-primary)]">Plan and usage</p>
+        <h1 className="font-display mt-2 text-4xl text-[var(--color-text-strong)]">Billing</h1>
+        <p className="mt-2 text-sm text-[var(--color-text-subtle)]">Manage your real provider subscription, invoices, and one-time credit packs.</p>
       </header>
 
       {isPastDue && (
-        <div className="flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-red-700 dark:text-red-300" role="alert">
+        <div className="flex items-center gap-3 rounded-xl border border-[var(--color-status-danger)]/30 bg-[var(--color-status-danger)]/10 p-4 text-[var(--color-status-danger)]" role="alert">
           <AlertCircle className="h-5 w-5 shrink-0" />
           <p className="text-xs font-semibold">Your payment is past due. Open the billing provider to update your payment method.</p>
         </div>
       )}
       {inCancelGrace && (
-        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs leading-5 text-amber-800 dark:text-amber-200">
+        <div className="rounded-xl border border-[var(--color-status-warning)]/30 bg-[var(--color-status-warning)]/10 p-4 text-xs leading-5 text-[var(--color-status-warning)]">
           This plan is set to stop renewing. Reactivation is not supported in this workspace; use the provider portal or {BRAND.support.contactLabel.toLowerCase()}.
         </div>
       )}
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <section className="surface-card rounded-2xl p-6 lg:col-span-2">
+        <section className="bg-[var(--color-surface-raised)] border border-[var(--color-border-subtle)] rounded-2xl p-6 lg:col-span-2">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="eyebrow text-muted-foreground">Current subscription</p>
-              <h2 className="mt-2 text-xl font-extrabold">{plan?.name || 'Starter'}</h2>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="eyebrow text-[var(--color-text-subtle)]">Current subscription</p>
+              <h2 className="mt-2 text-xl font-extrabold text-[var(--color-text-strong)]">{plan?.name || 'Starter'}</h2>
+              <p className="mt-1 text-xs text-[var(--color-text-subtle)]">
                 {subscription ? `Billed ${subscription.interval} · Current period ends ${formatDate(subscription.current_period_end)}` : 'No paid subscription is active.'}
               </p>
             </div>
@@ -101,21 +101,21 @@ export function Billing() {
           </div>
         </section>
 
-        <section className="surface-card rounded-2xl p-6">
-          <p className="eyebrow text-muted-foreground">Credit balance</p>
-          <p className="mt-3 text-4xl font-extrabold">{credits}</p>
-          <p className="mt-2 text-xs leading-5 text-muted-foreground">Available for full campaign generation and supported section regeneration.</p>
+        <section className="bg-[var(--color-surface-raised)] border border-[var(--color-border-subtle)] rounded-2xl p-6">
+          <p className="eyebrow text-[var(--color-text-subtle)]">Credit balance</p>
+          <p className="mt-3 text-4xl font-extrabold text-[var(--color-text-strong)]">{credits}</p>
+          <p className="mt-2 text-xs leading-5 text-[var(--color-text-subtle)]">Available for full campaign generation and supported section regeneration.</p>
         </section>
       </div>
 
-      <section className="surface-card rounded-2xl p-6">
-        <h2 className="text-sm font-bold">Invoices</h2>
-        <p className="mt-1 text-xs text-muted-foreground">Invoice PDF downloads and refund submission are not exposed by the current service.</p>
+      <section className="bg-[var(--color-surface-raised)] border border-[var(--color-border-subtle)] rounded-2xl p-6">
+        <h2 className="text-sm font-bold text-[var(--color-text-strong)]">Invoices</h2>
+        <p className="mt-1 text-xs text-[var(--color-text-subtle)]">Invoice PDF downloads and refund submission are not exposed by the current service.</p>
         <div className="mt-5">
           {loadingInvoices ? (
-            <p className="text-xs text-muted-foreground" aria-live="polite">Loading invoices…</p>
+            <p className="text-xs text-[var(--color-text-subtle)]" aria-live="polite">Loading invoices…</p>
           ) : invoices.length === 0 ? (
-            <p className="rounded-xl bg-muted p-4 text-xs text-muted-foreground">No invoices are available for this account.</p>
+            <p className="rounded-xl bg-[var(--color-surface-sunken)] p-4 text-xs text-[var(--color-text-subtle)]">No invoices are available for this account.</p>
           ) : (
             <DataTable
               columns={[
@@ -124,15 +124,15 @@ export function Billing() {
                 { key: 'total_cents', label: 'Amount', render: (row: any) => formatCents(row.total_cents) },
                 { key: 'status', label: 'Status', render: (row: any) => <Badge tone={row.status === 'paid' ? 'success' : 'warning'}>{row.status}</Badge> },
               ]}
-              rows={invoices.map((invoice) => ({ ...invoice, id: String(invoice.id) })) as any}
+              rows={invoices.map((invoice: any) => ({ ...invoice, id: String(invoice.id) })) as any}
             />
           )}
         </div>
       </section>
 
-      <section className="surface-card rounded-2xl p-6">
-        <h2 className="text-sm font-bold">Billing details and support</h2>
-        <p className="mt-2 max-w-2xl text-xs leading-5 text-muted-foreground">
+      <section className="bg-[var(--color-surface-raised)] border border-[var(--color-border-subtle)] rounded-2xl p-6">
+        <h2 className="text-sm font-bold text-[var(--color-text-strong)]">Billing details and support</h2>
+        <p className="mt-2 max-w-2xl text-xs leading-5 text-[var(--color-text-subtle)]">
           Billing-detail changes, credit-ledger history, refund requests, and subscription reactivation are not available through the current Briefloom API. {BRAND.support.availability}
         </p>
       </section>
@@ -144,11 +144,11 @@ export function Billing() {
               key={slug}
               type="button"
               onClick={() => handleTopup(slug)}
-              className="min-h-32 rounded-2xl border border-border bg-card p-5 text-left transition hover:border-[#b9573b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="min-h-32 rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-raised)] p-5 text-left transition hover:border-[var(--color-accent-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <span className="text-xs font-bold capitalize">{slug} pack</span>
-              <span className="mt-2 block text-2xl font-extrabold">{pack.credits} credits</span>
-              <span className="mt-1 block text-xs text-muted-foreground">{formatCents(pack.price_cents)}</span>
+              <span className="text-xs font-bold capitalize text-[var(--color-text-strong)]">{slug} pack</span>
+              <span className="mt-2 block text-2xl font-extrabold text-[var(--color-text-strong)]">{pack.credits} credits</span>
+              <span className="mt-1 block text-xs text-[var(--color-text-subtle)]">{formatCents(pack.price_cents)}</span>
             </button>
           ))}
         </div>
