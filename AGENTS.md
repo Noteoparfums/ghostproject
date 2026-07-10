@@ -62,7 +62,7 @@ The work is frontend-only with respect to product contracts:
 
 **Branch:** `main` tracking `origin/main`
 
-**Verified HEAD at current session start:** `8956ae3` (`chore: verify feedback primitives`)
+**Verified HEAD at current session start:** `dcdc53e` (`3`)
 
 **Working tree at current session start:** only untracked `.verdent/`; it is unrelated and must not be committed.
 
@@ -149,14 +149,14 @@ Unsupported and never simulated: generation cancellation, A/B variants, generati
 ```yaml
 last_updated: 2026-07-10
 branch: main
-    verified_head_at_session_start: 8956ae3
+verified_head_at_session_start: dcdc53e
 remote_parity_at_session_start: main matches origin/main
 working_tree_at_session_start: only untracked .verdent/
 phase: frontend-rebuild
 current_plan_step: 3
 current_step_name: Rebuild shared UI, overlay, feedback, and responsive data primitives
-    step_status: responsive-data-primitives-dependency-install-pending
-    next_executable_action: Install locked workspace dependencies, then rerun the unchanged isolated TypeScript and client lint checks for Slider, Accordion, and DataTable.
+step_status: responsive-data-primitives-dependency-install-pending
+next_executable_action: Install locked workspace dependencies, then rerun the unchanged isolated TypeScript and client lint checks for Slider, Accordion, and DataTable.
 first_files_to_read:
   - AGENTS.md
       - client/src/components/ui/Slider.tsx
@@ -185,9 +185,9 @@ verification_completed:
   - Step 3 feedback-primitives isolated strict TypeScript check
   - Step 3 feedback-primitives lint with zero errors and 23 unrelated warnings
   - Step 3 feedback-primitives scoped diff inspection and git diff --check
-      - Step 3 feedback-primitives commit 8956ae3 pushed to origin/main
+  - Step 3 feedback-primitives commit 8956ae3 pushed to origin/main
 verification_pending:
-      - isolated TypeScript and lint verification
+  - isolated TypeScript and lint verification
 known_blockers: []
 do_not_repeat:
   - broad repository inventory already captured on 2026-07-10
@@ -200,7 +200,17 @@ do_not_repeat:
 
 | File | Purpose | State | Next action |
 |---|---|---|---|
-| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Current-session Git correction recorded; next Step 3 slice activated | Record audit, implementation, verification, commit, and push |
+| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Current-session Git correction and feedback verification results recorded; scoped diff inspected and `git diff --check` passed | Commit and push checkpoint |
+| `client/src/components/ui/Button.tsx` | Shared button states and touch targets | Complete states and 44px target passed isolated TypeScript verification | No further action in this atomic step |
+| `client/src/components/ui/Field.tsx` | Shared labels, hints, and errors | Automatic ID, described-by, and invalid wiring passed isolated TypeScript verification | No further action in this atomic step |
+| `client/src/components/ui/Input.tsx` | Shared text controls | Multiline cast fix and semantic states passed isolated TypeScript verification | No further action in this atomic step |
+| `client/src/components/ui/Select.tsx` | Shared selection control | Invalid/success/disabled states and 44px target passed isolated TypeScript verification | No further action in this atomic step |
+| `client/src/components/ui/Toggle.tsx` | Shared binary control | Switch labels, selected states, and 44px target passed isolated TypeScript verification | No further action in this atomic step |
+| `client/src/components/ui/Badge.tsx` | Compact semantic status indicator | Exhaustive tones and resilient compact content layout passed isolated TypeScript and lint verification | Include in scoped checkpoint |
+| `client/src/components/ui/EmptyState.tsx` | Empty and unavailable state presentation | Optional tones, section attributes, and action semantics passed isolated TypeScript and lint verification | Include in scoped checkpoint |
+| `client/src/components/ui/Skeleton.tsx` | Loading placeholder and announcement behavior | Decorative default and labelled status semantics passed isolated TypeScript and lint verification | Include in scoped checkpoint |
+| `client/src/components/ui/Stepper.tsx` | Ordered progress state | Active index normalization and concise live step updates passed isolated TypeScript and lint verification | Include in scoped checkpoint |
+| `client/src/components/ui/ProgressRing.tsx` | Determinate progress visualization | Explicit SVG view box and progress metadata passed isolated TypeScript and lint verification | Include in scoped checkpoint |
 | `client/src/components/ui/Slider.tsx` | Shared ranged-value control | Value formatting, endpoint context, semantic states, and 44px interaction area implemented | Run isolated TypeScript and lint verification |
 | `client/src/components/ui/Accordion.tsx` | Shared disclosure-group control | Linked disclosure semantics, disabled state, focus styling, and reduced-motion transitions implemented | Run isolated TypeScript and lint verification |
 | `client/src/components/ui/DataTable.tsx` | Shared responsive data presentation | Keyboard sorting, caption, mobile semantics, empty state, and normalized pagination implemented | Run isolated TypeScript and lint verification |
@@ -263,9 +273,12 @@ For every future failure, append: date, plan step, command or approach, exact er
 
 ### Next executable action — Step 3 responsive data primitives
 
-1. [x] Inspect Slider, Accordion, and DataTable plus their targeted usages.
-2. [x] Rebuild semantic states, keyboard behavior, and responsive presentation without removing existing props.
-3. Run isolated TypeScript verification and lint, then record exact results.
+1. [x] Inspect Badge, EmptyState, Skeleton, Stepper, and ProgressRing plus their targeted usages.
+2. [x] Rebuild semantic states and accessibility behavior without removing existing props.
+3. [x] Install locked workspace dependencies, run isolated TypeScript verification and lint, then record exact results.
+4. [x] Inspect Slider, Accordion, and DataTable plus their targeted usages.
+5. [x] Rebuild semantic states, keyboard behavior, and responsive presentation without removing existing props.
+6. Run isolated TypeScript verification and lint, then record exact results.
 4. Inspect the scoped diff, run `git diff --check`, commit the active files with this ledger, and push.
 
 ### Ordered project queue
