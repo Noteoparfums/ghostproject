@@ -62,7 +62,7 @@ The work is frontend-only with respect to product contracts:
 
 **Branch:** `main` tracking `origin/main`
 
-**Verified HEAD at current session start:** `3bdce02` (`Merge branch 'main' of https://github.com/Noteoparfums/ghostproject`)
+**Verified HEAD at current session start:** `fab4722` (`4`)
 
 **Working tree at current session start:** only untracked `.verdent/`; it is unrelated and must not be committed.
 
@@ -120,9 +120,11 @@ The work is frontend-only with respect to product contracts:
 - Body scroll locking is reference-counted for nested dialogs, compensates for scrollbar width, and makes non-top-level body content inert.
 - ConfirmDialog now describes itself, focuses the safest action by default, focuses the required text field when applicable, and prevents dismissal while confirmation is loading.
 - Button, Field, Input, Select, and Toggle now have complete invalid/description wiring, disabled and loading semantics, explicit hover/active/focus/selected/success/destructive states where applicable, and minimum 44px interactive targets.
-- Client production build passes; lint completes with zero errors and the same 24 warnings outside the changed overlay files.
+- The overlay-foundation production build passed; lint completed with zero errors and the same 24 warnings outside the changed overlay files.
 - Runtime keyboard interaction remains pending because the available agent browser controls do not expose click, key input, or script evaluation in this session.
 - The overlay foundation was committed and pushed as `9e5fd7f`; the working tree then contained only untracked `.verdent/`.
+- Button, Field, Input, Select, and Toggle control-state changes are present in Git-verified `HEAD` `fab4722`, which matches `origin/main`; isolated TypeScript verification remains pending.
+- The isolated TypeScript rerun initially could not start because this fresh environment had no root `node_modules/.bin/tsc`; after installing 348 locked workspace packages, the same five-file check passed with no diagnostics.
 
 ### Contract boundary
 
@@ -135,14 +137,14 @@ Unsupported and never simulated: generation cancellation, A/B variants, generati
 ```yaml
 last_updated: 2026-07-10
 branch: main
-verified_head_at_session_start: 3bdce02
+verified_head_at_session_start: fab4722
 remote_parity_at_session_start: main matches origin/main
 working_tree_at_session_start: only untracked .verdent/
 phase: frontend-rebuild
 current_plan_step: 3
 current_step_name: Rebuild shared UI, overlay, feedback, and responsive data primitives
-step_status: control-state-targeted-typecheck-fix-in-progress
-next_executable_action: Rerun isolated TypeScript verification for the five active controls after correcting the multiline attribute cast.
+step_status: control-state-verification-complete-commit-pending
+next_executable_action: Commit the validated continuity correction and control-state verification checkpoint, then push it to the tracked main branch.
 first_files_to_read:
   - AGENTS.md
   - client/src/components/ui/Button.tsx
@@ -167,9 +169,9 @@ verification_completed:
   - Step 2 commit 752b480 pushed to origin/main
   - Step 3 overlay build and lint
   - Step 3 overlay commit 9e5fd7f pushed to origin/main
-verification_pending:
-  - Step 3 control-state isolated TypeScript rerun
-  - scoped diff inspection and diff check
+  - Step 3 five-control isolated strict TypeScript check
+  - Step 3 control-state checkpoint scoped diff inspection and git diff --check
+verification_pending: []
 known_blockers: []
 do_not_repeat:
   - broad repository inventory already captured on 2026-07-10
@@ -182,12 +184,12 @@ do_not_repeat:
 
 | File | Purpose | State | Next action |
 |---|---|---|---|
-| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Overlay push and low-context handoff recorded | Keep current during the control audit |
-| `client/src/components/ui/Button.tsx` | Shared button states and touch targets | Complete states and 44px target implemented | Run build and lint |
-| `client/src/components/ui/Field.tsx` | Shared labels, hints, and errors | Automatic ID, described-by, and invalid wiring implemented | Run build and lint |
-| `client/src/components/ui/Input.tsx` | Shared text controls | Invalid/success/disabled states and 44px target implemented | Run build and lint |
-| `client/src/components/ui/Select.tsx` | Shared selection control | Invalid/success/disabled states and 44px target implemented | Run build and lint |
-| `client/src/components/ui/Toggle.tsx` | Shared binary control | Switch labels, selected states, and 44px target implemented | Run build and lint |
+| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Git correction and verification checkpoint inspected; `git diff --check` passed | Commit and push checkpoint |
+| `client/src/components/ui/Button.tsx` | Shared button states and touch targets | Complete states and 44px target passed isolated TypeScript verification | No further action in this atomic step |
+| `client/src/components/ui/Field.tsx` | Shared labels, hints, and errors | Automatic ID, described-by, and invalid wiring passed isolated TypeScript verification | No further action in this atomic step |
+| `client/src/components/ui/Input.tsx` | Shared text controls | Multiline cast fix and semantic states passed isolated TypeScript verification | No further action in this atomic step |
+| `client/src/components/ui/Select.tsx` | Shared selection control | Invalid/success/disabled states and 44px target passed isolated TypeScript verification | No further action in this atomic step |
+| `client/src/components/ui/Toggle.tsx` | Shared binary control | Switch labels, selected states, and 44px target passed isolated TypeScript verification | No further action in this atomic step |
 
 ## 4) Changes Made
 
@@ -205,6 +207,10 @@ do_not_repeat:
 | 2026-07-10 | 3 | Completed the overlay-foundation checkpoint. | Commit `9e5fd7f` and push output confirmed `main -> main`; working tree then contained only untracked `.verdent/` | `9e5fd7f` pushed to `origin/main` |
 | 2026-07-10 | Continuity correction | Corrected the stale session-start HEAD from `1665c15` to Git-verified `3bdce02`; confirmed `main` matches `origin/main` and only `.verdent/` is untracked. Also corrected stale verification-summary bullets that contradicted the recorded Step 1-3 results. | Session-start `git status --short --branch` and `git log -5 --oneline --decorate` | Include with the Step 3 control-state checkpoint |
 | 2026-07-10 | 3 | Rebuilt Button, Field, Input, Select, and Toggle semantic states, accessibility wiring, loading behavior, and minimum touch targets without removing existing props. | Implementation complete; client build and lint pending | Commit and push pending |
+| 2026-07-10 | Continuity correction | Corrected the stale session-start HEAD from `3bdce02` to Git-verified `fab4722`; confirmed `main` matches `origin/main`, only `.verdent/` is untracked, and all five active control changes are already present in `HEAD`. | Session-start `git status --short --branch`, `git log -5 --oneline --decorate`, and targeted `git show HEAD:` reads of the ledger and five active controls | Record with the Step 3 control-state verification checkpoint |
+| 2026-07-10 | 3 | Resumed the recorded isolated control-state verification from Git-verified `fab4722`. | The TypeScript command could not start because dependencies are absent in this fresh environment | Checkpoint pending after locked dependency installation and verification |
+| 2026-07-10 | 3 | Installed 348 locked workspace packages and reran isolated strict TypeScript verification for Button, Field, Input, Select, and Toggle. | `npm ci` completed; the five-file `tsc --noEmit` check passed with no diagnostics | Continuity correction and verification checkpoint commit/push pending |
+| 2026-07-10 | 3 | Inspected the scoped continuity checkpoint diff and checked whitespace. | Only `AGENTS.md` is modified, `.verdent/` remains untracked and excluded, and `git diff --check` passed | Commit and push pending |
 
 When recording future work, append a row; do not erase historical rows. Keep entries short and link each change to one plan step.
 
@@ -221,6 +227,7 @@ When recording future work, append a row; do not erase historical rows. Keep ent
 | 2026-07-10 | 3 | Ran the client production build and lint after the control-state changes | Build could not find shared-workspace `tsc`; lint could not find `oxlint`; both exited 127 because local dependencies from the prior session are absent | No tracked files changed by either command | Install locked workspace dependencies with the previously successful extended timeout, then rerun both checks because the environment will have changed |
 | 2026-07-10 | 3 | Reran the client production build after successfully installing 348 locked packages | Build reached TypeScript but failed because the tracked shared config extends absent `/workspace/ghostproject/tsconfig.base.json`; resulting shared `node:fs`, `node:path`, and union-narrowing errors are outside the active files | No tracked files changed by the build | Treat as a pre-existing repository build blocker; use isolated TypeScript verification for the five active controls and do not alter files outside this atomic step |
 | 2026-07-10 | 3 | Ran isolated TypeScript verification for the five active controls | One active-file error identified an intentionally cross-element multiline props cast that needed to pass through `unknown` | No additional files changed by the command; `Input.tsx` then received the scoped fix | Rerun the same isolated check after the active file changed |
+| 2026-07-10 | 3 | Reran isolated TypeScript verification from the recorded resume point | Root `/workspace/ghostproject/node_modules/.bin/tsc` was absent, so the shell returned command not found and no type checking ran | No files changed by the command; only `AGENTS.md` records the result | Resolved after `npm ci` installed 348 packages; the unchanged isolated command then passed |
 
 For every future failure, append: date, plan step, command or approach, exact error summary, whether files changed, and the condition required before retrying. Never delete a failure merely because it is later resolved; mark it resolved and reference the successful change.
 
@@ -228,9 +235,8 @@ For every future failure, append: date, plan step, command or approach, exact er
 
 ### Next executable action — Step 3 control-state verification
 
-1. Rerun isolated TypeScript verification for the five active controls.
-2. Record exact results in this ledger, including the successful lint and pre-existing production-build blocker.
-3. Inspect the scoped diff, run `git diff --check`, commit the active files with this ledger, and push.
+1. Commit this validated continuity correction and verification checkpoint.
+2. Push the commit to the tracked `main` branch.
 
 ### Ordered project queue
 
