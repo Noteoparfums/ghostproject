@@ -1,18 +1,18 @@
-import { useState } from 'react';
-import { NavLink, Outlet, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { NavLink, Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBilling } from '../../contexts/BillingContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import ProgressRing from '../ui/ProgressRing';
-import { 
-  LayoutDashboard, 
-  FolderOpen, 
-  Sparkles, 
-  Volume2, 
-  CreditCard, 
-  Settings, 
-  LogOut, 
-  Menu, 
+import {
+  LayoutDashboard,
+  FolderOpen,
+  Sparkles,
+  Volume2,
+  CreditCard,
+  Settings,
+  LogOut,
+  Menu,
   X,
   Sun,
   Moon,
@@ -26,6 +26,12 @@ export function AppShell() {
   const { credits } = useBilling();
   const { theme, resolvedTheme, setTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
+
+  // Close mobile menu on navigate
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const toggleTheme = () => {
     setTheme(theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system');
@@ -43,28 +49,28 @@ export function AppShell() {
   const parsedCredits = parseFloat(credits) || 0.00;
 
   const SidebarContent = () => (
-    <div className="flex h-full flex-col border-r border-[#ddd3c5] bg-[#fffdf8] selection:bg-[#d8795c] dark:border-[#374a42] dark:bg-[#17211d]">
+    <div className="flex h-full flex-col border-r border-[var(--color-border-subtle)] bg-[var(--color-surface-raised)] selection:bg-[var(--color-accent-primary)]/30">
       {/* Brand logo */}
-      <div className="flex h-16 shrink-0 items-center border-b border-[#e4dcd0] px-6 dark:border-[#374a42]">
+      <div className="flex h-16 shrink-0 items-center border-b border-[var(--color-border-subtle)] px-6">
         <Link to="/app" className="flex items-center gap-2">
-          <BrandLockup className="text-zinc-900 dark:text-zinc-50" />
+          <BrandLockup className="text-[var(--color-text-strong)]" />
         </Link>
       </div>
 
       {/* Nav items */}
       <nav className="flex flex-1 flex-col gap-1.5 overflow-y-auto px-4 py-6">
-        <span className="eyebrow mb-2 px-4 text-[#9a8978] dark:text-[#a89a8a]">Workspace</span>
+        <span className="mb-2 px-4 text-xs font-semibold uppercase tracking-[0.15em] text-[var(--color-text-muted)]">Workspace</span>
         {navItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
-            onClick={() => setMobileMenuOpen(false)}
+            end={item.to === '/app'}
             className={({ isActive }) =>
               cn(
-                'flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors',
+                'flex items-center gap-3 rounded-[var(--radius-lg)] px-4 py-2.5 text-sm font-semibold transition-colors',
                 isActive
-                  ? 'bg-[#efe2d9] text-[#a94c34] dark:bg-[#53372f] dark:text-[#ef9a7f]'
-                  : 'text-[#627069] hover:bg-[#f2ece3] hover:text-[#263b33] dark:text-[#aeb8b2] dark:hover:bg-[#263730] dark:hover:text-[#f8f3e9]'
+                  ? 'bg-[var(--color-accent-primary)]/10 text-[var(--color-accent-primary)]'
+                  : 'text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-text-strong)]'
               )
             }
           >
@@ -75,15 +81,15 @@ export function AppShell() {
       </nav>
 
       {/* Footer / Profile */}
-      <div className="flex shrink-0 flex-col gap-4 border-t border-[#e4dcd0] bg-[#f7f3eb] p-4 dark:border-[#374a42] dark:bg-[#15201b]">
+      <div className="flex shrink-0 flex-col gap-4 border-t border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)] p-4">
         {/* Credits usage widget */}
-        <div className="flex items-center gap-3 rounded-xl border border-[#ded4c6] bg-[#fffdf8] p-3 dark:border-[#374a42] dark:bg-[#1e2c27]">
+        <div className="flex items-center gap-3 rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-surface-raised)] p-3">
           <ProgressRing value={parsedCredits} max={100} size={44} strokeWidth={4} />
           <div className="flex flex-col min-w-0">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">
               Credits Remaining
             </span>
-            <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5 truncate">
+            <span className="text-xs font-semibold text-[var(--color-text-strong)] mt-0.5 truncate">
               {credits} credits
             </span>
           </div>
@@ -92,22 +98,22 @@ export function AppShell() {
         {/* User profile & Actions */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
-            <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full bg-[#b9573b] text-xs font-bold uppercase text-white">
+            <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full bg-[var(--color-accent-primary)] text-xs font-bold uppercase text-white">
               {user?.name.slice(0, 2) || 'Me'}
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate">
+              <span className="text-xs font-bold text-[var(--color-text-strong)] truncate">
                 {user?.name || 'My Account'}
               </span>
-              <span className="text-[10px] text-zinc-500 truncate">
+              <span className="text-[10px] text-[var(--color-text-subtle)] truncate">
                 {user?.email || ''}
               </span>
             </div>
           </div>
-          
+
           <button
             onClick={logout}
-            className="p-2 rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all"
+            className="p-2 rounded-[var(--radius-md)] text-[var(--color-text-muted)] hover:text-[var(--color-status-danger)] hover:bg-[var(--color-status-danger)]/10 transition-all"
             title="Sign Out"
           >
             <LogOut className="w-4 h-4" />
@@ -118,7 +124,7 @@ export function AppShell() {
   );
 
   return (
-    <div className="flex min-h-screen overflow-hidden bg-[#f7f3eb] dark:bg-[#17211d]">
+    <div className="flex min-h-screen overflow-hidden bg-[var(--color-canvas)]">
       {/* Desktop Sidebar (hidden on mobile) */}
       <aside className="w-64 shrink-0 max-md:hidden h-screen sticky top-0">
         <SidebarContent />
@@ -127,16 +133,18 @@ export function AppShell() {
       {/* Main viewport */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
         {/* Topbar Header */}
-        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-[#ddd3c5] bg-[#f7f3eb]/90 px-6 backdrop-blur-xl dark:border-[#374a42] dark:bg-[#17211d]/90">
+        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-[var(--color-border-subtle)] bg-[var(--color-canvas)]/90 px-6 backdrop-blur-xl">
           {/* Mobile hamburger menu toggle */}
           <button
             onClick={() => setMobileMenuOpen(true)}
-            className="p-2 -ml-2 rounded-xl text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-900 md:hidden"
+            className="p-2 -ml-2 rounded-[var(--radius-lg)] text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-sunken)] md:hidden"
             title="Toggle Menu"
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-nav"
           >
             <Menu className="w-5 h-5" />
           </button>
-          
+
           <div className="max-md:hidden" />
 
           {/* Top Actions */}
@@ -144,14 +152,14 @@ export function AppShell() {
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
-              className="rounded-full border border-[#d7ccbd] p-2 text-[#657169] transition-colors hover:bg-[#eee8de] dark:border-[#40564c] dark:text-[#b7c0ba] dark:hover:bg-[#263730]"
+              className="rounded-full border border-[var(--color-border-subtle)] p-2 text-[var(--color-text-subtle)] transition-colors hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-text-strong)]"
               title={`Theme: ${theme}. Activate to change.`}
               aria-label={`Theme preference: ${theme}`}
             >
               {theme === 'system' ? <Monitor className="w-4 h-4" /> : resolvedTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
-            <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800" />
-            <span className="rounded-full bg-[#e9e2d6] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#657169] dark:bg-[#263730] dark:text-[#b7c0ba]">
+            <div className="h-4 w-px bg-[var(--color-border-subtle)]" />
+            <span className="rounded-full bg-[var(--color-surface-sunken)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">
               {user?.role || 'user'}
             </span>
           </div>
@@ -165,23 +173,23 @@ export function AppShell() {
 
       {/* Mobile Drawer Navigation overlay */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 flex md:hidden">
+        <div className="fixed inset-0 z-50 flex md:hidden" id="mobile-nav">
           {/* Backdrop overlay */}
           <div
             onClick={() => setMobileMenuOpen(false)}
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
           />
           {/* Drawer sheet container */}
-          <div className="relative flex flex-col w-64 max-w-xs h-full bg-white dark:bg-zinc-950 shadow-2xl z-10 animate-slide-right">
+          <div className="relative flex flex-col w-64 max-w-xs h-full bg-[var(--color-surface-raised)] shadow-[var(--shadow-lg)] z-10">
             {/* Close button */}
             <button
               onClick={() => setMobileMenuOpen(false)}
-              className="absolute top-4 right-4 p-1.5 rounded-lg text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+              className="absolute top-4 right-4 p-1.5 rounded-[var(--radius-md)] text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-sunken)] z-20"
               title="Close Menu"
             >
               <X className="w-4 h-4" />
             </button>
-            
+
             <SidebarContent />
           </div>
         </div>
@@ -189,4 +197,5 @@ export function AppShell() {
     </div>
   );
 }
+
 export default AppShell;
