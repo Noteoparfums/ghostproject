@@ -62,9 +62,13 @@ The work is frontend-only with respect to product contracts:
 
 **Branch:** `main` tracking `origin/main`
 
-**Verified HEAD before this ledger:** `ad19a12` (`p`)
+**Session-start verified HEAD:** `2c7873b` (`Merge branch 'main' of https://github.com/Noteoparfums/ghostproject`)
 
-**Working tree before this ledger:** only untracked `.verdent/`; it is unrelated and must not be committed.
+**Session-start branch parity:** `main` matches `origin/main`.
+
+**Session-start working tree:** clean.
+
+**Continuity ledger state:** `AGENTS.md` is tracked in `HEAD`. The earlier pending-commit note was stale and is corrected by this checkpoint.
 
 ### Confirmed present in the repository
 
@@ -98,7 +102,9 @@ Unsupported and never simulated: generation cancellation, A/B variants, generati
 ```yaml
 last_updated: 2026-07-10
 branch: main
-verified_head_before_ledger: ad19a12
+verified_head_at_session_start: 2c7873b
+remote_parity_at_session_start: main matches origin/main
+working_tree_at_session_start: clean
 phase: frontend-rebuild
 current_plan_step: 1
 current_step_name: Centralize Briefloom identity and brand assets
@@ -132,7 +138,7 @@ do_not_repeat:
 
 | File | Purpose | State | Next action |
 |---|---|---|---|
-| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Created, pending commit/push | Validate, commit, push, then record its commit hash at the next checkpoint |
+| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Tracked; stale pre-commit state corrected in the current checkpoint | Validate, commit, and push this factual correction |
 
 No product source file is currently active. The next agent must add Step 1 files to this table before editing them.
 
@@ -140,7 +146,8 @@ No product source file is currently active. The next agent must add Step 1 files
 
 | Date | Plan step | Change | Verification | Commit / push |
 |---|---:|---|---|---|
-| 2026-07-10 | Continuity setup | Added this root continuity ledger with mandatory session-start, low-credit checkpoint, atomic commit/push, failure logging, and exact resume rules. Captured only repository facts verified from Git and targeted files. | Initial unstaged check did not cover the untracked file; staged `git diff --cached --check` passed after whitespace fix | Commit retry pending with the existing repository author identity supplied per command; push follows |
+| 2026-07-10 | Continuity setup | Added this root continuity ledger with mandatory session-start, low-credit checkpoint, atomic commit/push, failure logging, and exact resume rules. Captured only repository facts verified from Git and targeted files. | Initial unstaged check did not cover the untracked file; staged `git diff --cached --check` passed after whitespace fix | Present in verified `HEAD` `2c7873b`; session-start status confirmed `main` matches `origin/main` |
+| 2026-07-10 | Continuity correction | Replaced stale pending-commit and working-tree claims with the Git state verified at session start. | Session-start `git status --short --branch`, `git log -5 --oneline --decorate`, and `git show HEAD:AGENTS.md` | Current correction pending scoped diff check, commit, and push |
 
 When recording future work, append a row; do not erase historical rows. Keep entries short and link each change to one plan step.
 
@@ -149,13 +156,15 @@ When recording future work, append a row; do not erase historical rows. Keep ent
 | Date | Plan step | Command or approach | Failure | Files changed | Retry condition / resolution |
 |---|---:|---|---|---|---|
 | 2026-07-10 | Continuity setup | Staged `AGENTS.md`, then ran `git diff --cached --check` before commit | Four Markdown hard-break lines had trailing whitespace; the command exited 2, so commit and push did not run | No additional files changed; `AGENTS.md` remained staged and was then corrected | Resolved by replacing hard-break whitespace with blank lines; rerun the staged check before committing |
-| 2026-07-10 | Continuity setup | Ran the validated commit without an explicit author identity | Git could not auto-detect `user.name` and `user.email`; commit and push did not run | No files changed; `AGENTS.md` remains staged | Retry with the existing HEAD author identity supplied through command environment variables, without modifying Git config |
+| 2026-07-10 | Continuity setup | Ran the validated commit without an explicit author identity | Git could not auto-detect `user.name` and `user.email`; commit and push did not run | No files changed at failure time | Resolved in a prior session: `AGENTS.md` is present in verified `HEAD` `2c7873b`, and `main` matches `origin/main`; do not repeat the failed identity-less command |
 
 For every future failure, append: date, plan step, command or approach, exact error summary, whether files changed, and the condition required before retrying. Never delete a failure merely because it is later resolved; mark it resolved and reference the successful change.
 
 ## 6) Next steps
 
 ### Next executable action — Step 1 only
+
+The continuity-ledger setup is complete once the current factual correction is committed and pushed. The next product action remains:
 
 1. Audit only the brand files listed in the **Resume Point**.
 2. Search user-visible client source and built HTML for stale `Ghostwriter OS` naming while excluding intentional internal identifiers.
