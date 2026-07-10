@@ -2,7 +2,7 @@ import express, { type Express, type Request, type Response, type NextFunction }
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import path from 'node:path';
-import { env } from './config/env.js';
+import { appUrl, env } from './config/env.js';
 import { requestId } from './middleware/requestId.js';
 import { requestLogger } from './middleware/requestLogger.js';
 import { metricsMiddleware } from './middleware/metrics.js';
@@ -33,7 +33,7 @@ function securityHeaders(_req: Request, res: Response, next: NextFunction) {
 app.use(securityHeaders);
 
 // 3. Locked to frontend origin CORS
-app.use(cors({ origin: env.APP_URL, credentials: true }));
+app.use(cors({ origin: appUrl, credentials: true }));
 
 // 4. Raw body parser for webhooks signature verification (limit to 256kb)
 app.use('/api/webhooks', express.raw({ type: 'application/json', limit: '256kb' }));

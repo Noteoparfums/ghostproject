@@ -14,6 +14,7 @@
     "client"
   ],
   "scripts": {
+    "build": "npm run build -w client",
     "migrate": "npm run -w scripts migrate",
     "migrate:status": "npm run -w scripts migrate:status",
     "seed": "npm run -w scripts seed",

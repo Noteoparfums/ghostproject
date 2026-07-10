@@ -1,6 +1,7 @@
 import { logger } from '../lib/logger.js';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { appUrl, env } from '../config/env.js';
 
 export interface EmailAdapter {
   sendVerificationEmail(to: string, token: string): Promise<void>;
@@ -25,12 +26,12 @@ export class DevMailboxAdapter implements EmailAdapter {
   }
 
   async sendVerificationEmail(to: string, token: string): Promise<void> {
-    const url = `http://localhost:5173/verify-email?token=${token}`;
+    const url = `${appUrl}/verify-email?token=${token}`;
     await this.appendToMailbox(to, 'Verify your Briefloom account', `Click here to verify: ${url}`);
   }
 
   async sendPasswordResetEmail(to: string, token: string): Promise<void> {
-    const url = `http://localhost:5173/reset-password?token=${token}`;
+    const url = `${appUrl}/reset-password/${token}`;
     await this.appendToMailbox(to, 'Reset your password', `Click here to reset: ${url}`);
   }
 
@@ -39,4 +40,20 @@ export class DevMailboxAdapter implements EmailAdapter {
   }
 }
 
-export const emailAdapter = new DevMailboxAdapter();
+class UnavailableEmailAdapter implements EmailAdapter {
+  async sendVerificationEmail(to: string): Promise<void> {
+    logger.warn({ to }, 'Verification email skipped because no production mail provider is configured');
+  }
+
+  async sendPasswordResetEmail(to: string): Promise<void> {
+    logger.warn({ to }, 'Password reset email skipped because no production mail provider is configured');
+  }
+
+  async sendWelcomeEmail(to: string): Promise<void> {
+    logger.warn({ to }, 'Welcome email skipped because no production mail provider is configured');
+  }
+}
+
+export const emailAdapter = env.NODE_ENV === 'production'
+  ? new UnavailableEmailAdapter()
+  : new DevMailboxAdapter();

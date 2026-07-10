@@ -18,7 +18,7 @@ function connectionConfig(connectionString: string) {
 
   return {
     connectionString: url.toString(),
-    max: 10,
+    max: env.VERCEL ? 1 : 10,
     ssl: useTls
       ? {
           minVersion: 'TLSv1.2' as const,

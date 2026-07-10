@@ -10,8 +10,10 @@ export const envSchema = z
     DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
     PORT: z.coerce.number().int().positive().default(4001),
     NODE_ENV: z.enum(['development', 'staging', 'production']).default('development'),
-    APP_URL: z.string().url().default('http://localhost:5173'),
+    APP_URL: z.string().url().optional(),
     APP_VERSION: z.string().default('0.0.0-dev'),
+    VERCEL: z.string().optional(),
+    VERCEL_URL: z.string().optional(),
 
     JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters').optional(),
 
