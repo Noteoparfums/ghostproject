@@ -38,18 +38,18 @@ const BillingSuccess = lazy(() => import('./pages/app/BillingSuccess'));
 function PageSkeleton() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-      <svg className="animate-spin h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24">
+      <svg className="animate-spin h-8 w-8 text-[var(--color-accent-primary)]" fill="none" viewBox="0 0 24 24">
         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
       </svg>
-      <span className="text-xs text-zinc-500 font-medium animate-pulse">Loading campaign view...</span>
+      <span className="text-xs text-[var(--color-text-subtle)] font-medium animate-pulse">Loading…</span>
     </div>
   );
 }
 
 function FullPageSkeleton() {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-zinc-950">
+    <div className="flex items-center justify-center min-h-screen bg-[var(--color-canvas)]">
       <PageSkeleton />
     </div>
   );
@@ -64,7 +64,7 @@ function ForbiddenPage() {
 
 function MarketingLayout() {
   return (
-    <div className="flex flex-col min-h-screen dark:bg-zinc-950 bg-white">
+    <div className="flex flex-col min-h-screen bg-[var(--color-canvas)]">
       <MarketingNav />
       <main className="flex-grow">
         <Suspense fallback={<PageSkeleton />}>
@@ -81,7 +81,7 @@ function AuthLayout() {
   if (status === 'authed') return <Navigate to="/app" replace />;
 
   return (
-    <div className="min-h-screen dark:bg-zinc-950 bg-white flex flex-col justify-center">
+    <div className="min-h-screen bg-[var(--color-canvas)] flex flex-col justify-center">
       <Suspense fallback={<FullPageSkeleton />}>
         <Outlet />
       </Suspense>

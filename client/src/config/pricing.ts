@@ -7,6 +7,8 @@ export const PRICING_PLANS = [
     monthlyCredits: 10,
     description: 'Explore the VSL workflow with a focused monthly allowance.',
     features: ['10 monthly credits', 'VSL funnel generation', 'Project organization', 'Campaign history summaries'],
+    recommended: false,
+    ctaLabel: 'Get Started',
   },
   {
     name: 'Pro Copywriter',
@@ -16,6 +18,8 @@ export const PRICING_PLANS = [
     monthlyCredits: 100,
     description: 'For individual copywriters building campaigns across funnel types.',
     features: ['100 monthly credits', 'All available funnel types', 'Brand voice profiles', 'Supported section regeneration'],
+    recommended: true,
+    ctaLabel: 'Choose Pro',
   },
   {
     name: 'Agency Studio',
@@ -25,6 +29,8 @@ export const PRICING_PLANS = [
     monthlyCredits: 500,
     description: 'For teams coordinating higher-volume campaign work.',
     features: ['500 monthly credits', 'All available funnel types', 'Up to 5 seats', 'Dedicated support manager'],
+    recommended: false,
+    ctaLabel: 'Choose Agency',
   },
 ] as const;
 
