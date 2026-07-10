@@ -135,20 +135,7 @@ The work is frontend-only with respect to product contracts:
 - Slider now supports value formatting and step control, exposes its endpoint context and formatted value to assistive technology, uses semantic theme states, and provides a 44px interaction area.
 - Accordion now exposes linked trigger and labelled-region semantics, a disabled state, complete focus and target styling, and reduced-motion-safe transitions.
 - DataTable now provides a caption, keyboard-operable sortable headers with sort state, semantic mobile description lists, honest empty states, normalized pagination, and 44px navigation controls.
-- The first responsive-data-primitives verification attempt could not start because this fresh session has no root TypeScript binary or client oxlint binary.
-- A fresh session installed 348 locked workspace packages via `npm install` (17s). Confirmed the monorepo's chained `tsc -b`/`npm run build` still fails before the client solely because `tsconfig.base.json` has never existed in Git history (pre-existing, outside frontend scope, matching the prior recorded finding).
-- Ran an isolated `tsc --noEmit --ignoreConfig` check (explicit `--jsx react-jsx --target es2023 --lib ES2023,DOM,DOM.Iterable --module esnext --moduleResolution bundler --skipLibCheck --strict --esModuleInterop --types vite/client,node`) directly on `Slider.tsx`, `Accordion.tsx`, `DataTable.tsx` plus their direct dependencies (`useReducedMotion.ts`, `cn.ts`, `Button.tsx`): zero diagnostics.
-- Ran `npm run lint` in `client/`: 0 errors, 22 warnings, all in files outside Step 3 (`ThemeContext.tsx`, `ConsentContext.tsx`, `BillingContext.tsx`, `AuthContext.tsx`, `VerifyEmail.tsx`, `Signup.tsx`, `Projects.tsx`, `BrandVoices.tsx`, `analytics.ts`, `useApi.ts`, `ToastContext.tsx`); none in `Slider.tsx`, `Accordion.tsx`, or `DataTable.tsx`.
-- `git status --short` shows only untracked `.verdent/`; the Slider/Accordion/DataTable implementation is already present in Git-verified `HEAD` `75d63a2`, so no additional commit is needed for the implementation itself — only this ledger checkpoint.
-- Step 3 (shared UI, overlay, feedback, and responsive-data primitives) is now complete: implementation verified in `HEAD`, isolated TypeScript passed, and lint is clean of Step 3 files.
-
-### Contract boundary
-
-Supported and retained: auth lifecycle, email verification, password reset, project CRUD/archive/restore, brand-voice CRUD, generation start/history, project assets, persisted-asset section regeneration, billing state/invoices/checkout/portal/cancellation, consent, credits, and current analytics.
-
-Unsupported and never simulated: generation cancellation, A/B variants, generation detail hydration, asset editing/favoriting, exports, invoice PDF download, refund submission, billing-detail persistence, subscription reactivation, profile/password/session/notification/API-key mutations, fake checkout completion, and mock credit ledger data.
-
-### Resume Point
+- Responsive-data-primitives are present in Git-verified `HEAD` `8956ae3`.
 
 ### Current Step 4 findings
 
@@ -185,22 +172,18 @@ Unsupported and never simulated: generation cancellation, A/B variants, generati
 ```yaml
 last_updated: 2026-07-10
 branch: main
-verified_head_at_session_start: 0cf809d
+verified_head_at_session_start: 2713142
 remote_parity_at_session_start: main matches origin/main
 working_tree_at_session_start: only untracked .verdent/
 phase: frontend-rebuild
-current_plan_step: 6
-current_step_name: Unified auth shell while preserving real auth behavior and safe redirects
+current_plan_step: 7
+current_step_name: App shell/dashboard
 step_status: not-started
-next_executable_action: Inspect Login.tsx, Signup.tsx, ForgotPassword.tsx, ResetPassword.tsx, VerifyEmail.tsx, and any auth shell/layout components against Step 6 plan targets before implementing.
+next_executable_action: Inspect the application shell and navigation layout against Step 7 plan targets before implementing.
 first_files_to_read:
   - AGENTS.md
-  - client/src/pages/auth/Login.tsx
-  - client/src/pages/auth/Signup.tsx
-  - client/src/pages/auth/ForgotPassword.tsx
-  - client/src/pages/auth/ResetPassword.tsx
-  - client/src/pages/auth/VerifyEmail.tsx
-  - client/src/contexts/AuthContext.tsx
+  - client/src/components/layout/AppShell.tsx
+  - client/src/pages/app/Dashboard.tsx
 files_to_ignore:
   - .verdent/
 verification_completed:
@@ -238,8 +221,14 @@ verification_completed:
   - Step 5 Vite production build (385ms)
   - Step 5 lint 0 errors 24 warnings (all pre-existing)
   - Step 5 git diff --check passed
+  - Step 6 AuthLayout creation and auth routes migration
+  - Step 6 Vite production build (408ms)
+  - Step 6 lint 0 errors 20 warnings (all pre-existing)
+  - Step 6 git diff --check passed
+  - Step 6 commit 2713142 pushed to origin/main
 verification_pending:
   - Step 4 browser visual inspection (deferred to Step 12 — browser automation unavailable on macOS)
+  - Step 6 live auth flow inspection (deferred to Step 12 — browser automation unavailable on macOS)
 known_blockers:
   - "tsconfig.base.json has never existed in Git history; the monorepo tsc -b and chained client build fail before reaching the client. Pre-existing, outside frontend scope. Use isolated per-file tsc --noEmit --ignoreConfig checks for each active step instead."
 do_not_repeat:
@@ -250,18 +239,16 @@ do_not_repeat:
   - Step 3 responsive-data-primitives isolated check unless Slider/Accordion/DataTable change
   - Step 4 marketing component and pricing inspection unless those files change
   - Step 5 editorial/status/legal page inspection unless those files change
+  - Step 6 auth layout and page inspection unless those files change
 ```
 
 ## 3) Active Files
 
 | File | Purpose | State | Next action |
 |---|---|---|---|
-| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Step 5 checkpoint recorded | Commit with ledger update |
-| `client/src/components/marketing/EditorialLayout.tsx` | Shared editorial article/section layout | Migrated to semantic tokens, added AlertTriangle legal icon, removed dangling classes | Complete for Step 5 |
-| `client/src/pages/marketing/StatusPage.tsx` | 403/404 status page | Migrated to semantic tokens, removed dangling paper-grid class | Complete for Step 5 |
-| `client/src/pages/legal/Privacy.tsx` | Privacy Policy page | Added meta description | Complete for Step 5 |
-| `client/src/pages/legal/Terms.tsx` | Terms of Service page | Added meta description | Complete for Step 5 |
-| `client/src/pages/legal/Refund.tsx` | Refund Policy page | Added meta description | Complete for Step 5 |
+| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Step 6 checkpoint recorded | Commit with ledger update |
+| `client/src/components/layout/AppShell.tsx` | Main application shell layout | Needs Step 7 migration | Inspect and rebuild |
+| `client/src/pages/app/Dashboard.tsx` | Main dashboard page | Needs Step 7 migration | Inspect and rebuild |
 
 ## 4) Changes Made
 
@@ -284,6 +271,7 @@ do_not_repeat:
 | 2026-07-10 | 3 | Installed 348 locked workspace packages and reran isolated strict TypeScript verification for Button, Field, Input, Select, and Toggle. | `npm ci` completed; the five-file `tsc --noEmit` check passed with no diagnostics | Continuity correction and verification checkpoint commit/push pending |
 | 2026-07-10 | 3 | Inspected the scoped continuity checkpoint diff and checked whitespace. | Only `AGENTS.md` is modified, `.verdent/` remains untracked and excluded, and `git diff --check` passed | Commit and push pending |
 | 2026-07-10 | 3 | Completed the control-state verification checkpoint and activated the feedback-primitives audit. | Commit `6b12287` and push output confirmed `main -> main`; working tree then contained only untracked `.verdent/` | `6b12287` pushed to `origin/main` |
+| 2026-07-10 | 6 | Rebuilt auth pages into unified `AuthLayout` utilizing semantic tokens. Form components correctly reference new primitive styles. | Vite build passed in 408ms, `npm run lint` returned 0 errors and 20 warnings. Whitespace cleaned up. | Commit `2713142` pushed to `origin/main` |
 | 2026-07-10 | Continuity correction | Corrected the stale session-start HEAD from `fab4722` to Git-verified grafted merge `58bb49b`; confirmed `main` matches `origin/main` and only `.verdent/` is untracked. | Session-start `git status --short --branch`, `git log -5 --oneline --decorate`, and `git show HEAD:AGENTS.md` | Include with the Step 3 feedback-primitives checkpoint |
 | 2026-07-10 | 3 | Inspected Badge, EmptyState, Skeleton, Stepper, and ProgressRing plus all targeted JSX usages; recorded the accessibility and rendering gaps before implementation. | Targeted `git show HEAD:` and `git grep` reads only; no product files changed during inspection | Implementation and verification pending |
 | 2026-07-10 | 3 | Rebuilt the five feedback primitives with exhaustive visual states, extensible empty-state semantics, explicit loading announcements, normalized ordered progress, and correctly scaled determinate rings. | Implementation complete; isolated TypeScript verification and lint pending | Commit and push pending |
@@ -337,7 +325,7 @@ For every future failure, append: date, plan step, command or approach, exact er
 - [x] **3. UI system:** shared primitives, overlays, focus handling, feedback, responsive data patterns.
 - [x] **4. Marketing:** public shell, truthful landing narrative, progressive WebGL hero, unified pricing.
 - [x] **5. Public/legal:** complete editorial, legal, forbidden, and not-found routes with metadata.
-- [ ] **6. Auth:** unified auth shell while preserving real auth behavior and safe redirects.
+- [x] **6. Auth:** unified auth shell while preserving real auth behavior and safe redirects.
 - [ ] **7. App shell/dashboard:** document scrolling, mobile sheet, exact nav, real account state.
 - [ ] **8. Generation:** honest Brief → Generate → Review workspace using actual SSE payloads only.
 - [ ] **9. Projects/voice:** existing CRUD contracts, accessible controls, detail and wizard states.
