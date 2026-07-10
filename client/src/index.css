@@ -25,6 +25,28 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
+  /* Semantic UI tokens mapped to Tailwind utility classes */
+  --color-accent-primary: var(--primary);
+  --color-accent-primary-hover: var(--primary-hover);
+  --color-canvas: var(--canvas);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-overlay: var(--surface-overlay);
+  --color-text-strong: var(--text-strong);
+  --color-text-default: var(--text-default);
+  --color-text-subtle: var(--text-subtle);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+  --color-focus-ring: var(--focus-ring);
+  --color-status-success: var(--status-success);
+  --color-status-success-surface: var(--status-success-surface);
+  --color-status-warning: var(--status-warning);
+  --color-status-warning-surface: var(--status-warning-surface);
+  --color-status-danger: var(--status-danger);
+  --color-status-danger-surface: var(--status-danger-surface);
+  --color-status-info: var(--status-info);
+  --color-status-info-surface: var(--status-info-surface);
+
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);

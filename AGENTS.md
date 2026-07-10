@@ -170,16 +170,16 @@ The work is frontend-only with respect to product contracts:
 - `git diff --check` passed.
 
 ```yaml
-last_updated: 2026-07-10
+last_updated: 2026-07-11
 branch: main
-verified_head_at_session_start: 2713142
+verified_head_at_session_start: f155f8a
 remote_parity_at_session_start: main matches origin/main
 working_tree_at_session_start: only untracked .verdent/
 phase: frontend-rebuild
 current_plan_step: 13
 current_step_name: Complete
 step_status: not-started
-next_executable_action: Rebuild is complete. Await user feedback.
+next_executable_action: Rebuild and landing page refinement complete. Await user feedback.
 first_files_to_read:
   - AGENTS.md
 
@@ -225,6 +225,8 @@ verification_completed:
   - Step 6 lint 0 errors 20 warnings (all pre-existing)
   - Step 6 git diff --check passed
   - Step 6 commit 2713142 pushed to origin/main
+  - Landing page alignment with user screenshot (sub-copy updated, See the workflow button added with smooth scroll)
+  - Refinement build passed in 317ms and lint returned 0 errors
 verification_pending:
   - Step 4 browser visual inspection (deferred to Step 12 — browser automation unavailable on macOS)
   - Step 6 live auth flow inspection (deferred to Step 12 — browser automation unavailable on macOS)
@@ -233,7 +235,7 @@ known_blockers:
 do_not_repeat:
   - broad repository inventory already captured on 2026-07-10
   - Step 1 brand audit and SVG inspection unless Step 1 files change
-  - Step 2 client build and lint unless Step 2 files change
+  - Step 2 client build and lint unless Step 2 styles change
   - Step 3 overlay build and lint unless overlay files change
   - Step 3 responsive-data-primitives isolated check unless Slider/Accordion/DataTable change
   - Step 4 marketing component and pricing inspection unless those files change
@@ -245,7 +247,7 @@ do_not_repeat:
 
 | File | Purpose | State | Next action |
 |---|---|---|---|
-| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Step 12 checkpoint recorded | Commit with ledger update |
+| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Complete | Await user feedback |
 
 ## 4) Changes Made
 
@@ -287,7 +289,8 @@ do_not_repeat:
 | 2026-07-10 | 9 | Migrated Projects and BrandVoices workspaces to semantic design tokens. Preserved all CRUD hooks. | Isolated file tsc passed; lint returned 0 errors; client build passed. | 85623ef pushed to origin/main |
 | 2026-07-10 | 10 | Migrated Billing, BillingSuccess, and Settings pages to semantic design tokens. Preserved all API endpoints. | Isolated file tsc passed; lint returned 0 errors; client build passed. | fc4755c pushed to origin/main |
 | 2026-07-10 | 11 | Verified App.tsx lazy routing boundaries. Fixed Vite HMR host mismatch and added API proxy. | Vite build passed. | 0c5684e pushed to origin/main |
-| 2026-07-10 | 12 | Performed final quality verification. Browser automation unavailable for visual inspection. Build and lint checks pass. | Vite build passed (334ms); lint 0 errors. | Pending push |
+| 2026-07-10 | 12 | Performed final quality verification. Browser automation unavailable for visual inspection. Build and lint checks pass. | Vite build passed (334ms); lint 0 errors. | ddf8e28 pushed to origin/main |
+| 2026-07-11 | Refinement | Refined landing page Hero section copy and added 'See the workflow' button with smooth scroll matching user design. Fixed theme variables for accent primary in index.css. | Vite build and lint checks pass (0 errors). | Pending push |
 
 When recording future work, append a row; do not erase historical rows. Keep entries short and link each change to one plan step.
 
@@ -312,14 +315,9 @@ For every future failure, append: date, plan step, command or approach, exact er
 
 ## 6) Next steps
 
-### Next executable action — Step 6: Unified auth shell
+### Next executable action
 
-1. Inspect Login.tsx, Signup.tsx, ForgotPassword.tsx, ResetPassword.tsx, VerifyEmail.tsx, and AuthContext.tsx.
-2. Rebuild each auth page with semantic tokens, accessible forms, and proper metadata.
-3. Ensure all auth flows (login, signup, forgot/reset password, email verification) preserve existing real API calls.
-4. Add a shared auth layout if none exists, or migrate the existing one.
-5. Run Vite build and lint, then record exact results.
-6. Inspect the scoped diff, run `git diff --check`, commit the active files with this ledger, and push.
+1. Await user feedback on landing page refinement.
 
 ### Ordered project queue
 

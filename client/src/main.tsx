@@ -6,6 +6,12 @@ import { ConsentProvider } from './contexts/ConsentContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { BillingProvider } from './contexts/BillingContext';
 import App from './App';
+
+// Catch chunk load errors caused by Vercel deployments and reload the page automatically
+window.addEventListener("vite:preloadError", (event) => {
+  event.preventDefault();
+  window.location.reload();
+});
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(

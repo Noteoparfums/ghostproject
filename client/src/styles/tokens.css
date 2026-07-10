@@ -8,6 +8,7 @@
     --popover: #fffdf8;
     --popover-foreground: #1e2c27;
     --primary: #b9573b;
+    --primary-hover: #9f4933;
     --primary-foreground: #ffffff;
     --secondary: #e9e2d6;
     --secondary-foreground: #263b33;
@@ -69,6 +70,7 @@
     --popover: #22312b;
     --popover-foreground: #f8f3e9;
     --primary: #dc8064;
+    --primary-hover: #c66a50;
     --primary-foreground: #1d1714;
     --secondary: #2b3b35;
     --secondary-foreground: #f8f3e9;

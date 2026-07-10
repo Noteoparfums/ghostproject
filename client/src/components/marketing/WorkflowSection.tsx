@@ -10,6 +10,7 @@ const steps = [
 export function WorkflowSection() {
   return (
     <section
+      id="workflow"
       className="px-[var(--space-page)] py-[var(--space-section)]"
       aria-labelledby="workflow-heading"
     >

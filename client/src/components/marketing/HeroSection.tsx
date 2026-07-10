@@ -1,7 +1,7 @@
 import React, { lazy, Suspense, useState, useEffect, Component } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '../ui/Button';
-import { ArrowRight, Check } from 'lucide-react';
+import { ArrowRight, Check, Play } from 'lucide-react';
 import HeroFallback from './hero/HeroFallback';
 
 const LoomSculpture = lazy(() => import('./hero/LoomSculpture'));
@@ -193,9 +193,7 @@ export function HeroSection() {
               margin: 0,
             }}
           >
-            Briefloom turns your positioning, brand voice, and audience context
-            into coordinated direct-response assets — landing pages, emails, ads,
-            and follow-ups — woven from a single strategic thread.
+            Briefloom turns campaign context into coordinated ads, sales pages, scripts, and emails—so every asset pulls in the same direction.
           </p>
 
           {/* CTA */}
@@ -206,6 +204,16 @@ export function HeroSection() {
                 <ArrowRight size={18} style={{ marginLeft: '0.35rem' }} />
               </Button>
             </Link>
+            <Button
+              variant="secondary"
+              size="lg"
+              onClick={() => {
+                document.getElementById('workflow')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
+              <Play size={18} style={{ fill: 'currentColor', marginLeft: '-0.2rem', marginRight: '0.1rem' }} />
+              See the workflow
+            </Button>
           </div>
 
           {/* Trust badges */}
