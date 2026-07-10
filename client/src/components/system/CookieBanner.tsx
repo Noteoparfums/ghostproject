@@ -1,4 +1,5 @@
 import { useConsent } from '../../contexts/ConsentContext';
+import { BRAND } from '../../config/brand';
 import Button from '../ui/Button';
 
 export function CookieBanner() {
@@ -17,7 +18,7 @@ export function CookieBanner() {
           Your privacy, your choice
         </h4>
         <p className="mt-1 text-xs dark:text-zinc-400 text-zinc-500 leading-relaxed">
-          We use optional analytics cookies to understand how Briefloom performs. Choose all cookies, essential only, or customize your preferences.
+          We use optional analytics cookies to understand how {BRAND.name} performs. Choose all cookies, essential only, or customize your preferences.
         </p>
       </div>
 

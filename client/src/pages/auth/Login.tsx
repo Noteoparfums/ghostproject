@@ -8,6 +8,7 @@ import Field from '../../components/ui/Field';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import Toggle from '../../components/ui/Toggle';
+import { BRAND } from '../../config/brand';
 import { Sparkles, Mail, Lock } from 'lucide-react';
 
 export function Login() {
@@ -140,7 +141,7 @@ export function Login() {
 
         {/* Footer */}
         <p className="text-center text-xs text-zinc-500">
-          New to Ghostwriter?{' '}
+          New to {BRAND.name}?{' '}
           <Link 
             to="/signup" 
             className="font-bold text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"

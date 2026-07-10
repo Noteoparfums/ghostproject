@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import type { SVGProps } from 'react';
-import type { BrandMarkVariant } from '../../config/brand';
+import { BRAND, type BrandMarkVariant } from '../../config/brand';
 import { cn } from '../../lib/cn';
 
 interface BrandMarkProps extends Omit<SVGProps<SVGSVGElement>, 'children'> {
@@ -27,7 +27,7 @@ export function BrandMark({
       className={cn('shrink-0', className)}
       {...props}
     >
-      {!decorative && <title id={titleId}>Briefloom</title>}
+      {!decorative && <title id={titleId}>{BRAND.name}</title>}
       <path
         d="M9 12.5c8.4 0 12.6 4.2 12.6 12.6S25.8 37.7 34.2 37.7"
         stroke={monochrome ? 'currentColor' : '#BE5A3C'}

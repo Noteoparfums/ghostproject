@@ -62,9 +62,9 @@ The work is frontend-only with respect to product contracts:
 
 **Branch:** `main` tracking `origin/main`
 
-**Verified HEAD before this ledger:** `ad19a12` (`p`)
+**Verified HEAD at current session start:** `40f545d` (`Update AGENTS.md`)
 
-**Working tree before this ledger:** only untracked `.verdent/`; it is unrelated and must not be committed.
+**Working tree at current session start:** only untracked `.verdent/`; it is unrelated and must not be committed.
 
 ### Confirmed present in the repository
 
@@ -87,6 +87,15 @@ The work is frontend-only with respect to product contracts:
 - Steps 2-12 have not been behaviorally, visually, or contract-verified in this ledger.
 - No build, lint, test, browser, console, network, responsive, accessibility, or production-bundle result is currently recorded.
 
+### Current Step 1 findings
+
+- Targeted source search found one stale visible `New to Ghostwriter?` login label; it is now sourced from `BRAND.name`.
+- Cookie identity copy, standalone mark title, 403/404 labels, and fatal-error copy are now sourced from central brand configuration.
+- The unsupported fatal-error claim that engineers had been notified was removed.
+- Targeted source search now finds no visible `Ghostwriter OS`, `GhostwriterOS`, or `New to Ghostwriter` strings under `client/`.
+- Operational identifiers `ghostwriter-os`, `@ghostwriter/shared`, and `gw_*` analytics/consent storage keys remain unchanged.
+- Client build and lint are blocked until workspace dependencies are installed; both commands failed because local binaries are absent.
+
 ### Contract boundary
 
 Supported and retained: auth lifecycle, email verification, password reset, project CRUD/archive/restore, brand-voice CRUD, generation start/history, project assets, persisted-asset section regeneration, billing state/invoices/checkout/portal/cancellation, consent, credits, and current analytics.
@@ -98,9 +107,9 @@ Unsupported and never simulated: generation cancellation, A/B variants, generati
 ```yaml
 last_updated: 2026-07-10
 branch: main
-verified_head_at_session_start: 2c7873b
+verified_head_at_session_start: 40f545d
 remote_parity_at_session_start: main matches origin/main
-working_tree_at_session_start: clean
+working_tree_at_session_start: only untracked .verdent/
 phase: frontend-rebuild
 current_plan_step: 1
 current_step_name: Centralize Briefloom identity and brand assets
@@ -126,24 +135,39 @@ verification_pending:
   - internal contract identifier preservation
   - client build
   - client lint
+known_blockers:
+  - workspace dependencies are not installed; client build cannot find tsc and client lint cannot find oxlint
 do_not_repeat:
   - broad repository inventory already captured on 2026-07-10
+  - client build or lint before installing workspace dependencies
 ```
 
 ## 3) Active Files
 
 | File | Purpose | State | Next action |
 |---|---|---|---|
-| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Tracked; stale pre-commit state corrected in the current checkpoint | Validate, commit, and push this factual correction |
-
-No product source file is currently active. The next agent must add Step 1 files to this table before editing them.
+| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Tracked; continuity correction committed and pushed as `bba5a5b` | Record exact Step 1 audit, verification, and handoff state |
+| `client/src/config/brand.ts` | Central public identity, metadata, navigation, support, and legal copy | Present; targeted audit in progress | Patch only confirmed centralization or helper gaps |
+| `client/src/components/brand/BrandMark.tsx` | Accessible inline brand mark variants | Present; targeted audit in progress | Verify primary, compact, and monochrome rendering |
+| `client/src/components/brand/BrandLockup.tsx` | Public lockup composition | Present; targeted audit in progress | Verify compact and full lockups |
+| `client/index.html` | Initial document identity and metadata | Present; targeted audit in progress | Verify defaults and built HTML |
+| `client/src/hooks/useDocumentMeta.ts` | Route metadata and canonical lifecycle | Present; targeted audit in progress | Verify defaults, canonical behavior, and cleanup |
+| `docs/brand-identity.md` | Naming matrix and operational naming boundary | Present; targeted audit in progress | Verify launch caveat and preserved identifiers |
+| `README.md` | Public identity and operational terminology | Present; targeted audit in progress | Verify terminology boundary |
+| `client/public/brand/*.svg` | Six static mark, favicon, social, and hero variants | Present; targeted audit in progress | Render and inspect all variants |
+| `client/src/App.tsx` | Explicit 403, 404, and wildcard labels | Stale inline status copy confirmed | Source labels from central brand configuration |
+| `client/src/components/system/CookieBanner.tsx` | User-visible consent identity copy | Hard-coded public name confirmed | Source public identity from central brand configuration |
+| `client/src/components/system/CookiePreferencesModal.tsx` | User-visible cookie labels and explanations | Targeted audit complete | Keep accurate consent behavior; normalize copy only if required |
+| `client/src/components/system/ErrorBoundary.tsx` | Fatal error identity and recovery copy | Unsupported notification claim confirmed | Replace with honest branded recovery copy |
+| `client/src/pages/auth/Login.tsx` | User-visible sign-in transactional copy | Stale “Ghostwriter” label confirmed | Replace with centralized Briefloom identity |
+| `client/src/pages/marketing/StatusPage.tsx` | Branded 403/404 presentation | Targeted audit complete | Keep metadata and mark behavior while centralizing labels upstream |
 
 ## 4) Changes Made
 
 | Date | Plan step | Change | Verification | Commit / push |
 |---|---:|---|---|---|
-| 2026-07-10 | Continuity setup | Added this root continuity ledger with mandatory session-start, low-credit checkpoint, atomic commit/push, failure logging, and exact resume rules. Captured only repository facts verified from Git and targeted files. | Initial unstaged check did not cover the untracked file; staged `git diff --cached --check` passed after whitespace fix | Present in verified `HEAD` `2c7873b`; session-start status confirmed `main` matches `origin/main` |
-| 2026-07-10 | Continuity correction | Replaced stale pending-commit and working-tree claims with the Git state verified at session start. | Session-start `git status --short --branch`, `git log -5 --oneline --decorate`, and `git show HEAD:AGENTS.md` | Current correction pending scoped diff check, commit, and push |
+| 2026-07-10 | Continuity setup | Added this root continuity ledger with mandatory session-start, low-credit checkpoint, atomic commit/push, failure logging, and exact resume rules. Captured only repository facts verified from Git and targeted files. | Initial unstaged check did not cover the untracked file; staged `git diff --cached --check` passed after whitespace fix | Present in verified `HEAD` `40f545d`; session-start status confirmed `main` matches `origin/main` |
+| 2026-07-10 | Continuity correction | Replaced stale HEAD and working-tree claims with the Git state verified at the current session start. | Session-start `git status --short --branch`, `git log -5 --oneline --decorate`, `git show HEAD:AGENTS.md`, scoped diff inspection, and `git diff --check` passed | Commit without explicit identity failed; retry pending with existing repository author identity |
 
 When recording future work, append a row; do not erase historical rows. Keep entries short and link each change to one plan step.
 
@@ -152,7 +176,9 @@ When recording future work, append a row; do not erase historical rows. Keep ent
 | Date | Plan step | Command or approach | Failure | Files changed | Retry condition / resolution |
 |---|---:|---|---|---|---|
 | 2026-07-10 | Continuity setup | Staged `AGENTS.md`, then ran `git diff --cached --check` before commit | Four Markdown hard-break lines had trailing whitespace; the command exited 2, so commit and push did not run | No additional files changed; `AGENTS.md` remained staged and was then corrected | Resolved by replacing hard-break whitespace with blank lines; rerun the staged check before committing |
-| 2026-07-10 | Continuity setup | Ran the validated commit without an explicit author identity | Git could not auto-detect `user.name` and `user.email`; commit and push did not run | No files changed at failure time | Resolved in a prior session: `AGENTS.md` is present in verified `HEAD` `2c7873b`, and `main` matches `origin/main`; do not repeat the failed identity-less command |
+| 2026-07-10 | Continuity setup | Ran the validated commit without an explicit author identity | Git could not auto-detect `user.name` and `user.email`; commit and push did not run | No files changed at failure time | Resolved in a prior session: `AGENTS.md` is present in verified `HEAD` `40f545d`, and `main` matches `origin/main`; do not repeat the failed identity-less command |
+| 2026-07-10 | Continuity correction | Ran `git commit` without explicit author environment variables because the ledger said the prior identity failure was resolved | Git again could not auto-detect `user.name` and `user.email`; commit and push did not run | `AGENTS.md` remained staged; no product files changed | Retry with `GIT_AUTHOR_*` and `GIT_COMMITTER_*` set from the existing `HEAD` author; do not modify Git configuration |
+| 2026-07-10 | 1 | Ran client build and lint before workspace dependencies were installed | Build could not find `tsc`; lint could not find `oxlint`; both exited 127 | No files changed by either command | Install locked workspace dependencies, then retry because the environment will have changed |
 
 For every future failure, append: date, plan step, command or approach, exact error summary, whether files changed, and the condition required before retrying. Never delete a failure merely because it is later resolved; mark it resolved and reference the successful change.
 

@@ -3,6 +3,7 @@ import type { ErrorInfo } from 'react';
 import type { ReactNode } from 'react';
 import { track } from '../../lib/analytics';
 import { ApiError } from '../../api/client';
+import { BRAND } from '../../config/brand';
 import Button from '../ui/Button';
 
 interface Props {
@@ -48,10 +49,10 @@ export class ErrorBoundary extends Component<Props & { children: ReactNode }, St
           <div className="max-w-md w-full p-8 border rounded-2xl dark:border-zinc-900 border-zinc-200 bg-white dark:bg-zinc-950 shadow-xl">
             <h1 className="text-4xl font-extrabold tracking-tight text-red-500 mb-2">500</h1>
             <h2 className="text-xl font-bold dark:text-zinc-100 text-zinc-800 mb-4">
-              Something went wrong
+              {BRAND.statusPages.fatalError.title}
             </h2>
             <p className="text-sm dark:text-zinc-400 text-zinc-500 mb-6">
-              An unexpected application error has occurred. Our engineers have been notified.
+              {BRAND.statusPages.fatalError.body}
             </p>
             
             {requestId && (

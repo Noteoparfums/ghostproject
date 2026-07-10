@@ -7,6 +7,7 @@ import CookiePreferencesModal from './components/system/CookiePreferencesModal';
 import MarketingNav from './components/layout/MarketingNav';
 import Footer from './components/layout/Footer';
 import AppShell from './components/layout/AppShell';
+import { BRAND } from './config/brand';
 
 // Lazy load pages for chunk budget optimization
 const Landing = lazy(() => import('./pages/marketing/LandingRedesign'));
@@ -56,7 +57,7 @@ function FullPageSkeleton() {
 
 // Branded Forbidden Page (403)
 function ForbiddenPage() {
-  return <StatusPage code="403" title="Access denied" body="This account does not have permission to open the requested workspace." />;
+  return <StatusPage code="403" {...BRAND.statusPages.forbidden} />;
 }
 
 // ─── Layout wrappers ─────────────────────────────────────────────────────────
@@ -160,10 +161,10 @@ const router = createBrowserRouter([
     ],
   },
   { path: '/403', element: <ForbiddenPage /> },
-  { path: '/404', element: <StatusPage code="404" title="Page not found" body="The page may have moved, or the address may be incomplete." /> },
+  { path: '/404', element: <StatusPage code="404" {...BRAND.statusPages.notFound} /> },
   {
     path: '*',
-    element: <StatusPage code="404" title="Page not found" body="The page may have moved, or the address may be incomplete." />,
+    element: <StatusPage code="404" {...BRAND.statusPages.notFound} />,
   },
 ]);
 

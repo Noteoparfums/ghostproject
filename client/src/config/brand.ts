@@ -13,6 +13,20 @@ export const BRAND = {
     availability:
       'This operation is not available in the current workspace. Contact support through your existing account channel for help.',
   },
+  statusPages: {
+    forbidden: {
+      title: 'Access denied',
+      body: 'This account does not have permission to open the requested workspace.',
+    },
+    notFound: {
+      title: 'Page not found',
+      body: 'The page may have moved, or the address may be incomplete.',
+    },
+    fatalError: {
+      title: 'Something went wrong',
+      body: 'Briefloom encountered an unexpected application error. Reload the page to try again, or return home.',
+    },
+  },
   legalReview:
     'Working identity and policy draft. Trademark, domain, company, jurisdiction, and legal counsel review are still required before public launch.',
   metadata: {
