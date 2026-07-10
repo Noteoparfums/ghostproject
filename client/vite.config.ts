@@ -8,11 +8,12 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     allowedHosts: true,
-    hmr: {
-      host: '4c1f33b2-5173-2-base.preview.verdent.ai',
-      protocol: 'wss',
-      clientPort: 443,
-    },
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      }
+    }
   },
   preview: {
     host: '0.0.0.0',
