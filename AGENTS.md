@@ -159,7 +159,7 @@ do_not_repeat:
 | `client/src/components/system/CookieBanner.tsx` | User-visible consent identity copy | Hard-coded public name confirmed | Source public identity from central brand configuration |
 | `client/src/components/system/CookiePreferencesModal.tsx` | User-visible cookie labels and explanations | Targeted audit complete | Keep accurate consent behavior; normalize copy only if required |
 | `client/src/components/system/ErrorBoundary.tsx` | Fatal error identity and recovery copy | Unsupported notification claim confirmed | Replace with honest branded recovery copy |
-| `client/src/pages/auth/Login.tsx` | User-visible sign-in transactional copy | Stale “Ghostwriter” label confirmed | Replace with centralized Briefloom identity |
+| `client/src/pages/auth/Login.tsx` | User-visible sign-in transactional copy | Stale "Ghostwriter" label confirmed | Replace with centralized Briefloom identity |
 | `client/src/pages/marketing/StatusPage.tsx` | Branded 403/404 presentation | Targeted audit complete | Keep metadata and mark behavior while centralizing labels upstream |
 
 ## 4) Changes Made
