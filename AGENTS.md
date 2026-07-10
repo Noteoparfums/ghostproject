@@ -62,13 +62,9 @@ The work is frontend-only with respect to product contracts:
 
 **Branch:** `main` tracking `origin/main`
 
-**Session-start verified HEAD:** `a2d3fd9` (`docs: refresh continuity ledger checkpoint`)
+**Verified HEAD before this ledger:** `ad19a12` (`p`)
 
-**Session-start branch parity:** `main` matches `origin/main`.
-
-**Session-start working tree:** clean.
-
-**Continuity ledger state:** `AGENTS.md` is tracked in `HEAD`. The 2026-07-10 factual correction is confirmed committed and pushed as `a2d3fd9`; continuity-ledger setup is complete. Per protocol, the required session-start Git commands remain the source of truth for the current ledger commit and remote parity.
+**Working tree before this ledger:** only untracked `.verdent/`; it is unrelated and must not be committed.
 
 ### Confirmed present in the repository
 
