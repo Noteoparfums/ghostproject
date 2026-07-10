@@ -62,7 +62,7 @@ The work is frontend-only with respect to product contracts:
 
 **Branch:** `main` tracking `origin/main`
 
-**Verified HEAD at current session start:** `dcdc53e` (`3`)
+**Verified HEAD at current session start:** `75d63a2` (grafted single-commit history; contains the recorded Step 1-3 work already)
 
 **Working tree at current session start:** only untracked `.verdent/`; it is unrelated and must not be committed.
 
@@ -82,10 +82,12 @@ The work is frontend-only with respect to product contracts:
 
 - Step 1 brand work is implemented, verified, committed, and pushed.
 - Step 2 semantic style files and local font assets are implemented, verified, committed, and pushed.
+- Step 3 shared UI/overlay/feedback/responsive-data primitives are implemented, verified, and present in Git-verified `HEAD` `75d63a2`.
 - Three/WebGL packages are absent from `client/package.json`; the progressive hero work is not complete.
 - The planned auth shell and generation component split are absent from the tracked file inventory.
-- Steps 4-12 have not been behaviorally, visually, or contract-verified in this ledger; Step 3 remains active.
-- Step 1 and Step 2 build, lint, and targeted browser results are recorded below; final root tests, accessibility, bundle, and full-stack route verification remain pending for Step 12.
+- Steps 4-12 have not been behaviorally, visually, or contract-verified in this ledger; Step 4 is next.
+- Step 1, Step 2, and Step 3 build/isolated-typecheck, lint, and targeted browser results are recorded below; final root tests, accessibility, bundle, and full-stack route verification remain pending for Step 12.
+- The root monorepo `tsc -b shared server scripts` and the client's chained `npm run build` both fail before reaching the client because `shared/tsconfig.json`, `server/tsconfig.json`, and `scripts/tsconfig.json` extend a `tsconfig.base.json` that does not exist anywhere in Git history (confirmed via `git log --all --diff-filter=A -- tsconfig.base.json`, zero results). This is a pre-existing repository defect outside the frontend-only scope; isolated per-file `tsc --noEmit --ignoreConfig <explicit compiler flags>` checks are used instead for each active step's files.
 
 ### Current Step 1 findings
 
@@ -137,6 +139,11 @@ The work is frontend-only with respect to product contracts:
 - Accordion now exposes linked trigger and labelled-region semantics, a disabled state, complete focus and target styling, and reduced-motion-safe transitions.
 - DataTable now provides a caption, keyboard-operable sortable headers with sort state, semantic mobile description lists, honest empty states, normalized pagination, and 44px navigation controls.
 - The first responsive-data-primitives verification attempt could not start because this fresh session has no root TypeScript binary or client oxlint binary.
+- A fresh session installed 348 locked workspace packages via `npm install` (17s). Confirmed the monorepo's chained `tsc -b`/`npm run build` still fails before the client solely because `tsconfig.base.json` has never existed in Git history (pre-existing, outside frontend scope, matching the prior recorded finding).
+- Ran an isolated `tsc --noEmit --ignoreConfig` check (explicit `--jsx react-jsx --target es2023 --lib ES2023,DOM,DOM.Iterable --module esnext --moduleResolution bundler --skipLibCheck --strict --esModuleInterop --types vite/client,node`) directly on `Slider.tsx`, `Accordion.tsx`, `DataTable.tsx` plus their direct dependencies (`useReducedMotion.ts`, `cn.ts`, `Button.tsx`): zero diagnostics.
+- Ran `npm run lint` in `client/`: 0 errors, 22 warnings, all in files outside Step 3 (`ThemeContext.tsx`, `ConsentContext.tsx`, `BillingContext.tsx`, `AuthContext.tsx`, `VerifyEmail.tsx`, `Signup.tsx`, `Projects.tsx`, `BrandVoices.tsx`, `analytics.ts`, `useApi.ts`, `ToastContext.tsx`); none in `Slider.tsx`, `Accordion.tsx`, or `DataTable.tsx`.
+- `git status --short` shows only untracked `.verdent/`; the Slider/Accordion/DataTable implementation is already present in Git-verified `HEAD` `75d63a2`, so no additional commit is needed for the implementation itself — only this ledger checkpoint.
+- Step 3 (shared UI, overlay, feedback, and responsive-data primitives) is now complete: implementation verified in `HEAD`, isolated TypeScript passed, and lint is clean of Step 3 files.
 
 ### Contract boundary
 
@@ -149,19 +156,22 @@ Unsupported and never simulated: generation cancellation, A/B variants, generati
 ```yaml
 last_updated: 2026-07-10
 branch: main
-verified_head_at_session_start: dcdc53e
+verified_head_at_session_start: 75d63a2
 remote_parity_at_session_start: main matches origin/main
 working_tree_at_session_start: only untracked .verdent/
 phase: frontend-rebuild
-current_plan_step: 3
-current_step_name: Rebuild shared UI, overlay, feedback, and responsive data primitives
-step_status: responsive-data-primitives-dependency-install-pending
-next_executable_action: Install locked workspace dependencies, then rerun the unchanged isolated TypeScript and client lint checks for Slider, Accordion, and DataTable.
+current_plan_step: 4
+current_step_name: Rebuild the public shell, landing narrative, progressive WebGL hero, and pricing
+step_status: not-started
+next_executable_action: Inspect MarketingNav.tsx, Footer.tsx, LandingRedesign.tsx, and pricing.ts against Step 4 plan targets (progressive WebGL hero, testimonial/metric audit, three/@react-three/fiber/@react-three/drei dependency check) before implementing.
 first_files_to_read:
   - AGENTS.md
-      - client/src/components/ui/Slider.tsx
-      - client/src/components/ui/Accordion.tsx
-      - client/src/components/ui/DataTable.tsx
+  - client/src/components/layout/MarketingNav.tsx
+  - client/src/components/layout/Footer.tsx
+  - client/src/pages/marketing/LandingRedesign.tsx
+  - client/src/pages/marketing/Pricing.tsx
+  - client/src/config/pricing.ts
+  - client/package.json
 files_to_ignore:
   - .verdent/
 verification_completed:
@@ -186,14 +196,18 @@ verification_completed:
   - Step 3 feedback-primitives lint with zero errors and 23 unrelated warnings
   - Step 3 feedback-primitives scoped diff inspection and git diff --check
   - Step 3 feedback-primitives commit 8956ae3 pushed to origin/main
-verification_pending:
-  - isolated TypeScript and lint verification
-known_blockers: []
+  - Step 3 responsive-data-primitives isolated strict TypeScript check (Slider, Accordion, DataTable) with zero diagnostics
+  - Step 3 responsive-data-primitives lint with zero errors and 22 unrelated warnings
+  - Step 3 confirmed complete and already present in Git-verified HEAD 75d63a2 matching origin/main
+verification_pending: []
+known_blockers:
+  - "tsconfig.base.json has never existed in Git history; the monorepo tsc -b and chained client build fail before reaching the client. Pre-existing, outside frontend scope. Use isolated per-file tsc --noEmit --ignoreConfig checks for each active step instead."
 do_not_repeat:
   - broad repository inventory already captured on 2026-07-10
   - Step 1 brand audit and SVG inspection unless Step 1 files change
   - Step 2 client build and lint unless Step 2 files change
   - Step 3 overlay build and lint unless overlay files change
+  - Step 3 responsive-data-primitives isolated check unless Slider/Accordion/DataTable change
 ```
 
 ## 3) Active Files
