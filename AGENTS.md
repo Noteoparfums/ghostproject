@@ -176,14 +176,14 @@ verified_head_at_session_start: 2713142
 remote_parity_at_session_start: main matches origin/main
 working_tree_at_session_start: only untracked .verdent/
 phase: frontend-rebuild
-current_plan_step: 7
-current_step_name: App shell/dashboard
+current_plan_step: 8
+current_step_name: Generation
 step_status: not-started
-next_executable_action: Inspect the application shell and navigation layout against Step 7 plan targets before implementing.
+next_executable_action: Inspect the generation workspace components against Step 8 plan targets before implementing.
 first_files_to_read:
   - AGENTS.md
-  - client/src/components/layout/AppShell.tsx
-  - client/src/pages/app/Dashboard.tsx
+
+  - client/src/pages/app/Generate.tsx
 files_to_ignore:
   - .verdent/
 verification_completed:
@@ -246,9 +246,8 @@ do_not_repeat:
 
 | File | Purpose | State | Next action |
 |---|---|---|---|
-| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Step 6 checkpoint recorded | Commit with ledger update |
-| `client/src/components/layout/AppShell.tsx` | Main application shell layout | Needs Step 7 migration | Inspect and rebuild |
-| `client/src/pages/app/Dashboard.tsx` | Main dashboard page | Needs Step 7 migration | Inspect and rebuild |
+| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Step 7 checkpoint recorded | Commit with ledger update |
+| `client/src/pages/app/Generate.tsx` | Main generation workspace | Needs Step 8 migration | Inspect and rebuild |
 
 ## 4) Changes Made
 
@@ -285,6 +284,7 @@ do_not_repeat:
 | 2026-07-10 | 3 | Started isolated TypeScript verification and client lint for Slider, Accordion, and DataTable. | Neither check could start because the local dependency binaries are absent in this fresh session | Install locked dependencies, then rerun unchanged checks |
 | 2026-07-10 | 4 | Installed three, @react-three/fiber, @react-three/drei (63 packages); created 7 marketing section components; rebuilt MarketingNav with mobile menu; rebuilt Footer and Pricing with semantic tokens; updated pricing.ts config; updated App.tsx layouts; rebuilt LandingRedesign as thin composition. | Vite build passed (388ms); lint 0 errors 24 warnings (all pre-existing); LoomSculpture chunk isolated (935KB); git diff --check passed; dev server metadata verified | Committed and pushed as `88d95c7` |
 | 2026-07-10 | 5 | Migrated EditorialLayout and StatusPage to semantic tokens; removed dangling prose-briefloom, eyebrow, and paper-grid classes; added AlertTriangle icon to legal notice; added meta descriptions to Privacy, Terms, and Refund pages. Content in About, Blog, Changelog reviewed and confirmed honest. | Vite build passed (385ms); lint 0 errors 24 warnings (all pre-existing); git diff --check passed | Commit and push pending |
+| 2026-07-10 | 7 | Migrated AppShell and Dashboard to use semantic design tokens and improved mobile layout. All existing contracts (Auth, Billing, hooks) preserved. | Isolated file tsc passed; lint returned 0 errors; client build passed. | 77270a8 pushed to origin/main |
 
 When recording future work, append a row; do not erase historical rows. Keep entries short and link each change to one plan step.
 
@@ -326,7 +326,7 @@ For every future failure, append: date, plan step, command or approach, exact er
 - [x] **4. Marketing:** public shell, truthful landing narrative, progressive WebGL hero, unified pricing.
 - [x] **5. Public/legal:** complete editorial, legal, forbidden, and not-found routes with metadata.
 - [x] **6. Auth:** unified auth shell while preserving real auth behavior and safe redirects.
-- [ ] **7. App shell/dashboard:** document scrolling, mobile sheet, exact nav, real account state.
+- [x] **7. App shell/dashboard:** document scrolling, mobile sheet, exact nav, real account state.
 - [ ] **8. Generation:** honest Brief → Generate → Review workspace using actual SSE payloads only.
 - [ ] **9. Projects/voice:** existing CRUD contracts, accessible controls, detail and wizard states.
 - [ ] **10. Billing/settings:** provider-backed behavior only; remove all simulated operations.
