@@ -14,7 +14,7 @@ import { Sparkles, Mail, Lock } from 'lucide-react';
 export function Login() {
   useDocumentMeta({
     title: 'Sign in',
-    description: 'Sign in to your Briefloom account.',
+    description: `Sign in to your ${BRAND.name} account.`,
   });
 
   const { login } = useAuth();

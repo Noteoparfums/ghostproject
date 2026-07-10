@@ -94,7 +94,11 @@ The work is frontend-only with respect to product contracts:
 - The unsupported fatal-error claim that engineers had been notified was removed.
 - Targeted source search now finds no visible `Ghostwriter OS`, `GhostwriterOS`, or `New to Ghostwriter` strings under `client/`.
 - Operational identifiers `ghostwriter-os`, `@ghostwriter/shared`, and `gw_*` analytics/consent storage keys remain unchanged.
-- Client build and lint are blocked until workspace dependencies are installed; both commands failed because local binaries are absent.
+- Locked workspace dependencies are installed locally; the client production build passes.
+- Client lint completes with zero errors and 24 warnings; the Step 1 metadata-hook dependency warnings were removed, while the remaining warnings are outside the Step 1 files.
+- All six static SVG variants render successfully in browser inspection at desktop or mobile viewport sizes.
+- Browser inspection confirms Briefloom page titles and responsive branded public surfaces. Frontend-only preview inspection records expected `/api/auth/refresh` 404 responses and a Vite HMR host mismatch that belongs to Step 11.
+- Step 1 implementation and verification are complete; commit and push are the remaining checkpoint actions.
 
 ### Contract boundary
 
@@ -113,54 +117,44 @@ working_tree_at_session_start: only untracked .verdent/
 phase: frontend-rebuild
 current_plan_step: 1
 current_step_name: Centralize Briefloom identity and brand assets
-step_status: partial-unverified
-next_executable_action: Audit only the Step 1 brand targets, patch missing brand requirements, then run targeted client checks.
+step_status: implementation-verified-push-pending
+next_executable_action: Commit and push the verified Step 1 changes with this ledger, then activate Step 2.
 first_files_to_read:
   - AGENTS.md
-  - client/src/config/brand.ts
-  - client/src/components/brand/BrandMark.tsx
-  - client/src/components/brand/BrandLockup.tsx
   - client/index.html
-  - client/src/hooks/useDocumentMeta.ts
-  - docs/brand-identity.md
-  - README.md
+  - client/src/index.css
+  - client/src/contexts/ThemeContext.tsx
 files_to_ignore:
   - .verdent/
-known_blockers: []
-verification_completed: []
-verification_pending:
-  - stale visible Ghostwriter OS search
-  - SVG variant rendering
-  - metadata defaults and canonical behavior
+verification_completed:
+  - stale visible Ghostwriter OS source and built HTML search
+  - all six SVG variants rendered in desktop or mobile browser viewports
+  - metadata defaults and route title behavior
   - internal contract identifier preservation
-  - client build
-  - client lint
-known_blockers:
-  - workspace dependencies are not installed; client build cannot find tsc and client lint cannot find oxlint
+  - client production build
+  - client lint with zero errors and 24 unrelated warnings
+verification_pending:
+  - Step 1 commit and push
+known_blockers: []
 do_not_repeat:
   - broad repository inventory already captured on 2026-07-10
-  - client build or lint before installing workspace dependencies
+  - Step 1 brand audit and SVG inspection unless Step 1 files change
 ```
 
 ## 3) Active Files
 
 | File | Purpose | State | Next action |
 |---|---|---|---|
-| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Tracked; continuity correction committed and pushed as `bba5a5b` | Record exact Step 1 audit, verification, and handoff state |
-| `client/src/config/brand.ts` | Central public identity, metadata, navigation, support, and legal copy | Present; targeted audit in progress | Patch only confirmed centralization or helper gaps |
-| `client/src/components/brand/BrandMark.tsx` | Accessible inline brand mark variants | Present; targeted audit in progress | Verify primary, compact, and monochrome rendering |
-| `client/src/components/brand/BrandLockup.tsx` | Public lockup composition | Present; targeted audit in progress | Verify compact and full lockups |
-| `client/index.html` | Initial document identity and metadata | Present; targeted audit in progress | Verify defaults and built HTML |
-| `client/src/hooks/useDocumentMeta.ts` | Route metadata and canonical lifecycle | Present; targeted audit in progress | Verify defaults, canonical behavior, and cleanup |
-| `docs/brand-identity.md` | Naming matrix and operational naming boundary | Present; targeted audit in progress | Verify launch caveat and preserved identifiers |
-| `README.md` | Public identity and operational terminology | Present; targeted audit in progress | Verify terminology boundary |
-| `client/public/brand/*.svg` | Six static mark, favicon, social, and hero variants | Present; targeted audit in progress | Render and inspect all variants |
-| `client/src/App.tsx` | Explicit 403, 404, and wildcard labels | Stale inline status copy confirmed | Source labels from central brand configuration |
-| `client/src/components/system/CookieBanner.tsx` | User-visible consent identity copy | Hard-coded public name confirmed | Source public identity from central brand configuration |
-| `client/src/components/system/CookiePreferencesModal.tsx` | User-visible cookie labels and explanations | Targeted audit complete | Keep accurate consent behavior; normalize copy only if required |
-| `client/src/components/system/ErrorBoundary.tsx` | Fatal error identity and recovery copy | Unsupported notification claim confirmed | Replace with honest branded recovery copy |
-| `client/src/pages/auth/Login.tsx` | User-visible sign-in transactional copy | Stale "Ghostwriter" label confirmed | Replace with centralized Briefloom identity |
-| `client/src/pages/marketing/StatusPage.tsx` | Branded 403/404 presentation | Targeted audit complete | Keep metadata and mark behavior while centralizing labels upstream |
+| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Current Step 1 verification recorded | Commit and push with Step 1 changes |
+| `client/src/config/brand.ts` | Central public identity, metadata, navigation, support, and legal copy | Audited; requirements present | No change required |
+| `client/src/components/brand/BrandMark.tsx` | Accessible inline brand mark variants | Audited and rendered | No change required |
+| `client/src/components/brand/BrandLockup.tsx` | Public lockup composition | Audited and rendered | No change required |
+| `client/index.html` | Initial document identity and metadata | Audited and built successfully | Step 2 will add no-flash theme bootstrap refinements |
+| `client/src/hooks/useDocumentMeta.ts` | Route metadata and canonical lifecycle | Dependency handling normalized; build and lint pass | Commit and push |
+| `docs/brand-identity.md` | Naming matrix and operational naming boundary | Audited; launch caveat and preserved identifiers present | No change required |
+| `README.md` | Public identity and operational terminology | Audited; boundary present | No change required |
+| `client/public/brand/*.svg` | Six static mark, favicon, social, and hero variants | All six rendered successfully | No change required |
+| `client/src/pages/auth/Login.tsx` | User-visible sign-in transactional copy | Metadata description now sources `BRAND.name` | Commit and push |
 
 ## 4) Changes Made
 
@@ -169,6 +163,7 @@ do_not_repeat:
 | 2026-07-10 | Continuity setup | Added this root continuity ledger with mandatory session-start, low-credit checkpoint, atomic commit/push, failure logging, and exact resume rules. Captured only repository facts verified from Git and targeted files. | Initial unstaged check did not cover the untracked file; staged `git diff --cached --check` passed after whitespace fix | Present in verified `HEAD` `40f545d`; session-start status confirmed `main` matches `origin/main` |
 | 2026-07-10 | Continuity correction | Replaced stale HEAD and working-tree claims with the Git state verified at the current session start. | Session-start `git status --short --branch`, `git log -5 --oneline --decorate`, `git show HEAD:AGENTS.md`, scoped diff inspection, and `git diff --check` passed | Commit without explicit identity failed; retry pending with existing repository author identity |
 | 2026-07-10 | Continuity correction | Corrected the current session HEAD from stale `40f545d` to Git-verified `1665c15`; confirmed `main` matches `origin/main` and only `.verdent/` is untracked. | Session-start `git status --short --branch`, `git log -5 --oneline --decorate`, and `git show HEAD:AGENTS.md` | Included in this checkpoint; push required before Step 1 resumes |
+| 2026-07-10 | 1 | Completed the targeted brand audit, centralized the login metadata description, and normalized document metadata dependencies without changing public or operational contracts. | Stale-name searches clean; six SVGs rendered; client build passed; lint returned zero errors and 24 unrelated warnings; desktop/mobile public pages inspected | Commit and push pending |
 
 When recording future work, append a row; do not erase historical rows. Keep entries short and link each change to one plan step.
 
@@ -180,27 +175,23 @@ When recording future work, append a row; do not erase historical rows. Keep ent
 | 2026-07-10 | Continuity setup | Ran the validated commit without an explicit author identity | Git could not auto-detect `user.name` and `user.email`; commit and push did not run | No files changed at failure time | Resolved in a prior session: `AGENTS.md` is present in verified `HEAD` `40f545d`, and `main` matches `origin/main`; do not repeat the failed identity-less command |
 | 2026-07-10 | Continuity correction | Ran `git commit` without explicit author environment variables because the ledger said the prior identity failure was resolved | Git again could not auto-detect `user.name` and `user.email`; commit and push did not run | `AGENTS.md` remained staged; no product files changed | Retry with `GIT_AUTHOR_*` and `GIT_COMMITTER_*` set from the existing `HEAD` author; do not modify Git configuration |
 | 2026-07-10 | 1 | Ran client build and lint before workspace dependencies were installed | Build could not find `tsc`; lint could not find `oxlint`; both exited 127 | No files changed by either command | Install locked workspace dependencies, then retry because the environment will have changed |
+| 2026-07-10 | 1 | First locked dependency installation attempt used the default 120-second command limit | `npm ci` timed out after 120 seconds; no tracked files changed | No tracked files changed; partial local dependency installation occurred | Resolved by rerunning with a 600-second limit; 348 packages installed in 17 seconds |
+| 2026-07-10 | 1 | Inspected public pages through the frontend-only Vite server | `/api/auth/refresh` returned 404 because the backend was not running; HMR attempted the stale configured preview host and returned 404 | No files changed | Record as expected frontend-only preview limitation; correct HMR host in Step 11 and use full-stack preview for final verification |
 
 For every future failure, append: date, plan step, command or approach, exact error summary, whether files changed, and the condition required before retrying. Never delete a failure merely because it is later resolved; mark it resolved and reference the successful change.
 
 ## 6) Next steps
 
-### Next executable action — Step 1 only
+### Next executable action — Step 1 checkpoint
 
-The continuity-ledger setup is complete once the current factual correction is committed and pushed. The next product action remains:
-
-1. Audit only the brand files listed in the **Resume Point**.
-2. Search user-visible client source and built HTML for stale `Ghostwriter OS` naming while excluding intentional internal identifiers.
-3. Compare the existing implementation against Step 1 requirements: centralized copy/navigation/support/legal metadata, brand variants, favicon/social/hero assets, document metadata, cookie/error labels, naming caveat documentation, and README terminology.
-4. Patch only confirmed Step 1 gaps.
-5. Run the smallest targeted checks first, then client build and client lint.
-6. Update every mutable section of this ledger with exact results.
-7. Commit the Step 1 code and this ledger together, then push to the tracked branch.
-8. Only after a successful push, mark Step 1 complete and activate Step 2.
+1. Inspect the scoped Step 1 diff and run `git diff --check`.
+2. Commit `AGENTS.md`, `client/src/hooks/useDocumentMeta.ts`, and `client/src/pages/auth/Login.tsx`.
+3. Push the commit to tracked `main`.
+4. After push confirmation, mark Step 1 complete and activate Step 2.
 
 ### Ordered project queue
 
-- [~] **1. Brand:** central identity, marks/assets, metadata, legal naming caveat. Partial and unverified.
+- [~] **1. Brand:** implementation and verification complete; checkpoint commit and push pending.
 - [ ] **2. Theme:** semantic tokens, typography, surfaces, motion, system/light/dark, no-flash bootstrap.
 - [ ] **3. UI system:** shared primitives, overlays, focus handling, feedback, responsive data patterns.
 - [ ] **4. Marketing:** public shell, truthful landing narrative, progressive WebGL hero, unified pricing.
