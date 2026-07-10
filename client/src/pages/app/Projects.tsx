@@ -15,7 +15,7 @@ import Input from '../../components/ui/Input';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import Badge from '../../components/ui/Badge';
 import { formatDate } from '../../lib/date';
-import { FolderPlus, Trash, Archive, FolderOpen, AlertTriangle } from 'lucide-react';
+import { FolderPlus, Trash, Archive, FolderOpen } from 'lucide-react';
 import { track } from '../../lib/analytics';
 
 export function Projects() {
@@ -37,7 +37,7 @@ export function Projects() {
 
   // Fetch assets for selected project details pane
   const { data: assetsData, loading: loadingAssets } = useApi(
-    (signal) => selectedProject ? projectsApi.listAssets(selectedProject.id) : Promise.resolve([]),
+    () => selectedProject ? projectsApi.listAssets(selectedProject.id) : Promise.resolve([]),
     [selectedProject]
   );
 
@@ -102,7 +102,7 @@ export function Projects() {
       render: (row: Project) => (
         <button
           onClick={() => setSelectedProject(row)}
-          className="text-left font-bold dark:text-zinc-100 text-zinc-800 hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
+          className="text-left font-bold text-[var(--color-text-strong)] hover:text-[var(--color-accent-primary)] focus:outline-none"
         >
           {row.name}
         </button>
@@ -129,14 +129,14 @@ export function Projects() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => handleToggleArchive(row)}
-            className="p-1.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+            className="p-1.5 rounded-[var(--radius-sm)] hover:bg-[var(--color-surface-sunken)] text-[var(--color-text-subtle)] hover:text-[var(--color-text-strong)]"
             title={row.status === 'active' ? 'Archive Project' : 'Activate Project'}
           >
             <Archive className="w-4 h-4" />
           </button>
           <button
             onClick={() => setProjectToDelete(row)}
-            className="p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-950/20 text-zinc-400 hover:text-red-500"
+            className="p-1.5 rounded-[var(--radius-sm)] hover:bg-[var(--color-status-danger)]/10 text-[var(--color-text-subtle)] hover:text-[var(--color-status-danger)]"
             title="Delete Project"
           >
             <Trash className="w-4 h-4" />
@@ -154,10 +154,10 @@ export function Projects() {
       {/* Header bar */}
       <div className="flex justify-between items-center shrink-0">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight dark:text-zinc-50 text-zinc-900">
+          <h1 className="text-xl font-extrabold tracking-tight text-[var(--color-text-strong)]">
             Projects
           </h1>
-          <p className="text-xs dark:text-zinc-400 text-zinc-500 mt-1">
+          <p className="text-xs text-[var(--color-text-subtle)] mt-1">
             Organize copywriting campaigns and marketing deliverables.
           </p>
         </div>
@@ -171,8 +171,8 @@ export function Projects() {
         {/* Table view */}
         <div className="min-w-0">
           {loading ? (
-            <div className="h-64 rounded-2xl border dark:border-zinc-900 border-zinc-200 bg-white dark:bg-zinc-950/20 flex items-center justify-center">
-              <svg className="animate-spin h-6 w-6 text-zinc-500" fill="none" viewBox="0 0 24 24">
+            <div className="h-64 rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-raised)] flex items-center justify-center">
+              <svg className="animate-spin h-6 w-6 text-[var(--color-text-subtle)]" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
@@ -187,7 +187,7 @@ export function Projects() {
           ) : (
             <DataTable
               columns={columns}
-              rows={projects.map(p => ({ ...p, id: String(p.id) })) as any}
+              rows={projects.map((p: any) => ({ ...p, id: String(p.id) })) as any}
               pagination={{
                 page,
                 total,
@@ -199,15 +199,15 @@ export function Projects() {
         </div>
 
         {/* Selected Project Details Pane */}
-        <div className="border rounded-2xl dark:border-zinc-900 border-zinc-200 bg-white dark:bg-zinc-950/20 p-6 flex flex-col gap-6">
+        <div className="border rounded-2xl border-[var(--color-border-subtle)] bg-[var(--color-surface-raised)] p-6 flex flex-col gap-6">
           {selectedProject ? (
             <div className="flex flex-col gap-5 min-w-0">
               <div className="flex justify-between items-start gap-4">
                 <div className="min-w-0">
-                  <h3 className="font-bold text-sm dark:text-zinc-100 text-zinc-800 truncate">
+                  <h3 className="font-bold text-sm text-[var(--color-text-strong)] truncate">
                     {selectedProject.name}
                   </h3>
-                  <p className="text-[10px] text-zinc-500 mt-0.5">
+                  <p className="text-[10px] text-[var(--color-text-subtle)] mt-0.5">
                     Created {formatDate(selectedProject.created_at)}
                   </p>
                 </div>
@@ -217,33 +217,33 @@ export function Projects() {
               </div>
 
               {selectedProject.description ? (
-                <p className="text-xs dark:text-zinc-400 text-zinc-500 leading-relaxed select-text">
+                <p className="text-xs text-[var(--color-text-subtle)] leading-relaxed select-text">
                   {selectedProject.description}
                 </p>
               ) : (
-                <p className="text-xs italic text-zinc-400 dark:text-zinc-600 leading-relaxed">
+                <p className="text-xs italic text-[var(--color-text-subtle)] leading-relaxed">
                   No description provided.
                 </p>
               )}
 
-              <div className="h-px bg-zinc-100 dark:bg-zinc-900" />
+              <div className="h-px bg-[var(--color-border-subtle)]" />
 
               <div>
-                <h4 className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-3">
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-subtle)] mb-3">
                   Campaign Assets
                 </h4>
                 {loadingAssets ? (
-                  <p className="text-xs text-zinc-500">Loading campaign deliverables...</p>
+                  <p className="text-xs text-[var(--color-text-subtle)]">Loading campaign deliverables...</p>
                 ) : !assetsData || assetsData.length === 0 ? (
-                  <p className="text-xs text-zinc-400 dark:text-zinc-600 italic">No deliverables generated for this project yet.</p>
+                  <p className="text-xs text-[var(--color-text-subtle)] italic">No deliverables generated for this project yet.</p>
                 ) : (
                   <div className="flex flex-col gap-2 max-h-[250px] overflow-y-auto pr-1">
                     {assetsData.map((asset: any) => (
                       <div
                         key={asset.id}
-                        className="p-3 rounded-lg border dark:border-zinc-900 border-zinc-200 bg-zinc-50/50 dark:bg-zinc-950/40 text-xs flex justify-between items-center gap-4"
+                        className="p-3 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)] text-xs flex justify-between items-center gap-4"
                       >
-                        <span className="font-semibold dark:text-zinc-300 text-zinc-700 capitalize truncate">
+                        <span className="font-semibold text-[var(--color-text-strong)] capitalize truncate">
                           {asset.asset_type.replace('_', ' ')}
                         </span>
                         {asset.copy_score && (
@@ -258,7 +258,7 @@ export function Projects() {
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center text-center p-8 text-zinc-400 dark:text-zinc-600 h-64">
+            <div className="flex flex-col items-center justify-center text-center p-8 text-[var(--color-text-subtle)] h-64">
               <FolderOpen className="w-8 h-8 stroke-1 mb-2" />
               <p className="text-xs leading-relaxed">Select a project to inspect description and asset list.</p>
             </div>

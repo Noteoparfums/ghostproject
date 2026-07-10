@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { useApi } from '../../hooks/useApi';
-import { useForm } from '../../hooks/useForm';
 import { useToast } from '../../contexts/ToastContext';
 import { brandVoicesApi, BrandVoice } from '../../api/endpoints/brandVoices';
-import { createBrandVoiceSchema } from '@ghostwriter/shared';
 import EmptyState from '../../components/ui/EmptyState';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
@@ -14,7 +12,7 @@ import Slider from '../../components/ui/Slider';
 import Stepper from '../../components/ui/Stepper';
 import Badge from '../../components/ui/Badge';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
-import { Volume2, VolumeX, Plus, Trash2, ArrowLeft, ArrowRight, ShieldAlert } from 'lucide-react';
+import { Volume2, VolumeX, Plus, Trash2, ArrowLeft, ArrowRight } from 'lucide-react';
 import { track } from '../../lib/analytics';
 
 export function BrandVoices() {
@@ -123,10 +121,10 @@ export function BrandVoices() {
       {/* Header bar */}
       <div className="flex justify-between items-center shrink-0">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight dark:text-zinc-50 text-zinc-900">
+          <h1 className="text-xl font-extrabold tracking-tight text-[var(--color-text-strong)]">
             Brand Voice
           </h1>
-          <p className="text-xs dark:text-zinc-400 text-zinc-500 mt-1">
+          <p className="text-xs text-[var(--color-text-subtle)] mt-1">
             Build guidelines representing your brand criteria and tone metrics.
           </p>
         </div>
@@ -140,8 +138,8 @@ export function BrandVoices() {
         {/* Main List */}
         <div className="min-w-0">
           {loading ? (
-            <div className="h-64 rounded-2xl border dark:border-zinc-900 border-zinc-200 bg-white dark:bg-zinc-950/20 flex items-center justify-center">
-              <svg className="animate-spin h-6 w-6 text-zinc-500" fill="none" viewBox="0 0 24 24">
+            <div className="h-64 rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-raised)] flex items-center justify-center">
+              <svg className="animate-spin h-6 w-6 text-[var(--color-text-subtle)]" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
@@ -159,14 +157,14 @@ export function BrandVoices() {
                 <div
                   key={v.id}
                   onClick={() => setSelectedVoice(v)}
-                  className="p-5 rounded-2xl border bg-white dark:bg-zinc-950/20 border-zinc-200 dark:border-zinc-900 hover:border-blue-500/50 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/10 cursor-pointer transition-all flex flex-col gap-4"
+                  className="p-5 rounded-2xl border bg-[var(--color-surface-raised)] border-[var(--color-border-subtle)] hover:border-[var(--color-accent-primary)]/50 hover:bg-[var(--color-surface-sunken)] cursor-pointer transition-all flex flex-col gap-4"
                 >
                   <div className="flex justify-between items-start gap-4">
                     <div>
-                      <h3 className="font-bold text-sm dark:text-zinc-200 text-zinc-800">
+                      <h3 className="font-bold text-sm text-[var(--color-text-strong)]">
                         {v.name}
                       </h3>
-                      <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+                      <p className="text-[10px] text-[var(--color-text-subtle)] mt-0.5">
                         Tuned: {v.tone_sliders ? Object.values(v.tone_sliders).join('/') : '50/50/50'}
                       </p>
                     </div>
@@ -175,7 +173,7 @@ export function BrandVoices() {
                         e.stopPropagation();
                         setVoiceToDelete(v);
                       }}
-                      className="p-1 rounded text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                      className="p-1.5 rounded-[var(--radius-sm)] text-[var(--color-text-subtle)] hover:text-[var(--color-status-danger)] hover:bg-[var(--color-status-danger)]/10 transition-colors"
                       title="Delete Voice"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -188,21 +186,21 @@ export function BrandVoices() {
         </div>
 
         {/* Selected Details Pane */}
-        <div className="border rounded-2xl dark:border-zinc-900 border-zinc-200 bg-white dark:bg-zinc-950/20 p-6 flex flex-col gap-6">
+        <div className="border rounded-2xl border-[var(--color-border-subtle)] bg-[var(--color-surface-raised)] p-6 flex flex-col gap-6">
           {selectedVoice ? (
             <div className="flex flex-col gap-5 min-w-0">
-              <h3 className="font-bold text-sm dark:text-zinc-100 text-zinc-800">
+              <h3 className="font-bold text-sm text-[var(--color-text-strong)]">
                 {selectedVoice.name} Profile
               </h3>
 
               {/* Sliders Display */}
               <div className="flex flex-col gap-3">
-                <h4 className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-subtle)]">
                   Tone Metrics
                 </h4>
                 
                 {/* Sliders */}
-                <div className="flex flex-col gap-2.5 text-[11px] font-medium text-zinc-600 dark:text-zinc-400">
+                <div className="flex flex-col gap-2.5 text-[11px] font-medium text-[var(--color-text-subtle)]">
                   <div className="flex justify-between">
                     <span>Formal / Casual</span>
                     <span className="font-bold font-mono">{selectedVoice.tone_sliders?.formal_casual || 50}%</span>
@@ -221,7 +219,7 @@ export function BrandVoices() {
               {/* Banned Keywords */}
               {selectedVoice.banned_words && selectedVoice.banned_words.length > 0 && (
                 <div className="flex flex-col gap-2">
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-subtle)]">
                     Banned Words
                   </h4>
                   <div className="flex flex-wrap gap-1.5">
@@ -235,7 +233,7 @@ export function BrandVoices() {
               )}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center text-center p-8 text-zinc-400 dark:text-zinc-600 h-64">
+            <div className="flex flex-col items-center justify-center text-center p-8 text-[var(--color-text-subtle)] h-64">
               <Volume2 className="w-8 h-8 stroke-1 mb-2 animate-pulse" />
               <p className="text-xs leading-relaxed">Select a Brand Voice from the list to view its configuration.</p>
             </div>
@@ -253,7 +251,7 @@ export function BrandVoices() {
         <div className="flex flex-col gap-6">
           <Stepper steps={steps} active={activeStep} />
           
-          <div className="h-px bg-zinc-100 dark:bg-zinc-900 mt-2" />
+          <div className="h-px bg-[var(--color-border-subtle)] mt-2" />
 
           {/* Step 1: Details */}
           {activeStep === 0 && (
