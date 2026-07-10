@@ -8,15 +8,29 @@ export interface StepperProps {
 }
 
 export function Stepper({ steps, active, label = 'Progress', className }: StepperProps) {
-  const activeStep = Math.min(Math.max(active, 0), Math.max(steps.length - 1, 0));
+  const normalizedActive = Number.isFinite(active) ? Math.trunc(active) : 0;
+  const activeStep = Math.min(
+    Math.max(normalizedActive, 0),
+    Math.max(steps.length - 1, 0)
+  );
+  const activeStepLabel =
+    steps.length > 0
+      ? `Step ${activeStep + 1} of ${steps.length}: ${steps[activeStep]}`
+      : undefined;
 
   return (
     <div className={cn('w-full select-none', className)}>
-      {steps.length > 0 && (
-        <p aria-hidden="true" className="mb-3 text-sm font-semibold text-[#263b33] dark:text-[#f8f3e9] sm:hidden">
-          Step {activeStep + 1} of {steps.length}: {steps[activeStep]}
+      {activeStepLabel && (
+        <p
+          aria-hidden="true"
+          className="mb-3 text-sm font-semibold text-[#263b33] dark:text-[#f8f3e9] sm:hidden"
+        >
+          {activeStepLabel}
         </p>
       )}
+      <p className="sr-only" role="status" aria-atomic="true">
+        {activeStepLabel}
+      </p>
       <ol aria-label={label} className="flex w-full items-center">
         {steps.map((step, index) => {
           const isCompleted = index < activeStep;
@@ -41,6 +55,7 @@ export function Stepper({ steps, active, label = 'Progress', className }: Steppe
                   {isCompleted ? '✓' : index + 1}
                 </span>
                 <span
+                  aria-hidden="true"
                   className={cn(
                     'absolute top-10 hidden whitespace-nowrap text-[10px] font-bold uppercase tracking-wider sm:block',
                     isActive && 'text-[#9f4933] dark:text-[#f0a087]',
@@ -51,7 +66,8 @@ export function Stepper({ steps, active, label = 'Progress', className }: Steppe
                   {step}
                 </span>
                 <span className="sr-only">
-                  {step}, {isCompleted ? 'completed' : isActive ? 'current step' : 'not started'}
+                  Step {index + 1}: {step},{' '}
+                  {isCompleted ? 'completed' : isActive ? 'current step' : 'not started'}
                 </span>
               </div>
 

@@ -34,6 +34,7 @@ export function ProgressRing({
   const circumference = radius * 2 * Math.PI;
   const percent = normalizedValue / normalizedMax;
   const offset = circumference - percent * circumference;
+  const state = percent >= 1 ? 'complete' : percent > 0 ? 'in-progress' : 'empty';
 
   return (
     <div
@@ -43,10 +44,16 @@ export function ProgressRing({
       aria-valuemax={normalizedMax}
       aria-valuenow={normalizedValue}
       aria-valuetext={valueLabel ?? `${normalizedValue} of ${normalizedMax}`}
+      data-state={state}
       className={cn('relative flex items-center justify-center shrink-0', className)}
       style={{ width: normalizedSize, height: normalizedSize }}
     >
-      <svg aria-hidden="true" focusable="false" className="h-full w-full -rotate-90">
+      <svg
+        aria-hidden="true"
+        focusable="false"
+        viewBox={`0 0 ${normalizedSize} ${normalizedSize}`}
+        className="h-full w-full -rotate-90"
+      >
         <circle
           className="text-[#e2d9cc] dark:text-[#354840]"
           strokeWidth={normalizedStrokeWidth}

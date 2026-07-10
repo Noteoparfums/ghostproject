@@ -9,7 +9,7 @@ export interface BadgeProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'child
 }
 
 export function Badge({ children, tone = 'default', className, ...props }: BadgeProps) {
-  const tones = {
+  const tones: Record<BadgeTone, string> = {
     default:
       'border-[#d4c9ba] bg-[#eee8de] text-[#263b33] dark:border-[#40564c] dark:bg-[#2b3b35] dark:text-[#d9ddd7]',
     success:
@@ -26,7 +26,7 @@ export function Badge({ children, tone = 'default', className, ...props }: Badge
     <span
       data-tone={tone}
       className={cn(
-        'inline-flex max-w-full select-text items-center rounded-full border px-2.5 py-1 text-xs font-semibold leading-none',
+        'inline-flex max-w-full min-w-0 select-text items-center justify-center gap-1.5 break-words rounded-full border px-2.5 py-1 text-center text-xs font-semibold leading-4 transition-colors motion-reduce:transition-none [&>svg]:h-3.5 [&>svg]:w-3.5 [&>svg]:shrink-0',
         tones[tone],
         className
       )}

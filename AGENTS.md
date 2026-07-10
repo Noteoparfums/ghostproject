@@ -62,7 +62,7 @@ The work is frontend-only with respect to product contracts:
 
 **Branch:** `main` tracking `origin/main`
 
-**Verified HEAD at current session start:** `fab4722` (`4`)
+**Verified HEAD at current session start:** `58bb49b` (`Merge branch 'main' of https://github.com/Noteoparfums/ghostproject`)
 
 **Working tree at current session start:** only untracked `.verdent/`; it is unrelated and must not be committed.
 
@@ -126,6 +126,9 @@ The work is frontend-only with respect to product contracts:
 - Button, Field, Input, Select, and Toggle control-state changes are present in Git-verified `HEAD` `fab4722`, which matches `origin/main`; isolated TypeScript verification remains pending.
 - The isolated TypeScript rerun initially could not start because this fresh environment had no root `node_modules/.bin/tsc`; after installing 348 locked workspace packages, the same five-file check passed with no diagnostics.
 - The control-state verification checkpoint was committed and pushed as `6b12287`; the working tree then contained only untracked `.verdent/`.
+- The feedback-primitives audit found complete tone coverage in Badge and labelled empty-state structure, but also found duplicated Stepper announcements, no concise active-step live update, and a ProgressRing SVG without an explicit view box. Skeleton supports opt-in announcements but does not yet wire live-region behavior explicitly.
+- Badge now uses exhaustive tone classes and resilient compact content layout. EmptyState retains its existing API while adding optional tone, section attributes, and action semantics. Skeleton keeps decorative placeholders hidden and makes labelled statuses polite, atomic, and busy. Stepper normalizes its active index and announces concise step changes without exposing duplicate visible labels. ProgressRing now exposes empty/in-progress/complete state and renders in an explicit SVG coordinate system.
+- The first feedback-primitives verification attempt could not start because this fresh session has no root TypeScript binary or client oxlint binary.
 
 ### Contract boundary
 
@@ -138,14 +141,14 @@ Unsupported and never simulated: generation cancellation, A/B variants, generati
 ```yaml
 last_updated: 2026-07-10
 branch: main
-verified_head_at_session_start: fab4722
+verified_head_at_session_start: 58bb49b
 remote_parity_at_session_start: main matches origin/main
 working_tree_at_session_start: only untracked .verdent/
 phase: frontend-rebuild
 current_plan_step: 3
 current_step_name: Rebuild shared UI, overlay, feedback, and responsive data primitives
-step_status: feedback-primitives-audit-in-progress
-next_executable_action: Inspect Badge, EmptyState, Skeleton, Stepper, and ProgressRing, then rebuild their semantic states and accessibility behavior without changing existing contracts.
+step_status: feedback-primitives-verification-blocked-on-local-dependencies
+next_executable_action: Install locked workspace dependencies with the previously successful extended timeout, then rerun the unchanged isolated TypeScript and client lint commands.
 first_files_to_read:
   - AGENTS.md
   - client/src/components/ui/Button.tsx
@@ -173,6 +176,7 @@ verification_completed:
   - Step 3 five-control isolated strict TypeScript check
   - Step 3 control-state checkpoint scoped diff inspection and git diff --check
 verification_pending:
+  - locked workspace dependency installation
   - Step 3 feedback-primitives isolated TypeScript check
   - Step 3 feedback-primitives lint
   - scoped diff inspection and diff check
@@ -194,11 +198,11 @@ do_not_repeat:
 | `client/src/components/ui/Input.tsx` | Shared text controls | Multiline cast fix and semantic states passed isolated TypeScript verification | No further action in this atomic step |
 | `client/src/components/ui/Select.tsx` | Shared selection control | Invalid/success/disabled states and 44px target passed isolated TypeScript verification | No further action in this atomic step |
 | `client/src/components/ui/Toggle.tsx` | Shared binary control | Switch labels, selected states, and 44px target passed isolated TypeScript verification | No further action in this atomic step |
-| `client/src/components/ui/Badge.tsx` | Compact semantic status indicator | Not yet inspected in this atomic step | Inspect implementation and usages |
-| `client/src/components/ui/EmptyState.tsx` | Empty and unavailable state presentation | Not yet inspected in this atomic step | Inspect implementation and usages |
-| `client/src/components/ui/Skeleton.tsx` | Loading placeholder and announcement behavior | Not yet inspected in this atomic step | Inspect implementation and usages |
-| `client/src/components/ui/Stepper.tsx` | Ordered progress state | Not yet inspected in this atomic step | Inspect implementation and usages |
-| `client/src/components/ui/ProgressRing.tsx` | Determinate progress visualization | Not yet inspected in this atomic step | Inspect implementation and usages |
+| `client/src/components/ui/Badge.tsx` | Compact semantic status indicator | Exhaustive tones and resilient compact content layout implemented | Run isolated TypeScript verification and lint |
+| `client/src/components/ui/EmptyState.tsx` | Empty and unavailable state presentation | Optional tones, section attributes, and action semantics implemented without removing props | Run isolated TypeScript verification and lint |
+| `client/src/components/ui/Skeleton.tsx` | Loading placeholder and announcement behavior | Decorative default retained; labelled statuses now expose polite, atomic, busy semantics | Run isolated TypeScript verification and lint |
+| `client/src/components/ui/Stepper.tsx` | Ordered progress state | Active index normalization and concise live step updates implemented without duplicate visible labels | Run isolated TypeScript verification and lint |
+| `client/src/components/ui/ProgressRing.tsx` | Determinate progress visualization | Explicit SVG view box and empty/in-progress/complete metadata implemented | Run isolated TypeScript verification and lint |
 
 ## 4) Changes Made
 
@@ -221,6 +225,10 @@ do_not_repeat:
 | 2026-07-10 | 3 | Installed 348 locked workspace packages and reran isolated strict TypeScript verification for Button, Field, Input, Select, and Toggle. | `npm ci` completed; the five-file `tsc --noEmit` check passed with no diagnostics | Continuity correction and verification checkpoint commit/push pending |
 | 2026-07-10 | 3 | Inspected the scoped continuity checkpoint diff and checked whitespace. | Only `AGENTS.md` is modified, `.verdent/` remains untracked and excluded, and `git diff --check` passed | Commit and push pending |
 | 2026-07-10 | 3 | Completed the control-state verification checkpoint and activated the feedback-primitives audit. | Commit `6b12287` and push output confirmed `main -> main`; working tree then contained only untracked `.verdent/` | `6b12287` pushed to `origin/main` |
+| 2026-07-10 | Continuity correction | Corrected the stale session-start HEAD from `fab4722` to Git-verified grafted merge `58bb49b`; confirmed `main` matches `origin/main` and only `.verdent/` is untracked. | Session-start `git status --short --branch`, `git log -5 --oneline --decorate`, and `git show HEAD:AGENTS.md` | Include with the Step 3 feedback-primitives checkpoint |
+| 2026-07-10 | 3 | Inspected Badge, EmptyState, Skeleton, Stepper, and ProgressRing plus all targeted JSX usages; recorded the accessibility and rendering gaps before implementation. | Targeted `git show HEAD:` and `git grep` reads only; no product files changed during inspection | Implementation and verification pending |
+| 2026-07-10 | 3 | Rebuilt the five feedback primitives with exhaustive visual states, extensible empty-state semantics, explicit loading announcements, normalized ordered progress, and correctly scaled determinate rings. | Implementation complete; isolated TypeScript verification and lint pending | Commit and push pending |
+| 2026-07-10 | 3 | Started isolated TypeScript verification and client lint for the five feedback primitives. | Neither check could start because the local dependency binaries are absent in this fresh session | Install locked dependencies, then rerun unchanged checks |
 
 When recording future work, append a row; do not erase historical rows. Keep entries short and link each change to one plan step.
 
@@ -238,6 +246,7 @@ When recording future work, append a row; do not erase historical rows. Keep ent
 | 2026-07-10 | 3 | Reran the client production build after successfully installing 348 locked packages | Build reached TypeScript but failed because the tracked shared config extends absent `/workspace/ghostproject/tsconfig.base.json`; resulting shared `node:fs`, `node:path`, and union-narrowing errors are outside the active files | No tracked files changed by the build | Treat as a pre-existing repository build blocker; use isolated TypeScript verification for the five active controls and do not alter files outside this atomic step |
 | 2026-07-10 | 3 | Ran isolated TypeScript verification for the five active controls | One active-file error identified an intentionally cross-element multiline props cast that needed to pass through `unknown` | No additional files changed by the command; `Input.tsx` then received the scoped fix | Rerun the same isolated check after the active file changed |
 | 2026-07-10 | 3 | Reran isolated TypeScript verification from the recorded resume point | Root `/workspace/ghostproject/node_modules/.bin/tsc` was absent, so the shell returned command not found and no type checking ran | No files changed by the command; only `AGENTS.md` records the result | Resolved after `npm ci` installed 348 packages; the unchanged isolated command then passed |
+| 2026-07-10 | 3 | Ran feedback-primitives isolated TypeScript verification and client lint before fresh-session dependencies were present | The root `./node_modules/.bin/tsc` and client `oxlint` commands were not found, so neither verification ran | No product files changed; `AGENTS.md` records the result | Install locked workspace dependencies with the previously successful extended timeout, then rerun both unchanged checks because the environment will have changed |
 
 For every future failure, append: date, plan step, command or approach, exact error summary, whether files changed, and the condition required before retrying. Never delete a failure merely because it is later resolved; mark it resolved and reference the successful change.
 
@@ -245,9 +254,9 @@ For every future failure, append: date, plan step, command or approach, exact er
 
 ### Next executable action — Step 3 feedback primitives
 
-1. Inspect Badge, EmptyState, Skeleton, Stepper, and ProgressRing plus their targeted usages.
-2. Rebuild semantic states and accessibility behavior without removing existing props.
-3. Run isolated TypeScript verification and lint, then record exact results.
+1. [x] Inspect Badge, EmptyState, Skeleton, Stepper, and ProgressRing plus their targeted usages.
+2. [x] Rebuild semantic states and accessibility behavior without removing existing props.
+3. Install locked workspace dependencies, run isolated TypeScript verification and lint, then record exact results.
 4. Inspect the scoped diff, run `git diff --check`, commit the active files with this ledger, and push.
 
 ### Ordered project queue
