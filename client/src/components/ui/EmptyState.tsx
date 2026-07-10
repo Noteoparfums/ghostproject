@@ -1,53 +1,80 @@
-import type { ReactNode } from 'react';
+import { useId } from 'react';
+import type { MouseEventHandler, ReactNode } from 'react';
 import Button from './Button';
 import { cn } from '../../lib/cn';
+
+export interface EmptyStateAction {
+  label: string;
+  onClick: MouseEventHandler<HTMLButtonElement>;
+  disabled?: boolean;
+  loading?: boolean;
+  loadingLabel?: string;
+}
 
 export interface EmptyStateProps {
   illustration?: ReactNode;
   title: string;
-  body?: string;
-  cta?: {
-    label: string;
-    onClick: () => void;
-  };
+  body?: ReactNode;
+  cta?: EmptyStateAction;
+  headingLevel?: 2 | 3 | 4;
   className?: string;
 }
 
-export function EmptyState({ illustration, title, body, cta, className }: EmptyStateProps) {
+export function EmptyState({
+  illustration,
+  title,
+  body,
+  cta,
+  headingLevel = 3,
+  className,
+}: EmptyStateProps) {
+  const generatedId = useId();
+  const titleId = `${generatedId}-title`;
+  const bodyId = body ? `${generatedId}-body` : undefined;
+  const Heading = `h${headingLevel}` as 'h2' | 'h3' | 'h4';
+
   return (
-    <div 
+    <section
+      aria-labelledby={titleId}
+      aria-describedby={bodyId}
       className={cn(
-        'flex flex-col items-center justify-center text-center p-8 border border-dashed rounded-2xl bg-zinc-50/50 border-zinc-200 dark:bg-zinc-950/20 dark:border-zinc-800/80 min-h-[300px]',
+        'flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-dashed border-[#d4c9ba] bg-[#fffdf8]/80 p-8 text-center dark:border-[#40564c] dark:bg-[#1d2b26]/60',
         className
       )}
     >
       {illustration && (
-        <div className="mb-4 text-zinc-400 dark:text-zinc-600">
+        <div aria-hidden="true" className="mb-4 text-[#78847e] dark:text-[#8f9d96]">
           {illustration}
         </div>
       )}
-      
-      <h3 className="text-base font-bold dark:text-zinc-200 text-zinc-800">
+
+      <Heading id={titleId} className="text-base font-bold text-[#263b33] dark:text-[#f8f3e9]">
         {title}
-      </h3>
-      
+      </Heading>
+
       {body && (
-        <p className="mt-1 text-sm dark:text-zinc-400 text-zinc-500 max-w-sm">
+        <div
+          id={bodyId}
+          className="mt-2 max-w-sm text-sm leading-6 text-[#5d6b65] dark:text-[#b8c0bb]"
+        >
           {body}
-        </p>
+        </div>
       )}
-      
+
       {cta && (
-        <Button 
-          variant="secondary" 
-          size="sm" 
-          onClick={cta.onClick} 
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={cta.onClick}
+          disabled={cta.disabled}
+          loading={cta.loading}
+          loadingLabel={cta.loadingLabel}
           className="mt-5"
         >
           {cta.label}
         </Button>
       )}
-    </div>
+    </section>
   );
 }
 export default EmptyState;

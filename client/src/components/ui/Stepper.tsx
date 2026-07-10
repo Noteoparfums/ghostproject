@@ -3,55 +3,71 @@ import { cn } from '../../lib/cn';
 export interface StepperProps {
   steps: string[];
   active: number;
+  label?: string;
   className?: string;
 }
 
-export function Stepper({ steps, active, className }: StepperProps) {
+export function Stepper({ steps, active, label = 'Progress', className }: StepperProps) {
+  const activeStep = Math.min(Math.max(active, 0), Math.max(steps.length - 1, 0));
+
   return (
-    <div className={cn('flex items-center w-full select-none', className)}>
-      {steps.map((step, idx) => {
-        const isCompleted = idx < active;
-        const isActive = idx === active;
+    <div className={cn('w-full select-none', className)}>
+      {steps.length > 0 && (
+        <p aria-hidden="true" className="mb-3 text-sm font-semibold text-[#263b33] dark:text-[#f8f3e9] sm:hidden">
+          Step {activeStep + 1} of {steps.length}: {steps[activeStep]}
+        </p>
+      )}
+      <ol aria-label={label} className="flex w-full items-center">
+        {steps.map((step, index) => {
+          const isCompleted = index < activeStep;
+          const isActive = index === activeStep;
 
-        return (
-          <div key={step} className="flex items-center flex-1 last:flex-initial">
-            <div className="flex flex-col items-center relative">
-              {/* Step indicator dot */}
-              <div
-                className={cn(
-                  'flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold transition-all border-2',
-                  isCompleted && 'bg-blue-600 border-blue-600 text-white',
-                  isActive && 'bg-white border-blue-600 text-blue-600 dark:bg-zinc-950 dark:border-blue-500 dark:text-blue-400',
-                  !isCompleted && !isActive && 'bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-600'
-                )}
-              >
-                {isCompleted ? '✓' : idx + 1}
+          return (
+            <li
+              key={`${step}-${index}`}
+              aria-current={isActive ? 'step' : undefined}
+              className="flex flex-1 items-center last:flex-initial"
+            >
+              <div className="relative flex flex-col items-center">
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-bold transition-colors motion-reduce:transition-none',
+                    isCompleted && 'border-emerald-700 bg-emerald-700 text-white dark:border-emerald-500 dark:bg-emerald-500 dark:text-[#17211d]',
+                    isActive && 'border-[#b9573b] bg-[#fffdf8] text-[#9f4933] dark:border-[#d8795c] dark:bg-[#17211d] dark:text-[#f0a087]',
+                    !isCompleted && !isActive && 'border-[#d4c9ba] bg-[#fffdf8] text-[#78847e] dark:border-[#40564c] dark:bg-[#17211d] dark:text-[#8f9d96]'
+                  )}
+                >
+                  {isCompleted ? '✓' : index + 1}
+                </span>
+                <span
+                  className={cn(
+                    'absolute top-10 hidden whitespace-nowrap text-[10px] font-bold uppercase tracking-wider sm:block',
+                    isActive && 'text-[#9f4933] dark:text-[#f0a087]',
+                    isCompleted && 'text-emerald-800 dark:text-emerald-300',
+                    !isCompleted && !isActive && 'text-[#78847e] dark:text-[#8f9d96]'
+                  )}
+                >
+                  {step}
+                </span>
+                <span className="sr-only">
+                  {step}, {isCompleted ? 'completed' : isActive ? 'current step' : 'not started'}
+                </span>
               </div>
-              {/* Step title label */}
-              <span 
-                className={cn(
-                  'absolute top-9 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap hidden sm:block',
-                  isActive && 'text-blue-600 dark:text-blue-400',
-                  isCompleted && 'text-zinc-600 dark:text-zinc-400',
-                  !isCompleted && !isActive && 'text-zinc-400 dark:text-zinc-500'
-                )}
-              >
-                {step}
-              </span>
-            </div>
 
-            {/* Connecting line */}
-            {idx < steps.length - 1 && (
-              <div
-                className={cn(
-                  'flex-1 h-0.5 mx-4 transition-all duration-300',
-                  isCompleted ? 'bg-blue-600 dark:bg-blue-500' : 'bg-zinc-200 dark:bg-zinc-800'
-                )}
-              />
-            )}
-          </div>
-        );
-      })}
+              {index < steps.length - 1 && (
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'mx-3 h-0.5 flex-1 transition-colors duration-300 motion-reduce:transition-none sm:mx-4',
+                    isCompleted ? 'bg-emerald-700 dark:bg-emerald-500' : 'bg-[#d4c9ba] dark:bg-[#40564c]'
+                  )}
+                />
+              )}
+            </li>
+          );
+        })}
+      </ol>
     </div>
   );
 }

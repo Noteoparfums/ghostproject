@@ -1,17 +1,30 @@
-import {    } from 'react';
 import type { HTMLAttributes } from 'react';
 import { cn } from '../../lib/cn';
 
-export interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {}
+export interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
+  animated?: boolean;
+}
 
-export function Skeleton({ className, ...props }: SkeletonProps) {
+export function Skeleton({
+  animated = true,
+  className,
+  role,
+  'aria-hidden': ariaHidden,
+  'aria-label': ariaLabel,
+  ...props
+}: SkeletonProps) {
+  const isAccessible = Boolean(role || ariaLabel);
+
   return (
     <div
       className={cn(
-        'animate-pulse rounded-lg bg-zinc-200 dark:bg-zinc-800/80',
+        'rounded-lg bg-[#e2d9cc] dark:bg-[#354840]',
+        animated && 'animate-pulse motion-reduce:animate-none',
         className
       )}
-      aria-hidden="true"
+      role={ariaLabel ? role ?? 'status' : role}
+      aria-hidden={ariaHidden ?? (isAccessible ? undefined : true)}
+      aria-label={ariaLabel}
       {...props}
     />
   );
