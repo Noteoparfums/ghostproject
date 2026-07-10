@@ -188,7 +188,12 @@ do_not_repeat:
 
 | File | Purpose | State | Next action |
 |---|---|---|---|
-| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Control-state checkpoint push recorded; feedback primitive audit activated | Keep current during this atomic step |
+| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Git correction and verification checkpoint inspected; `git diff --check` passed | Commit and push checkpoint |
+| `client/src/components/ui/Button.tsx` | Shared button states and touch targets | Complete states and 44px target passed isolated TypeScript verification | No further action in this atomic step |
+| `client/src/components/ui/Field.tsx` | Shared labels, hints, and errors | Automatic ID, described-by, and invalid wiring passed isolated TypeScript verification | No further action in this atomic step |
+| `client/src/components/ui/Input.tsx` | Shared text controls | Multiline cast fix and semantic states passed isolated TypeScript verification | No further action in this atomic step |
+| `client/src/components/ui/Select.tsx` | Shared selection control | Invalid/success/disabled states and 44px target passed isolated TypeScript verification | No further action in this atomic step |
+| `client/src/components/ui/Toggle.tsx` | Shared binary control | Switch labels, selected states, and 44px target passed isolated TypeScript verification | No further action in this atomic step |
 | `client/src/components/ui/Badge.tsx` | Compact semantic status indicator | Not yet inspected in this atomic step | Inspect implementation and usages |
 | `client/src/components/ui/EmptyState.tsx` | Empty and unavailable state presentation | Not yet inspected in this atomic step | Inspect implementation and usages |
 | `client/src/components/ui/Skeleton.tsx` | Loading placeholder and announcement behavior | Not yet inspected in this atomic step | Inspect implementation and usages |
