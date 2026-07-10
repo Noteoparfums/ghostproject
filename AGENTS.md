@@ -80,13 +80,12 @@ The work is frontend-only with respect to product contracts:
 
 ### Confirmed incomplete or not yet verified
 
-- Step 1 brand work is implemented, verified, committed, and pushed.
-- Step 2 semantic style files and local font assets are implemented, verified, committed, and pushed.
-- Step 3 shared UI/overlay/feedback/responsive-data primitives are implemented, verified, and present in Git-verified `HEAD` `75d63a2`.
-- Three/WebGL packages are absent from `client/package.json`; the progressive hero work is not complete.
+- Steps 1-4 are implemented, verified, committed, and pushed.
+- Step 3 responsive-data-primitives isolated TypeScript and lint checks passed; Step 3 is complete.
+- Step 4 WebGL hero, marketing shell, landing sections, and pricing token migration are complete.
 - The planned auth shell and generation component split are absent from the tracked file inventory.
-- Steps 4-12 have not been behaviorally, visually, or contract-verified in this ledger; Step 4 is next.
-- Step 1, Step 2, and Step 3 build/isolated-typecheck, lint, and targeted browser results are recorded below; final root tests, accessibility, bundle, and full-stack route verification remain pending for Step 12.
+- Steps 5-12 have not been behaviorally, visually, or contract-verified in this ledger; Step 5 is next.
+- Step 1-4 build/lint and targeted browser results are recorded below; final root tests, accessibility, bundle, and full-stack route verification remain pending for Step 12.
 - The root monorepo `tsc -b shared server scripts` and the client's chained `npm run build` both fail before reaching the client because `shared/tsconfig.json`, `server/tsconfig.json`, and `scripts/tsconfig.json` extend a `tsconfig.base.json` that does not exist anywhere in Git history (confirmed via `git log --all --diff-filter=A -- tsconfig.base.json`, zero results). This is a pre-existing repository defect outside the frontend-only scope; isolated per-file `tsc --noEmit --ignoreConfig <explicit compiler flags>` checks are used instead for each active step's files.
 
 ### Current Step 1 findings
@@ -153,25 +152,44 @@ Unsupported and never simulated: generation cancellation, A/B variants, generati
 
 ### Resume Point
 
+### Current Step 4 findings
+
+- Installed `three`, `@react-three/fiber`, and `@react-three/drei` in `client/`; 63 packages added.
+- Created 7 new marketing components: HeroSection, LoomSculpture (R3F torus-knot + copy planes), HeroFallback (framer-motion SVG), WorkflowSection, CapabilitySection, PricingPreview, FinalCTA.
+- Rebuilt MarketingNav with mobile responsive menu (hamburger/X toggle, aria-expanded, aria-controls, 44px touch targets, close-on-navigate), semantic token colors throughout.
+- Rebuilt Footer with all colors migrated to semantic tokens.
+- Rebuilt Pricing page: removed hard-coded dark zinc-950 palette, migrated to semantic tokens, uses `p.recommended` for emphasis and `p.ctaLabel` for button text. All checkout/billing logic preserved unchanged.
+- Added `recommended` and `ctaLabel` fields to pricing.ts config without changing pricing values.
+- Updated App.tsx skeletons and layout wrappers to semantic token backgrounds.
+- Rebuilt LandingRedesign as thin composition importing section components.
+- Vite production build passes in 388ms; LoomSculpture chunk is correctly isolated at 935KB (253KB gzipped), separate from all auth/app chunks.
+- Client lint: 0 errors, 24 warnings (all pre-existing outside Step 4 files).
+- `git diff --check` passed.
+- Dev server responds with correct "Briefloom — Direct-response copy intelligence" title and OG description.
+- Browser automation unavailable on macOS; visual inspection deferred to Step 12 final quality pass.
+- Step 4 was committed and pushed as `88d95c7`.
+
 ```yaml
 last_updated: 2026-07-10
 branch: main
-verified_head_at_session_start: 75d63a2
+verified_head_at_session_start: 0cf809d
 remote_parity_at_session_start: main matches origin/main
 working_tree_at_session_start: only untracked .verdent/
 phase: frontend-rebuild
-current_plan_step: 4
-current_step_name: Rebuild the public shell, landing narrative, progressive WebGL hero, and pricing
+current_plan_step: 5
+current_step_name: Complete all public, legal, forbidden, and not-found routes
 step_status: not-started
-next_executable_action: Inspect MarketingNav.tsx, Footer.tsx, LandingRedesign.tsx, and pricing.ts against Step 4 plan targets (progressive WebGL hero, testimonial/metric audit, three/@react-three/fiber/@react-three/drei dependency check) before implementing.
+next_executable_action: Inspect About.tsx, Blog.tsx, Changelog.tsx, Privacy.tsx, Terms.tsx, Refund.tsx, StatusPage.tsx, and EditorialLayout.tsx against Step 5 plan targets before implementing.
 first_files_to_read:
   - AGENTS.md
-  - client/src/components/layout/MarketingNav.tsx
-  - client/src/components/layout/Footer.tsx
-  - client/src/pages/marketing/LandingRedesign.tsx
-  - client/src/pages/marketing/Pricing.tsx
-  - client/src/config/pricing.ts
-  - client/package.json
+  - client/src/pages/marketing/About.tsx
+  - client/src/pages/marketing/Blog.tsx
+  - client/src/pages/marketing/Changelog.tsx
+  - client/src/pages/legal/Privacy.tsx
+  - client/src/pages/legal/Terms.tsx
+  - client/src/pages/legal/Refund.tsx
+  - client/src/pages/marketing/StatusPage.tsx
+  - client/src/components/marketing/EditorialLayout.tsx
 files_to_ignore:
   - .verdent/
 verification_completed:
@@ -199,7 +217,15 @@ verification_completed:
   - Step 3 responsive-data-primitives isolated strict TypeScript check (Slider, Accordion, DataTable) with zero diagnostics
   - Step 3 responsive-data-primitives lint with zero errors and 22 unrelated warnings
   - Step 3 confirmed complete and already present in Git-verified HEAD 75d63a2 matching origin/main
-verification_pending: []
+  - Step 4 three/R3F/drei dependency installation (63 packages)
+  - Step 4 Vite production build (388ms)
+  - Step 4 LoomSculpture chunk isolated (935KB) from auth/app bundles
+  - Step 4 lint 0 errors 24 warnings (all pre-existing)
+  - Step 4 git diff --check passed
+  - Step 4 dev server metadata verification (correct title and OG description)
+  - Step 4 commit 88d95c7 pushed to origin/main
+verification_pending:
+  - Step 4 browser visual inspection (deferred to Step 12 — browser automation unavailable on macOS)
 known_blockers:
   - "tsconfig.base.json has never existed in Git history; the monorepo tsc -b and chained client build fail before reaching the client. Pre-existing, outside frontend scope. Use isolated per-file tsc --noEmit --ignoreConfig checks for each active step instead."
 do_not_repeat:
@@ -208,26 +234,27 @@ do_not_repeat:
   - Step 2 client build and lint unless Step 2 files change
   - Step 3 overlay build and lint unless overlay files change
   - Step 3 responsive-data-primitives isolated check unless Slider/Accordion/DataTable change
+  - Step 4 marketing component and pricing inspection unless those files change
 ```
 
 ## 3) Active Files
 
 | File | Purpose | State | Next action |
 |---|---|---|---|
-| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Current-session Git correction and feedback verification results recorded; scoped diff inspected and `git diff --check` passed | Commit and push checkpoint |
-| `client/src/components/ui/Button.tsx` | Shared button states and touch targets | Complete states and 44px target passed isolated TypeScript verification | No further action in this atomic step |
-| `client/src/components/ui/Field.tsx` | Shared labels, hints, and errors | Automatic ID, described-by, and invalid wiring passed isolated TypeScript verification | No further action in this atomic step |
-| `client/src/components/ui/Input.tsx` | Shared text controls | Multiline cast fix and semantic states passed isolated TypeScript verification | No further action in this atomic step |
-| `client/src/components/ui/Select.tsx` | Shared selection control | Invalid/success/disabled states and 44px target passed isolated TypeScript verification | No further action in this atomic step |
-| `client/src/components/ui/Toggle.tsx` | Shared binary control | Switch labels, selected states, and 44px target passed isolated TypeScript verification | No further action in this atomic step |
-| `client/src/components/ui/Badge.tsx` | Compact semantic status indicator | Exhaustive tones and resilient compact content layout passed isolated TypeScript and lint verification | Include in scoped checkpoint |
-| `client/src/components/ui/EmptyState.tsx` | Empty and unavailable state presentation | Optional tones, section attributes, and action semantics passed isolated TypeScript and lint verification | Include in scoped checkpoint |
-| `client/src/components/ui/Skeleton.tsx` | Loading placeholder and announcement behavior | Decorative default and labelled status semantics passed isolated TypeScript and lint verification | Include in scoped checkpoint |
-| `client/src/components/ui/Stepper.tsx` | Ordered progress state | Active index normalization and concise live step updates passed isolated TypeScript and lint verification | Include in scoped checkpoint |
-| `client/src/components/ui/ProgressRing.tsx` | Determinate progress visualization | Explicit SVG view box and progress metadata passed isolated TypeScript and lint verification | Include in scoped checkpoint |
-| `client/src/components/ui/Slider.tsx` | Shared ranged-value control | Value formatting, endpoint context, semantic states, and 44px interaction area implemented | Run isolated TypeScript and lint verification |
-| `client/src/components/ui/Accordion.tsx` | Shared disclosure-group control | Linked disclosure semantics, disabled state, focus styling, and reduced-motion transitions implemented | Run isolated TypeScript and lint verification |
-| `client/src/components/ui/DataTable.tsx` | Shared responsive data presentation | Keyboard sorting, caption, mobile semantics, empty state, and normalized pagination implemented | Run isolated TypeScript and lint verification |
+| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Step 4 checkpoint recorded | Commit with ledger update |
+| `client/src/components/layout/MarketingNav.tsx` | Responsive marketing navigation with mobile menu | Rebuilt with semantic tokens, mobile menu, a11y attributes | Complete for Step 4 |
+| `client/src/components/layout/Footer.tsx` | Marketing footer with centralized navigation | Rebuilt with semantic tokens | Complete for Step 4 |
+| `client/src/components/marketing/HeroSection.tsx` | Landing hero orchestrating WebGL/fallback | Created with WebGL detection, error boundary, semantic HTML | Complete for Step 4 |
+| `client/src/components/marketing/hero/LoomSculpture.tsx` | Lazy R3F 3D woven-loom sculpture | Created with DPR cap, mobile simplification, reduced motion | Complete for Step 4 |
+| `client/src/components/marketing/hero/HeroFallback.tsx` | Static SVG fallback with framer-motion | Created with reduced-motion awareness | Complete for Step 4 |
+| `client/src/components/marketing/WorkflowSection.tsx` | 3-step workflow cards | Created with semantic tokens | Complete for Step 4 |
+| `client/src/components/marketing/CapabilitySection.tsx` | Honest capability showcase | Created with verified supported claims | Complete for Step 4 |
+| `client/src/components/marketing/PricingPreview.tsx` | Compact landing pricing preview | Created from PRICING_PLANS config | Complete for Step 4 |
+| `client/src/components/marketing/FinalCTA.tsx` | Bottom CTA section | Created with BrandMark and signup link | Complete for Step 4 |
+| `client/src/pages/marketing/LandingRedesign.tsx` | Landing page thin composition | Rebuilt as section imports | Complete for Step 4 |
+| `client/src/pages/marketing/Pricing.tsx` | Full pricing page | Migrated to semantic tokens, preserved checkout logic | Complete for Step 4 |
+| `client/src/config/pricing.ts` | Central pricing catalog | Added recommended and ctaLabel fields | Complete for Step 4 |
+| `client/src/App.tsx` | Root router and layout wrappers | Semantic token migration for skeletons/layouts | Complete for Step 4 |
 
 ## 4) Changes Made
 
@@ -261,6 +288,7 @@ do_not_repeat:
 | 2026-07-10 | 3 | Inspected Slider, Accordion, and DataTable plus every targeted JSX usage; recorded interaction, semantics, and responsive-presentation gaps before implementation. | Targeted `git show HEAD:` and `git grep` reads only; no product files changed during inspection | Implementation and verification pending |
 | 2026-07-10 | 3 | Rebuilt Slider, Accordion, and DataTable with semantic theme states, complete disclosure and sorting relationships, keyboard-operable controls, responsive data semantics, empty states, and minimum interaction targets without removing existing props. | Implementation complete; isolated TypeScript verification and lint pending | Commit and push pending |
 | 2026-07-10 | 3 | Started isolated TypeScript verification and client lint for Slider, Accordion, and DataTable. | Neither check could start because the local dependency binaries are absent in this fresh session | Install locked dependencies, then rerun unchanged checks |
+| 2026-07-10 | 4 | Installed three, @react-three/fiber, @react-three/drei (63 packages); created 7 marketing section components; rebuilt MarketingNav with mobile menu; rebuilt Footer and Pricing with semantic tokens; updated pricing.ts config; updated App.tsx layouts; rebuilt LandingRedesign as thin composition. | Vite build passed (388ms); lint 0 errors 24 warnings (all pre-existing); LoomSculpture chunk isolated (935KB); git diff --check passed; dev server metadata verified | Committed and pushed as `88d95c7` |
 
 When recording future work, append a row; do not erase historical rows. Keep entries short and link each change to one plan step.
 
@@ -285,22 +313,21 @@ For every future failure, append: date, plan step, command or approach, exact er
 
 ## 6) Next steps
 
-### Next executable action — Step 3 responsive data primitives
+### Next executable action — Step 5: Complete all public, legal, forbidden, and not-found routes
 
-1. [x] Inspect Badge, EmptyState, Skeleton, Stepper, and ProgressRing plus their targeted usages.
-2. [x] Rebuild semantic states and accessibility behavior without removing existing props.
-3. [x] Install locked workspace dependencies, run isolated TypeScript verification and lint, then record exact results.
-4. [x] Inspect Slider, Accordion, and DataTable plus their targeted usages.
-5. [x] Rebuild semantic states, keyboard behavior, and responsive presentation without removing existing props.
-6. Run isolated TypeScript verification and lint, then record exact results.
-4. Inspect the scoped diff, run `git diff --check`, commit the active files with this ledger, and push.
+1. Inspect About.tsx, Blog.tsx, Changelog.tsx, Privacy.tsx, Terms.tsx, Refund.tsx, StatusPage.tsx, and EditorialLayout.tsx.
+2. Rebuild each with product-appropriate content, semantic tokens, honest empty/coming-when-published states, and legal-review markers.
+3. Add lazy explicit `/403` and `/404` pages while preserving wildcard handling.
+4. Apply route-specific metadata, heading hierarchy, and readable line length.
+5. Run Vite build and lint, then record exact results.
+6. Inspect the scoped diff, run `git diff --check`, commit the active files with this ledger, and push.
 
 ### Ordered project queue
 
 - [x] **1. Brand:** central identity, marks/assets, metadata, legal naming caveat.
 - [x] **2. Theme:** semantic tokens, typography, surfaces, motion, system/light/dark, no-flash bootstrap.
-- [~] **3. UI system:** shared primitives, overlays, focus handling, feedback, responsive data patterns. Active.
-- [ ] **4. Marketing:** public shell, truthful landing narrative, progressive WebGL hero, unified pricing.
+- [x] **3. UI system:** shared primitives, overlays, focus handling, feedback, responsive data patterns.
+- [x] **4. Marketing:** public shell, truthful landing narrative, progressive WebGL hero, unified pricing.
 - [ ] **5. Public/legal:** complete editorial, legal, forbidden, and not-found routes with metadata.
 - [ ] **6. Auth:** unified auth shell while preserving real auth behavior and safe redirects.
 - [ ] **7. App shell/dashboard:** document scrolling, mobile sheet, exact nav, real account state.
