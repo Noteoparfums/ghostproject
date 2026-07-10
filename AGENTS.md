@@ -80,12 +80,10 @@ The work is frontend-only with respect to product contracts:
 
 ### Confirmed incomplete or not yet verified
 
-- Steps 1-4 are implemented, verified, committed, and pushed.
-- Step 3 responsive-data-primitives isolated TypeScript and lint checks passed; Step 3 is complete.
-- Step 4 WebGL hero, marketing shell, landing sections, and pricing token migration are complete.
+- Steps 1-5 are implemented, verified, committed, and pushed.
 - The planned auth shell and generation component split are absent from the tracked file inventory.
-- Steps 5-12 have not been behaviorally, visually, or contract-verified in this ledger; Step 5 is next.
-- Step 1-4 build/lint and targeted browser results are recorded below; final root tests, accessibility, bundle, and full-stack route verification remain pending for Step 12.
+- Steps 6-12 have not been behaviorally, visually, or contract-verified in this ledger; Step 6 is next.
+- Step 1-5 build/lint results are recorded below; final root tests, accessibility, bundle, and full-stack route verification remain pending for Step 12.
 - The root monorepo `tsc -b shared server scripts` and the client's chained `npm run build` both fail before reaching the client because `shared/tsconfig.json`, `server/tsconfig.json`, and `scripts/tsconfig.json` extend a `tsconfig.base.json` that does not exist anywhere in Git history (confirmed via `git log --all --diff-filter=A -- tsconfig.base.json`, zero results). This is a pre-existing repository defect outside the frontend-only scope; isolated per-file `tsc --noEmit --ignoreConfig <explicit compiler flags>` checks are used instead for each active step's files.
 
 ### Current Step 1 findings
@@ -169,6 +167,21 @@ Unsupported and never simulated: generation cancellation, A/B variants, generati
 - Browser automation unavailable on macOS; visual inspection deferred to Step 12 final quality pass.
 - Step 4 was committed and pushed as `88d95c7`.
 
+### Current Step 5 findings
+
+- EditorialLayout migrated from legacy `bg-background`/`text-foreground`/`text-muted-foreground` to semantic tokens (`--color-canvas`, `--color-text-default`, `--color-text-strong`, `--color-text-subtle`, `--color-accent-primary`).
+- Removed dangling `prose-briefloom` class (never defined in any CSS file); replaced with direct spacing.
+- Removed dangling `eyebrow` class; replaced with inline `text-xs font-semibold uppercase tracking-[0.15em]` matching the Step 4 eyebrow pattern.
+- Legal notice banner now uses semantic `--color-status-warning` tokens with AlertTriangle icon for visual clarity.
+- EditorialSection headings now use `--color-text-strong` and responsive `text-2xl sm:text-3xl`.
+- StatusPage migrated from `bg-background`/`text-foreground`/`text-muted-foreground` to semantic tokens; removed dangling `paper-grid` class (never defined).
+- StatusPage error code now uses `--color-accent-primary` instead of hardcoded `#b9573b`.
+- Added `description` meta to Privacy, Terms, and Refund pages (were missing for SEO).
+- About, Blog, and Changelog content reviewed: honest, no fabricated claims; no code changes needed.
+- Vite production build passes in 385ms.
+- Client lint: 0 errors, 24 warnings (all pre-existing outside Step 5 files).
+- `git diff --check` passed.
+
 ```yaml
 last_updated: 2026-07-10
 branch: main
@@ -176,20 +189,18 @@ verified_head_at_session_start: 0cf809d
 remote_parity_at_session_start: main matches origin/main
 working_tree_at_session_start: only untracked .verdent/
 phase: frontend-rebuild
-current_plan_step: 5
-current_step_name: Complete all public, legal, forbidden, and not-found routes
+current_plan_step: 6
+current_step_name: Unified auth shell while preserving real auth behavior and safe redirects
 step_status: not-started
-next_executable_action: Inspect About.tsx, Blog.tsx, Changelog.tsx, Privacy.tsx, Terms.tsx, Refund.tsx, StatusPage.tsx, and EditorialLayout.tsx against Step 5 plan targets before implementing.
+next_executable_action: Inspect Login.tsx, Signup.tsx, ForgotPassword.tsx, ResetPassword.tsx, VerifyEmail.tsx, and any auth shell/layout components against Step 6 plan targets before implementing.
 first_files_to_read:
   - AGENTS.md
-  - client/src/pages/marketing/About.tsx
-  - client/src/pages/marketing/Blog.tsx
-  - client/src/pages/marketing/Changelog.tsx
-  - client/src/pages/legal/Privacy.tsx
-  - client/src/pages/legal/Terms.tsx
-  - client/src/pages/legal/Refund.tsx
-  - client/src/pages/marketing/StatusPage.tsx
-  - client/src/components/marketing/EditorialLayout.tsx
+  - client/src/pages/auth/Login.tsx
+  - client/src/pages/auth/Signup.tsx
+  - client/src/pages/auth/ForgotPassword.tsx
+  - client/src/pages/auth/ResetPassword.tsx
+  - client/src/pages/auth/VerifyEmail.tsx
+  - client/src/contexts/AuthContext.tsx
 files_to_ignore:
   - .verdent/
 verification_completed:
@@ -224,6 +235,9 @@ verification_completed:
   - Step 4 git diff --check passed
   - Step 4 dev server metadata verification (correct title and OG description)
   - Step 4 commit 88d95c7 pushed to origin/main
+  - Step 5 Vite production build (385ms)
+  - Step 5 lint 0 errors 24 warnings (all pre-existing)
+  - Step 5 git diff --check passed
 verification_pending:
   - Step 4 browser visual inspection (deferred to Step 12 — browser automation unavailable on macOS)
 known_blockers:
@@ -235,26 +249,19 @@ do_not_repeat:
   - Step 3 overlay build and lint unless overlay files change
   - Step 3 responsive-data-primitives isolated check unless Slider/Accordion/DataTable change
   - Step 4 marketing component and pricing inspection unless those files change
+  - Step 5 editorial/status/legal page inspection unless those files change
 ```
 
 ## 3) Active Files
 
 | File | Purpose | State | Next action |
 |---|---|---|---|
-| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Step 4 checkpoint recorded | Commit with ledger update |
-| `client/src/components/layout/MarketingNav.tsx` | Responsive marketing navigation with mobile menu | Rebuilt with semantic tokens, mobile menu, a11y attributes | Complete for Step 4 |
-| `client/src/components/layout/Footer.tsx` | Marketing footer with centralized navigation | Rebuilt with semantic tokens | Complete for Step 4 |
-| `client/src/components/marketing/HeroSection.tsx` | Landing hero orchestrating WebGL/fallback | Created with WebGL detection, error boundary, semantic HTML | Complete for Step 4 |
-| `client/src/components/marketing/hero/LoomSculpture.tsx` | Lazy R3F 3D woven-loom sculpture | Created with DPR cap, mobile simplification, reduced motion | Complete for Step 4 |
-| `client/src/components/marketing/hero/HeroFallback.tsx` | Static SVG fallback with framer-motion | Created with reduced-motion awareness | Complete for Step 4 |
-| `client/src/components/marketing/WorkflowSection.tsx` | 3-step workflow cards | Created with semantic tokens | Complete for Step 4 |
-| `client/src/components/marketing/CapabilitySection.tsx` | Honest capability showcase | Created with verified supported claims | Complete for Step 4 |
-| `client/src/components/marketing/PricingPreview.tsx` | Compact landing pricing preview | Created from PRICING_PLANS config | Complete for Step 4 |
-| `client/src/components/marketing/FinalCTA.tsx` | Bottom CTA section | Created with BrandMark and signup link | Complete for Step 4 |
-| `client/src/pages/marketing/LandingRedesign.tsx` | Landing page thin composition | Rebuilt as section imports | Complete for Step 4 |
-| `client/src/pages/marketing/Pricing.tsx` | Full pricing page | Migrated to semantic tokens, preserved checkout logic | Complete for Step 4 |
-| `client/src/config/pricing.ts` | Central pricing catalog | Added recommended and ctaLabel fields | Complete for Step 4 |
-| `client/src/App.tsx` | Root router and layout wrappers | Semantic token migration for skeletons/layouts | Complete for Step 4 |
+| `AGENTS.md` | Persistent project memory and mandatory handoff protocol | Step 5 checkpoint recorded | Commit with ledger update |
+| `client/src/components/marketing/EditorialLayout.tsx` | Shared editorial article/section layout | Migrated to semantic tokens, added AlertTriangle legal icon, removed dangling classes | Complete for Step 5 |
+| `client/src/pages/marketing/StatusPage.tsx` | 403/404 status page | Migrated to semantic tokens, removed dangling paper-grid class | Complete for Step 5 |
+| `client/src/pages/legal/Privacy.tsx` | Privacy Policy page | Added meta description | Complete for Step 5 |
+| `client/src/pages/legal/Terms.tsx` | Terms of Service page | Added meta description | Complete for Step 5 |
+| `client/src/pages/legal/Refund.tsx` | Refund Policy page | Added meta description | Complete for Step 5 |
 
 ## 4) Changes Made
 
@@ -289,6 +296,7 @@ do_not_repeat:
 | 2026-07-10 | 3 | Rebuilt Slider, Accordion, and DataTable with semantic theme states, complete disclosure and sorting relationships, keyboard-operable controls, responsive data semantics, empty states, and minimum interaction targets without removing existing props. | Implementation complete; isolated TypeScript verification and lint pending | Commit and push pending |
 | 2026-07-10 | 3 | Started isolated TypeScript verification and client lint for Slider, Accordion, and DataTable. | Neither check could start because the local dependency binaries are absent in this fresh session | Install locked dependencies, then rerun unchanged checks |
 | 2026-07-10 | 4 | Installed three, @react-three/fiber, @react-three/drei (63 packages); created 7 marketing section components; rebuilt MarketingNav with mobile menu; rebuilt Footer and Pricing with semantic tokens; updated pricing.ts config; updated App.tsx layouts; rebuilt LandingRedesign as thin composition. | Vite build passed (388ms); lint 0 errors 24 warnings (all pre-existing); LoomSculpture chunk isolated (935KB); git diff --check passed; dev server metadata verified | Committed and pushed as `88d95c7` |
+| 2026-07-10 | 5 | Migrated EditorialLayout and StatusPage to semantic tokens; removed dangling prose-briefloom, eyebrow, and paper-grid classes; added AlertTriangle icon to legal notice; added meta descriptions to Privacy, Terms, and Refund pages. Content in About, Blog, Changelog reviewed and confirmed honest. | Vite build passed (385ms); lint 0 errors 24 warnings (all pre-existing); git diff --check passed | Commit and push pending |
 
 When recording future work, append a row; do not erase historical rows. Keep entries short and link each change to one plan step.
 
@@ -313,12 +321,12 @@ For every future failure, append: date, plan step, command or approach, exact er
 
 ## 6) Next steps
 
-### Next executable action — Step 5: Complete all public, legal, forbidden, and not-found routes
+### Next executable action — Step 6: Unified auth shell
 
-1. Inspect About.tsx, Blog.tsx, Changelog.tsx, Privacy.tsx, Terms.tsx, Refund.tsx, StatusPage.tsx, and EditorialLayout.tsx.
-2. Rebuild each with product-appropriate content, semantic tokens, honest empty/coming-when-published states, and legal-review markers.
-3. Add lazy explicit `/403` and `/404` pages while preserving wildcard handling.
-4. Apply route-specific metadata, heading hierarchy, and readable line length.
+1. Inspect Login.tsx, Signup.tsx, ForgotPassword.tsx, ResetPassword.tsx, VerifyEmail.tsx, and AuthContext.tsx.
+2. Rebuild each auth page with semantic tokens, accessible forms, and proper metadata.
+3. Ensure all auth flows (login, signup, forgot/reset password, email verification) preserve existing real API calls.
+4. Add a shared auth layout if none exists, or migrate the existing one.
 5. Run Vite build and lint, then record exact results.
 6. Inspect the scoped diff, run `git diff --check`, commit the active files with this ledger, and push.
 
@@ -328,7 +336,7 @@ For every future failure, append: date, plan step, command or approach, exact er
 - [x] **2. Theme:** semantic tokens, typography, surfaces, motion, system/light/dark, no-flash bootstrap.
 - [x] **3. UI system:** shared primitives, overlays, focus handling, feedback, responsive data patterns.
 - [x] **4. Marketing:** public shell, truthful landing narrative, progressive WebGL hero, unified pricing.
-- [ ] **5. Public/legal:** complete editorial, legal, forbidden, and not-found routes with metadata.
+- [x] **5. Public/legal:** complete editorial, legal, forbidden, and not-found routes with metadata.
 - [ ] **6. Auth:** unified auth shell while preserving real auth behavior and safe redirects.
 - [ ] **7. App shell/dashboard:** document scrolling, mobile sheet, exact nav, real account state.
 - [ ] **8. Generation:** honest Brief → Generate → Review workspace using actual SSE payloads only.

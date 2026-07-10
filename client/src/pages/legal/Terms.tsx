@@ -2,7 +2,7 @@ import EditorialLayout, { EditorialSection } from '../../components/marketing/Ed
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 
 export function Terms() {
-  useDocumentMeta({ title: 'Terms of Service', canonical: '/legal/terms' });
+  useDocumentMeta({ title: 'Terms of Service', description: 'Working terms describing responsible use of the current Briefloom service.', canonical: '/legal/terms' });
   return (
     <EditorialLayout legal eyebrow="Legal draft" title="Terms of Service" intro="These working terms describe responsible use of the current Briefloom service.">
       <EditorialSection title="Service and accounts">

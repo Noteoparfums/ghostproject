@@ -2,7 +2,7 @@ import EditorialLayout, { EditorialSection } from '../../components/marketing/Ed
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 
 export function Refund() {
-  useDocumentMeta({ title: 'Refund Policy', canonical: '/legal/refund' });
+  useDocumentMeta({ title: 'Refund Policy', description: 'Refund submission is not currently available inside the Briefloom workspace. Contact support for help.', canonical: '/legal/refund' });
   return (
     <EditorialLayout legal eyebrow="Legal draft" title="Refund Policy" intro="Refund submission is not currently available inside the Briefloom workspace.">
       <EditorialSection title="How to ask for help">

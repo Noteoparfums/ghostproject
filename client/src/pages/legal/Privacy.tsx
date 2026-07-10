@@ -2,7 +2,7 @@ import EditorialLayout, { EditorialSection } from '../../components/marketing/Ed
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 
 export function Privacy() {
-  useDocumentMeta({ title: 'Privacy Policy', canonical: '/legal/privacy' });
+  useDocumentMeta({ title: 'Privacy Policy', description: 'How the current Briefloom workspace handles account and product data.', canonical: '/legal/privacy' });
   return (
     <EditorialLayout legal eyebrow="Legal draft" title="Privacy Policy" intro="This draft explains how the current Briefloom workspace handles account and product data.">
       <EditorialSection title="Information used by the service">
